@@ -131,3 +131,55 @@ def dq_vec6(xi):
     Return [omega_x, omega_y, omega_z, v_x, v_y, v_z].
     """
     return np.r_[xi[1:4], xi[5:8]]
+
+
+def vec6_to_pure_dq(v):
+    """
+    Convert 6D twist vector to pure dual quaternion.
+
+    v = [wx, wy, wz, vx, vy, vz]
+
+    xi = omega + eps * velocity
+       = [0, wx, wy, wz] + eps [0, vx, vy, vz]
+    """
+    v = np.asarray(v, dtype=float).reshape(6)
+    return np.array([
+        0.0, v[0], v[1], v[2],
+        0.0, v[3], v[4], v[5]
+    ], dtype=float)
+
+
+def dq_pose_normalize(x):
+    """
+    Normalize a pose dual quaternion.
+
+    x = r + eps * 1/2 * p * r
+
+    After Euler integration, numerical drift appears.
+    We normalize r and reconstruct the dual part from the current translation.
+    """
+    r = q_normalize(x[:4])
+    qd = x[4:]
+
+    p_quat = 2.0 * q_mul(qd, q_conj(r))
+    p = p_quat[1:4]
+
+    qd_new = 0.5 * q_mul(np.r_[0.0, p], r)
+
+    return np.r_[r, qd_new]
+
+
+def integrate_pose_left_twist(x, xi_vec6, dt):
+    """
+    Integrate:
+        x_dot = 1/2 * xi * x
+
+    where xi is a pure dual quaternion represented by vec6:
+        xi_vec6 = [omega, velocity]
+
+    This matches the spatial/inertial twist convention used in the H∞ paper.
+    """
+    xi = vec6_to_pure_dq(xi_vec6)
+    x_dot = 0.5 * dq_mul(xi, x)
+    x_next = x + dt * x_dot
+    return dq_pose_normalize(x_next)

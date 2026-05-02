@@ -24,7 +24,7 @@ def main():
 
     # Goal joint configuration.
     # We use its FK as desired pose xd.
-    q_goal = np.array([0.7, -0.2, 0.6, -0.4, 0.3, 0.6, 0.1], dtype=float)
+    q_goal = np.array([0.7, -0.2, 0.1, -0.4, 0.3, 0.6, 0.1], dtype=float)
     xd = robot.fkm(q_goal)
 
     gamma_O = 1.0
