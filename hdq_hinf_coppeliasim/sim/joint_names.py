@@ -7,3 +7,8 @@ JOINT_PATHS_7R = [
     "/lbr4p_joint_6",
     "/lbr4p_joint_7",
 ]
+
+BASE_PATH = "/LBR4p"
+
+# 这里换成你刚刚从 CoppeliaSim 打印出来的末端路径
+TIP_PATH = "/LBR4p/connection"

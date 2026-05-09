@@ -1,5 +1,5 @@
 import numpy as np
-from core.dq_math import dq_mul, dq_conj, dq_translation
+from src.dq_math import dq_mul, dq_conj, dq_translation
 
 
 def pose_error(x, xd):
@@ -36,3 +36,4 @@ def pose_error(x, xd):
 
 def pose_error_norm(O, T):
     return np.sqrt(np.dot(O, O) + np.dot(T, T))
+

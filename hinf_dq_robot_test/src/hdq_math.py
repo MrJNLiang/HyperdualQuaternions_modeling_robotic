@@ -1,5 +1,5 @@
 import numpy as np
-from core.dq_math import q_mul, dq_mul, dq_conj, dq_vec6
+from src.dq_math import q_mul, dq_mul, dq_conj, dq_vec6
 
 
 def dq_zero():

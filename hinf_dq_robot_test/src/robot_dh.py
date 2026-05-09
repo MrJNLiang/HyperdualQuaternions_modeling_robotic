@@ -1,7 +1,7 @@
 import numpy as np
-from core.dq_math import dq_from_transform, dq_mul, dq_conj, dq_vec6
-from core.hdq_math import hdq_identity, hdq_from_standard_dh, spatial_twist_from_hdq
-from core.hdq_math import dq_identity, dq_standard_dh_and_derivative
+from src.dq_math import dq_from_transform, dq_mul, dq_conj, dq_vec6
+from src.hdq_math import hdq_identity, hdq_from_standard_dh, spatial_twist_from_hdq
+from src.hdq_math import dq_identity, dq_standard_dh_and_derivative
 
 def dh_transform(a, alpha, d, theta):
     """
@@ -231,7 +231,7 @@ class SerialDHRobot:
         This is not finite difference.
         It is the expanded HDQ chain-rule derivative.
         """
-        from core.dq_math import dq_mul, dq_conj, dq_vec6
+        from src.dq_math import dq_mul, dq_conj, dq_vec6
 
         q = np.asarray(q, dtype=float)
 

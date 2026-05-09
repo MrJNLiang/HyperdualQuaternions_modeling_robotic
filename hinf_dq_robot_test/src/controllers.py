@@ -1,43 +1,4 @@
 import numpy as np
-from core.dq_math import dq_mul, dq_conj, dq_vec6, vec6_to_pure_dq
-
-
-def transform_desired_twist_by_error(x_tilde, xi_d):
-    """
-    原文 tracking feedforward 项：
-        vec6( x_tilde * xi_d * x_tilde^* )
-    """
-    xi_d_dq = vec6_to_pure_dq(xi_d)
-    tmp = dq_mul(dq_mul(x_tilde, xi_d_dq), dq_conj(x_tilde))
-    return dq_vec6(tmp)
-
-
-def hinf_tracking_control(
-    J,
-    O,
-    T,
-    x_tilde,
-    xi_d,
-    gamma_O=1.0,
-    gamma_T=1.0,
-    damping=1e-3
-):
-    """
-    H∞ tracking controller:
-        qdot = J^+ ( [kO O; -kT T] + vec6(x_tilde xi_d x_tilde*) )
-    """
-    kO = np.sqrt(2.0) / gamma_O
-    kT = np.sqrt(2.0) / gamma_T
-
-    feedback = np.r_[kO * O, -kT * T]
-    feedforward = transform_desired_twist_by_error(x_tilde, xi_d)
-
-    task_velocity = feedback + feedforward
-
-    J_pinv = damped_pinv(J, damping=damping)
-    qdot_cmd = J_pinv @ task_velocity
-
-    return qdot_cmd, task_velocity, kO, kT
 
 
 def damped_pinv(J, damping=1e-4):
