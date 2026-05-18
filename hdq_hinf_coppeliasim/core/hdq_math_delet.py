@@ -1,12 +1,5 @@
 import numpy as np
-from core.dq_math import (
-    q_mul,
-    dq_mul,
-    dq_conj,
-    dq_vec6,
-    dq_from_transform,
-    vec6_to_pure_dq,
-)
+from core.dq_math import q_mul, dq_mul, dq_conj, dq_vec6
 
 
 def dq_zero():
@@ -128,7 +121,7 @@ def spatial_twist_from_hdq(X):
     Given:
         X = x + eps_star * x_dot
 
-    For the H∞ paper convention used in this project:
+    For the H∞ paper convention:
         x_dot = 1/2 * xi * x
 
     Therefore:
@@ -136,7 +129,6 @@ def spatial_twist_from_hdq(X):
     """
     xi = 2.0 * dq_mul(X.hd, dq_conj(X.dq))
     return dq_vec6(xi)
-
 
 def dq_standard_dh_and_derivative(a, alpha, d, theta, joint_type):
     """
@@ -166,132 +158,3 @@ def dq_standard_dh_and_derivative(a, alpha, d, theta, joint_type):
         dXi = dq_mul(dq_mul(dq_mul(Rz, dTz), Tx), Rx)
 
     return Xi, dXi
-
-
-# -----------------------------------------------------------------------------
-# POE-based HDQ chain propagation
-# -----------------------------------------------------------------------------
-
-def _skew(v):
-    v = np.asarray(v, dtype=float).reshape(3)
-    return np.array([
-        [0.0, -v[2], v[1]],
-        [v[2], 0.0, -v[0]],
-        [-v[1], v[0], 0.0]
-    ], dtype=float)
-
-
-def se3_exp_transform_from_screw(S, theta):
-    """
-    Homogeneous transform exp([S] theta), matching CoppeliaPOEModel.se3_exp.
-
-    S order:
-        S = [omega_x, omega_y, omega_z, v_x, v_y, v_z]
-
-    For a revolute joint:
-        S = [omega; v],  v = -omega x o = o x omega
-
-    For a prismatic joint:
-        omega = 0, v = translation direction
-    """
-    S = np.asarray(S, dtype=float).reshape(6)
-    w = S[:3]
-    v = S[3:]
-
-    T = np.eye(4)
-    wn = np.linalg.norm(w)
-
-    if wn < 1e-12:
-        T[:3, 3] = v * theta
-        return T
-
-    w = w / wn
-    v = v / wn
-    theta = theta * wn
-
-    wx = _skew(w)
-    R = np.eye(3) + np.sin(theta) * wx + (1.0 - np.cos(theta)) * (wx @ wx)
-    V = (
-        np.eye(3) * theta
-        + (1.0 - np.cos(theta)) * wx
-        + (theta - np.sin(theta)) * (wx @ wx)
-    )
-    p = V @ v
-
-    T[:3, :3] = R
-    T[:3, 3] = p
-    return T
-
-
-def dq_exp_from_spatial_screw(S, theta):
-    """
-    Convert exp([S] theta) to pose dual quaternion.
-    """
-    T = se3_exp_transform_from_screw(S, theta)
-    return dq_from_transform(T)
-
-
-def hdq_from_spatial_screw(S, theta, theta_dot):
-    """
-    One POE joint factor in HDQ form, without explicitly forming the full Jacobian.
-
-        x_i(theta) = exp(S_i theta)
-        x_dot_i    = 1/2 * (S_i * theta_dot) * x_i
-        X_i        = x_i + eps_star * x_dot_i
-
-    This is analytic time differentiation through q_dot_i. It is not finite
-    difference.
-    """
-    S = np.asarray(S, dtype=float).reshape(6)
-    theta_dot = float(theta_dot)
-
-    x_i = dq_exp_from_spatial_screw(S, theta)
-    xi_i = vec6_to_pure_dq(S * theta_dot)
-    x_dot_i = 0.5 * dq_mul(xi_i, x_i)
-
-    return HDQ(x_i, x_dot_i)
-
-
-def hdq_constant_transform(T_or_dq):
-    """
-    Constant transform as HDQ with zero hyper-dual part.
-    Accepts either a 4x4 homogeneous matrix or an 8D dual quaternion.
-    """
-    arr = np.asarray(T_or_dq, dtype=float)
-    if arr.shape == (4, 4):
-        x = dq_from_transform(arr)
-    else:
-        x = arr.reshape(8)
-    return HDQ(x, dq_zero())
-
-
-def hdq_poe_chain_from_model(robot, q, qdot):
-    """
-    Pure HDQ chain propagation for a CoppeliaPOEModel-like object.
-
-    Required robot attributes:
-        robot.S       : 6 x n screw matrix
-        robot.M       : 4 x 4 home/end transform
-        robot.q_home  : n-vector home joint values
-
-    It computes:
-        X(q, qdot) = Π_i [ exp(S_i theta_i)
-                           + eps_star * d/dt exp(S_i theta_i) ] * M
-
-    where:
-        theta_i     = q_i - q_home_i
-        theta_dot_i = qdot_i
-
-    No full Jacobian J(q) is formed inside this function.
-    """
-    q = np.asarray(q, dtype=float).reshape(robot.n)
-    qdot = np.asarray(qdot, dtype=float).reshape(robot.n)
-
-    X = hdq_identity()
-    for i in range(robot.n):
-        theta_i = q[i] - robot.q_home[i]
-        X_i = hdq_from_spatial_screw(robot.S[:, i], theta_i, qdot[i])
-        X = X * X_i
-
-    X = X * hdq_constant_transform(robot.M)
-    return X
