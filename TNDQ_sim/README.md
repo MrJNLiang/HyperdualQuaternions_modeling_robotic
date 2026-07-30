@@ -5,9 +5,10 @@ TNDQ/HDQ/DQ 代数结构、7R 串联机械臂（KUKA LBR4+/LWR4+ 构型）TNDQ �
 几何一致误差体系（定理 1/2）、计算力矩控制律（式 5.2）与 H∞/ISS 性能保证（定理 3）；
 并按 `docx/KUKALBR4p场景_定点与圆周扰动对比实验设计.md`（下称"场景篇"）与
 `docx/TNDQ动力学控制对比分析与实验设计方案.md`（下称"总方案"）完成了
-**CoppeliaSim（KUKALBR4+_sim.ttt 场景）力矩级对接**与 **E1–E7 扰动实验矩阵**。
+**CoppeliaSim（KUKALBR4+_sim.ttt 场景）力矩级对接**与 **E1–E8 扰动/γ 扫描实验矩阵**。
 
-**纯数值输出（npz + CSV），不含任何绘图。**
+**默认纯数值输出（npz + CSV）**；仅 S3 实验的 `--plot` 选项可选生成对比图
+（需 matplotlib，见下）。
 
 ## 目录结构
 
@@ -38,6 +39,12 @@ TNDQ_sim/
 │   └── data_logger.py           #   npz + CSV + 定宽文本表 + 数值摘要
 ├── tests/
 │   └── test_math_properties.py  #   11 项数学性质单元测试（全部通过）
+├── experiments/
+│   ├── run_grasp_circle.py      #   S3 抓取-搬运实验：抓杯 + 带载圆周 +
+│   │                            #   空载/带载 × 控制律（C1/C2/C3 三方）全交叉
+│   │                            #   对比 + 指标汇总 CSV（grasp_metrics_summary.csv）
+│   └── run_gamma_sweep.py       #   γ 影响实验（E8）：新理论 γ_a 证书/综合双通道
+│                                #   vs 旧理论 γ_O/γ_T 综合参数，图 + CSV
 ├── run_simulation.py            #   闭环仿真主程序（双后端、S1/S2、E1–E7、安全机制）
 └── README.md
 ```
@@ -46,10 +53,12 @@ TNDQ_sim/
 
 - Python ≥ 3.8，核心仅依赖 `numpy`（测试可选 `pytest`）
 - CoppeliaSim 对接（可选）：CoppeliaSim ≥ 4.4 + ZMQ Remote API 客户端
+- S3 对比出图（可选）：`matplotlib`（仅 `run_grasp_circle.py --plot` 需要）
 
 ```bash
 pip install numpy
 pip install coppeliasim-zmqremoteapi-client   # 仅 --backend coppeliasim 需要
+pip install matplotlib                        # 仅 S3 --plot 需要
 ```
 
 ## 运行方法（TNDQ_sim/ 目录下）
@@ -85,6 +94,178 @@ python3 run_simulation.py --plant torque --scenario cup-circle \
 python3 run_simulation.py --backend coppeliasim --scenario setpoint
 python3 run_simulation.py --backend coppeliasim --scenario cup-circle --condition l2
 ```
+
+### 4. S3 抓取-搬运实验（experiments/run_grasp_circle.py，仅 CoppeliaSim）
+
+抓杯 → 提升 → 横移过渡 → 带载圆周的完整物理交互流程，并在**完全相同的
+实验环境**（同轨迹/同力矩出口/同安全预算/同监控）下做两个维度的交叉对比：
+
+- **负载维** `--mode noload|load`：同一条轨迹，唯一差别是是否刚性附着杯子
+  （力传感器焊接 + 杯质量改写为 CUP_LOAD_MASS=0.25 kg）；控制器名义模型
+  不含杯 → 负载即 ΔM/Δg 模型失配扰动，由定理 3(c)/(d) H∞/ISS 证书兜底。
+- **控制律维** `--law tndq|dq-ctc|dq-hinf`（总方案 §4/§5.2 三方同台对比）：
+  - `tndq` = **C1** 几何一致计算力矩律（式 5.2，本文新理论）；
+  - `dq-ctc` = **C2** 二阶 DQ CTC 基线（差分前馈）：同一 DQ 位姿误差
+    (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项基线）、位姿反馈不经
+    Aᵀ 整形（无定理 3 证书）、前馈 ξ̇_d 与 J̇q̇ 均取数值差分（一拍滞后 +
+    差分噪声），接入**同一力矩出口**。公平性：DQC_K_D=24I、
+    DQC_K_P=diag(160,80)（params.py DQC_* 参数节），使其线性化 d→e 传递
+    函数与 C1(tuned)/C3 逐通道恒等（极点 {−4,−20}、DC 刚度 80）；
+  - `dq-hinf` = **C3** 一阶 DQ H∞ 运动学律（`hdq_hinf_coppeliasim` 原实现
+    逐行移植，“之前理论”）：任务速度 = [k_O·O; −k_T·T] + vec₆(x̃ ξ_d x̃*)，
+    经同一阻尼伪逆得 q̇_cmd，再由内环伺服 q̈_ref = Δq̇_cmd/dt +
+    K_servo(q̇_cmd−q̇) 接入**同一力矩出口** τ = M̂q̈_ref + Ĉq̇ + ĝ。
+    公平性：基线增益 k_T=4、k_O=8、K_servo=20（params.py DQH_* 参数节）。
+- **增益维** `--gains base|tuned|fast`（仅对 `--law tndq` 有效，见 §4.1）：
+  `base` 是出厂增益，只对齐了 C1/C3 的**主导极点**、没有对齐级联第二极点
+  带来的**直流刚度**，因此不构成同预算对比；`tuned` 使 C1/C2/C3 三律的
+  线性化 d→e 传递函数**逐通道恒等**，才是公平对比点；`fast` 是同一安全
+  约束下的可达上限档。
+- **敏感条件维** `--condition none|highspeed|fast-transit|noise|coarse-dt`
+  （层 3 结构敏感域对比）：准静态标准场景下三律同预算必然趋同（误差被
+  DC 刚度垄断），敏感条件把结构差异（解析 vs 差分前馈、二阶通道有无、
+  Aᵀ 整形）推到线性化失效/高频域使其可观测。全部只改时间/测量/控制
+  周期参数，**路标几何与场景完全不变**（IK 限位验证仍有效、无穿模风险）：
+  - `highspeed`：圆周 ω 1.0→2.5 rad/s（前馈/向心项 ×6.25，暴露解析 vs
+    差分前馈差距）；
+  - `fast-transit`：lift/retreat/transit/descend2 时长 ×0.5（快相位前馈
+    精度；descend/hold 不动，附着时刻力学不变）；
+  - `noise`：编码器级测量噪声 σ_q=5e-5 rad、σ_q̇=1e-3 rad/s（控制器只见
+    带噪测量、安全检查用真值；差分放大 ∝1/dt）；
+  - `coarse-dt`：控制周期 5→15 ms（非控制步 ZOH 保持力矩；差分前馈一拍
+    滞后 ×3，解析前馈不受影响）。
+
+  公平性：敏感条件下 C1 建议配 `--gains tuned`（与 C2/C3 同预算，残余
+  差异纯属结构）。参数：params.py `GRASP_FAST_PHASE_SCALE`/
+  `GRASP_CTRL_DECIM`/`CIRCLE_OMEGA_FAST`/`NOISE_SIGMA_*`。
+
+```bash
+# 先在 CoppeliaSim 中打开 KUKALBR4+_sim.ttt，以下均在 TNDQ_sim/ 目录下
+python3 experiments/run_grasp_circle.py --mode noload               # C1 空载（base）
+python3 experiments/run_grasp_circle.py --mode load                 # C1 带载（base）
+python3 experiments/run_grasp_circle.py --gains tuned --mode noload # C1 空载（整定后）
+python3 experiments/run_grasp_circle.py --gains tuned --mode load   # C1 带载（整定后）
+python3 experiments/run_grasp_circle.py --gains fast  --mode load   # C1 带载（上限档）
+python3 experiments/run_grasp_circle.py --law dq-ctc  --mode noload # C2 空载
+python3 experiments/run_grasp_circle.py --law dq-ctc  --mode load   # C2 带载
+python3 experiments/run_grasp_circle.py --law dq-hinf --mode noload # C3 空载
+python3 experiments/run_grasp_circle.py --law dq-hinf --mode load   # C3 带载
+python3 experiments/run_grasp_circle.py --compare-only              # 只重印三方对比 + 导出指标 CSV
+python3 experiments/run_grasp_circle.py --compare-only --plot       # 对比 + 出图
+
+# 敏感条件（每个条件跑齐三律；C1 用 tuned 保同预算公平），以 highspeed 为例：
+python3 experiments/run_grasp_circle.py --mode load --gains tuned --condition highspeed
+python3 experiments/run_grasp_circle.py --mode load --law dq-ctc  --condition highspeed
+python3 experiments/run_grasp_circle.py --mode load --law dq-hinf --condition highspeed
+#（同理替换为 fast-transit / noise / coarse-dt；跑齐后 --compare-only 自动
+# 输出各条件的三方对比表，--plot 另存条件分组柱状图）
+```
+
+相位时间线（路标经 IK 扫描验证，params.py S3 参数节）：descend
+（指尖从杯口开口垂直伸入 30 mm，内撑式，全程走杯内空气）→ hold
+（静止保持段中点 t=2.5 s 刚性附着）→ lift → retreat → transit →
+descend2 → circle（R=0.06 m，ramp 2 s + 稳态 >1.5 圈，总时长 22.5 s）。
+
+每记录步同时采样物理交互量：附着点力旋量（readForceSensor = 抓握力
+直接测量）、杯子接触合力（getContactInfo）、机器人↔环境最小净距
+（checkDistance，独立的“无穿模”审计量：零净距且邻域无接触力 = 幽灵
+穿透 FAIL）。npz 齐备后自动打印：分相位（descend/hold/lift/
+retreat/transit/descend2/circle/circle-ss）的 |T|/|O|/|e_ξ|/|τ| RMS、
+抓握力均值、V 收敛特性（统一 base 权重折算，跨增益组可比）、饱和/治理
+步数——空载↔带载、新律↔基线（C1/C2/C3 三方）、整定前↔整定后三张交叉
+对比表；`--plot` 另存 `results/grasp_compare_{errors,effort,interaction,
+lyapunov}.png` 与敏感条件分组柱状图 `grasp_compare_conditions_{noload,
+load}.png`（condition 组 × 三律柱，C1 优先取 tuned）。轨迹级输出：
+`results/grasp_circle_[dqhinf_|dqctc_|tuned_|fast_]{noload|load}
+[_hspeed|_ftrans|_noise|_cdt].npz/.csv`（敏感条件加后缀，`none` 无后缀、
+完全兼容已有结果文件）；指标级输出：每次对比后自动导出
+`results/grasp_metrics_summary.csv`（law × gains × mode × condition ×
+phase 全交叉，列含 T/O/e_ξ/τ 的 RMS 与峰值、抓握力均值/峰值、V 稳态/
+峰值/回落时间、饱和/治理步数、单步耗时，供定量分析直接入表）。
+
+### 4.1 C1 增益整定（`control/gain_design.py` + `experiments/tune_tndq_gains.py`）
+
+出厂增益（`K_D=8I`、标量 `K_P=16`）**不是最优**。近单位误差处 A→
+diag(−I/2, I)，(5.2) 的误差体系解耦为两条二阶通道
+
+    旋转：  Ö + K_ω Ȯ + (p_O/4) O = −d_ω/2
+    平移：  T̈ + K_v Ṫ +   p_T  T = +d_v
+
+标量 `k_p`（p_O=p_T）因此让**旋转刚度只有平移的 1/4**：旋转极点退化为
+{−0.54, −7.46}（ts=7.5 s，长于 lift/retreat/transit 各相位），直流误差
+增益 0.125 —— 是 C3（外环×内环级联 k·K_servo=80）的 20 倍。这正是先前
+“C3 稳态更优”的真实原因：早先的公平性只对齐了**主导极点**，没有对齐
+级联第二极点带来的**直流刚度**。
+
+把标量推广为对称正定矩阵 `K_p` 后定理 3 逐字成立（反馈取 −AᵀK_p e_z，
+K_p 在 Aᵀ 内侧，V=½‖e_ξ‖²+½e_zᵀK_p e_z 的交叉项仍逐点相消；
+`tune_tndq_gains.py` 阶段 0 用完整非线性 A(x̃) 随机抽样核验，残差
+8.7e−16）。于是可在四个约束下做约束优化：λmin(K_d)≥2.5 (5.6a)、
+max|p|·dt≤0.15（200 Hz 显式积分余量）、ζ≥1（接触任务禁过冲）、
+指令峰值代理 ≤ QDDOT_MAX。`params.GAIN_SETS`：
+
+| 组 | K_ω / K_v | p_O / p_T | 极点 | DC 增益 O/T | λmin(K_d) | 认证 L2 | 代价 J |
+|---|---|---|---|---|---|---|---|
+| `base` | 8 / 8 | 16 / 16 | {−0.54,−7.46} / {−4,−4} | 0.125 / 0.0625 | 8 | 0.125 | 16.26 |
+| `tuned` | 24 / 24 | 320 / 80 | {−4,−20} 两通道 | 0.00625 / 0.0125 | 24 | 0.042 | 1.75 |
+| `fast` | 36 / 36 | 720 / 180 | {−6,−30} 两通道 | 0.00278 / 0.00556 | 36 | 0.028 | 1.30 |
+
+`tuned` 使 C1 两通道与 C3 的线性化 d→e 传递函数**逐通道恒等**，是真正的
+同预算对比点；`fast` 是同一安全约束下的可达上限（J 最小可行点，但恰在
+|p|dt=0.15 边界、指令峰值预算翻倍）。完整整定报告（含敏感性与证书表）：
+
+```bash
+python3 experiments/tune_tndq_gains.py          # 五阶段报告，无需 CoppeliaSim
+python3 experiments/tune_tndq_gains.py --set tuned
+python3 -m control.gain_design                  # 通道诊断自检
+```
+
+**S3 带载实测（圆周稳态段，与 C3 同环境）**——整定模型的外推被实测确认：
+
+| 增益组 | \|T\|rms [m] | \|O\|rms | 预测/C3 | 实测/C3 | \|τ\|rms [N·m] | 饱和/治理 |
+|---|---|---|---|---|---|---|
+| `base` | 1.58e−2 | 5.26e−2 | 5.0 / 20.0 | 3.25 / 12.3 | 21.1 | 0 / 0 |
+| `tuned` | 4.86e−3 | 4.27e−3 | 1.000 / 1.000 | 0.999 / 0.999 | 19.2 | 0 / 0 |
+| `fast` | 2.20e−3 | 1.93e−3 | 0.444 / 0.444 | 0.453 / 0.453 | 19.2 | 0 / 0 |
+| C3 基线 | 4.86e−3 | 4.27e−3 | — | 1 | 19.2 | 0 / 0 |
+
+即：`tuned` 与 C3 在全部相位逐项落在 1.00–1.02 倍以内（增益分配成分被
+彻底消除，剩余差异只反映结构）；`fast` 在 retreat/transit/circle 相位
+把误差降到 C3 的 0.45 倍且力矩持平，代价是附着瞬态抓握力升高
+（hold 段 21.6 N vs tuned 13.7 N vs base 9.2 N）——这是线性模型看不到的
+物理代价，故 `tuned` 作为论文对比点、`fast` 作为上限档。
+
+### 5. γ 影响实验（experiments/run_gamma_sweep.py，E8，无需 CoppeliaSim）
+
+论文 §5.3 注记（γ_a 的角色）/附录 C.3 γ-κ 设计规则的实验化：新理论的
+γ_a 是**分析参数**（只进证书 (5.6a)，不进控制律），旧理论的 γ_O/γ_T 是
+**综合参数**（k=√2/γ 直接定增益）——三组实验在同一内部加速度级对象
+（式 5.1）+ line 轨迹 + 同一 L2 扰动（seed=0）下把两者的差别做成可观测判别：
+
+- **A 组（证书扫描）**：固定 tuned 增益（K_d=24I）扫 γ_a。实测：全部 γ_a
+  行的误差逐位相同（T_rms=7.031e-4、O_rms=6.018e-4、meas_L2=0.1466），
+  只有证书可判定性变化（γ_a=0.14 时 level=26.0 > λ_min=24，证书 FAIL 但
+  行为不变）——“γ_a 不进控制律”的直接实验证据。
+- **B 组（综合模式）**：γ-κ 规则回写增益：κ=γ_a²、K_d=γ_a⁻²I（(5.6a)
+  取等号，认证能量增益=γ_a²）、K_p 临界阻尼。实测：稳态误差随 γ_a 单调
+  下降（γ_a=1→0.25：T_rms 1.80e-1→9.46e-4），完整不等式 (5.6)（含 2V(0)
+  项）逐点核验通过；代价是指令峰值随 γ_a⁻² 增长，screen() 四约束在
+  γ_a≤0.2 处 FAIL（qdd 峰值 23→38 迫近 QDDOT_MAX=40），给出可达 γ_a 下界。
+- **C 组（旧理论对照）**：复刻旧 H∞ 论文的 γ 实验（γ_O=γ_T=γ 扫描，
+  kO=kT=√2/γ，经 K_servo=20 桥接）。实测：趋势与 B 组同构（γ=1→0.177：
+  T_rms 1.02e-3→3.74e-4），但力矩接口下无证书可对照（“可调不可证”），
+  且 γ 单参数锁死阻尼/刚度结构（γ=0.177 时已饱和 5 步）。
+
+```bash
+python3 experiments/run_gamma_sweep.py                 # A/B/C 三组，图 + CSV
+python3 experiments/run_gamma_sweep.py --t-end 8 --no-plot
+```
+
+输出：`results/gamma_sweep.csv`（逐 γ 点的证书可行性/认证与实测 L2 增益/
+稳态误差/能量/饱和计数 17 列）+ `results/gamma_sweep.png`（三面板：A 组
+不变性与证书边界、B/C 组 L2 增益 vs γ、B/C 组稳态误差 vs γ）+ 终端表。
+注：meas_L2=√(E_e/E_d) 未扣初始能量 V(0)，小 γ_a 时由初始瞬态主导而反弹，
+非证书违例——判据是含 2V(0) 的完整 (5.6)（CSV 的 hinf_lhs ≤ hinf_rhs 列）。
 
 ### 命令行参数
 
@@ -220,13 +401,39 @@ CSV 同时记录 ①-② 的误差与 ③ 的核验结果，三者闭环互证�
 （含 7 次 RNEA 组装 M̂ 与扰动折算，未做缓存优化——如实报告）。
 单元测试 11/11 通过。
 
-## 四种控制理论对比（总方案 §4，对比实现规划位）
+### S3 抓取-搬运（CoppeliaSim 力矩级，全交叉 law × mode，2026-07 实测）
+
+带载圆周稳态段（circle-ss，舍 ramp 后）关键指标：
+
+| 控制律 × 负载 | \|T\| RMS [m] | \|O\| RMS | \|e_ξ\| RMS | \|τ\| RMS [N·m] | V 稳态 |
+|---|---|---|---|---|---|
+| C1 空载 | 6.32e-4 | 1.72e-3 | 3.64e-4 | 18.1 | 2.7e-5 |
+| C1 带载 | 1.58e-2（×25）| 5.26e-2（×31）| 6.41e-3 | 21.1 | 2.4e-2 |
+| C3 空载 | 1.33e-4 | 8.85e-5 | 1.50e-4 | 18.1 | 2.1e-7 |
+| C3 带载 | 4.86e-3（×37）| 4.27e-3（×48）| 9.55e-4 | 19.2 | 3.4e-4 |
+
+- **负载效应**：两律带载稳态误差均放大 1–2 个数量级（名义模型不含杯，
+  ΔM/Δg 失配无积分作用时的固有稳态偏置，被 ISS 界约束）；抓握力稳态
+  均值 2.453 N = m·g（0.25 kg），力传感器直接验证负载真实作用在动力学链上。
+- **控制律对比（带载 circle-ss，C3/C1）**：T_rms 0.31、O_rms 0.08、
+  τ_rms 0.91。忠于实测的解读：本任务准静态（ω=1 rad/s），带载稳态误差由
+  对常值重力失配的等效直流刚度决定——C3 外环×内环级联 k_T·K_servo ≈ 80/s²
+  > C1 的 k_p=16，故 C3 稳态更小，属**增益分配效应而非结构优势**。
+- **C1 的结构优势在另两处**：① 附着瞬态——C3 差分前馈一拍滞后放大冲击，
+  hold 段抓握力均值 13.7 N vs C1 的 9.2 N（×1.5）；② 可证性——C1 持有
+  H∞/ISS 证书（V 有界可预算，定理 3），C3 的速度→力矩桥接无证书，且差分
+  前馈在大 dt/测量噪声（E6）下退化；高速域优势另见 E5（S2 表）。
+- **无穿模审计**：四组全部通过——最小净距恒为正（C3 带载最紧 0.7 mm）；
+  杯接触力仅出现在附着瞬态邻域（引擎焊接冲击，合法支撑），圆周段零接触。
+- 控制器单步耗时：C1 ~9.5 ms，C3 ~10.1 ms（同一力矩出口，开销相当）。
+
+## 四种控制理论对比（总方案 §4；C2/C3 已在 S3 三方同台实现，C4 为规划位）
 
 | 控制器 | 误差定义 | 姿态处理 | 前馈结构 | 已知短板 |
 |---|---|---|---|---|
 | **C1 TNDQ 几何一致 CTC（本实现）** | HDQ 群误差 x̃=x x̂_d⁻¹（定理 1），e_ξ/e_z 同一几何对象 | 单位 DQ 无奇异；unwinding 由符号翻转处置（定理 1(i)）| 引理 1 解析前馈 + J̇q̇ 免构造读出 | 力矩层 RNEA 装配开销（6.9 ms，可缓存优化） |
-| C2 操作空间矩阵 CTC | R/p 分离误差（SO(3)×R³） | 旋转矩阵对数映射，π 处退化 | 需显式 J̇（数值差分或逐列构造） | 姿态/平移增益耦合缺几何一致性；J̇ 数值噪声 |
-| C3 DQ 鲁棒 CTC（文献 DQ 系）| DQ 对数误差 | 单位 DQ，unwinding 需额外处理 | 一阶 DQ 无二阶通道，ξ̇_d 需数值差分 | 缺 (3.5) 二阶免构造通道 → 前馈滞后 |
+| C2 二阶 DQ CTC（差分前馈基线；**已同台实现** `--law dq-ctc`）| 同一 DQ 位姿误差 (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项）| 单位 DQ，同 C1 符号翻转 | ξ̇_d 与 J̇q̇ 均数值差分（一拍滞后 + 差分噪声），位姿反馈不经 Aᵀ 整形 | 伪项随 ‖ξ_d‖ 线性增长（E6 对照组实证）；Lyapunov 交叉项不相消 → 无定理 3 证书 |
+| C3 一阶 DQ H∞ 运动学律（[P2] 系；**已同台实现** `--law dq-hinf`）| DQ 误差 x̃=x x_d*（与 C1 同约定）| 单位 DQ，unwinding 需额外处理 | 一阶 DQ 无二阶通道，速度→力矩需差分前馈 + 内环伺服桥接 | 缺 (3.5) 二阶免构造通道 → 前馈滞后（S3 实测：附着冲击 ×1.5）；桥接后一阶 H∞ 证书失效 |
 | C4 关节空间 CTC | q̃ = q − q_d(逆解) | 依赖逆运动学采样 | 关节级前馈精确 | 任务空间误差不受直接调控；逆解在奇异/冗余下不适定 |
 
 **TNDQ/HDQ 的实测优势**（对应上表数据）：
@@ -235,8 +442,11 @@ CSV 同时记录 ①-② 的误差与 ③ 的核验结果，三者闭环互证�
 无数值差分噪声）；③ 证书可核验——实测 L2 增益 0.108 与认证 0.125 之差即为
 理论保守度的直接度量，H∞/ISS 证书在力矩级+失配下依然成立；
 ④ 数值稳定性——约束残差 (3.8) 全程机器精度，重投影（§3.4）零漂移。
-C2–C4 的同台数值对比按总方案 §5.2（同一力矩出口、同一扰动、同一预算）在
-CoppeliaSim 场景中执行，属后续实验里程碑。
+**C2/C3 的三方同台数值对比已按总方案 §5.2（同一力矩出口、同一扰动、
+同一预算：三律线性化 d→e 传递函数逐通道恒等）在 S3 抓取-搬运实验中支持**
+（C2 = `dq-ctc` 差分前馈基线，C3 = `hdq_hinf_coppeliasim` 原实现逐行移植，
+见上文 S3 实测表与解读；指标汇总见 `results/grasp_metrics_summary.csv`）；
+γ 维度的新旧理论对照见 §5 γ 影响实验（E8）；C4 属后续实验里程碑。
 
 ## 实现要点与符号约定
 

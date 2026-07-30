@@ -12,6 +12,9 @@ Logged columns per sample:
     x_d, xi_d, xi_dot_d   desired trajectory (TNDQ chain, (3.3a)/(3.5))
     x, xi                 actual pose/twist from the measured TNDQ chain
     V                     storage function 1/2||e_xi||^2 + k_p/2||e_z||^2 (Sec. 5.3)
+    d_hat                 reconstructed certificate-channel disturbance
+                          (control.performance.ResidualDisturbanceEstimator;
+                          diagnostic only, never enters the control law)
     c0, c1, c2            unit-constraint residual family (3.8)
     runtime               per-step controller wall time [s]
 
@@ -34,13 +37,13 @@ class DataLogger:
 
     FIELDS = ["t", "e_z", "e_xi", "qddot_ref", "tau",
               "x_d", "xi_d", "xi_dot_d", "x", "xi",
-              "V", "c0", "c1", "c2", "runtime"]
+              "V", "d_hat", "c0", "c1", "c2", "runtime"]
 
     def __init__(self):
         self._rows = {name: [] for name in self.FIELDS}
 
     def log(self, t, e_z, e_xi, qddot_ref, x_d, xi_d, xi_dot_d, x, xi,
-            V, c0, c1, c2, runtime, tau=None):
+            V, c0, c1, c2, runtime, tau=None, d_hat=None):
         r = self._rows
         r["t"].append(float(t))
         r["e_z"].append(np.asarray(e_z, dtype=float))
@@ -57,6 +60,10 @@ class DataLogger:
         r["x"].append(np.asarray(x, dtype=float))
         r["xi"].append(np.asarray(xi, dtype=float))
         r["V"].append(float(V))
+        # 反演的证书通道等效扰动 d̂（诚实条款：含 ΔM/Δg、噪声、伪逆残差、
+        # 限幅/治理器与离散化；不进控制律）。未提供时补零保持列结构
+        r["d_hat"].append(np.zeros(6) if d_hat is None
+                          else np.asarray(d_hat, dtype=float))
         r["c0"].append(float(c0))
         r["c1"].append(float(c1))
         r["c2"].append(float(c2))
@@ -114,13 +121,16 @@ class DataLogger:
             qddot_ref_norm     控制指令范数（式 5.2）
             tau_norm           下发力矩范数 ‖τ‖ [N m]（§2.4；加速度级为 0）
             V                  存储函数（定理 3 Lyapunov 监控）
+            d_hat_norm         反演的证书通道等效扰动范数 ‖d̂‖（§6.5(6)：由
+                               闭环误差动态 (5.1e) 反演，含 ΔM/Δg、噪声、
+                               伪逆残差、限幅/治理器与离散化；仅诊断量）
             c0,c1,c2           约束族 (3.8) 残差（数值健康度，判据 < 1e-12）
             runtime            控制器单步壁钟 [s]（实时性指标 B）
         """
         os.makedirs(os.path.dirname(path), exist_ok=True)
         d = self.as_arrays()
         header = ("t,pos_err,ori_err_geodesic,e_xi_norm,e_z_O_norm,e_z_T_norm,"
-                  "qddot_ref_norm,tau_norm,V,c0,c1,c2,runtime")
+                  "qddot_ref_norm,tau_norm,V,d_hat_norm,c0,c1,c2,runtime")
         lines = [header]
         for k in range(len(d["t"])):
             # 位置误差：从实际/期望 DQ 还原平移 p = 2 q_d' r*（式 2.1 逆映射）
@@ -140,6 +150,7 @@ class DataLogger:
                 f"{np.linalg.norm(d['qddot_ref'][k]):.9e},"
                 f"{np.linalg.norm(d['tau'][k]):.9e},"
                 f"{d['V'][k]:.9e},"
+                f"{np.linalg.norm(d['d_hat'][k]):.9e},"
                 f"{d['c0'][k]:.6e},{d['c1'][k]:.6e},{d['c2'][k]:.6e},"
                 f"{d['runtime'][k]:.6e}")
         with open(path, "w") as f:
@@ -191,6 +202,14 @@ class DataLogger:
             print(f"  certified L2 gain (remark)  : {s['certified_l2_gain']:.4e}")
             print(f"  per-channel gains (5.6')    : omega {s['measured_gain_omega']:.3e}, "
                   f"v {s['measured_gain_v']:.3e}")
-            print(f"  ISS bound (5.7) on |e_xi|   : {s['iss_bound_e_xi']:.4e} "
-                  f"(||d||_inf = {s['d_inf']:.3e})")
+            # (5.7) 是均方（RMS）界，不是逐点 ISS 极限球 —— 与 e_xi 的 RMS
+            # 同口径，故可直接比；d̂ = 反演的全部扰动源，d_inj = 注入的 J w
+            print(f"  RMS bound (5.7) on |e_xi|   : {s['iss_bound_e_xi']:.4e} "
+                  f">= measured RMS {s['e_xi_rms']:.4e}  "
+                  f"[margin x{s['rms_margin']:.1f}]")
+            print(f"  ||d_hat||_inf (reconstructed): {s['d_inf']:.3e}   "
+                  f"||d_inj||_inf (J w only) : {s['d_inj_inf']:.3e}")
+            if s['d_inj_inf'] > 0.0:
+                print(f"  measured L2 gain (inj. only): "
+                      f"{s['measured_l2_gain_injected']:.4e}")
         print("=" * 68)

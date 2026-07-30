@@ -299,3 +299,33 @@ class CompositeTrajectoryTNDQ:
             if t >= seg_t0:
                 traj, t0 = seg, seg_t0
         return traj.evaluate(t - t0)
+
+
+def pose_dq(p, r):
+    """(p, r) -> 单位 DQ  x = r + ε·½ p r（式 2.1）；路标拼接辅助。"""
+    r = np.asarray(r, dtype=float).reshape(4)
+    r = r / np.linalg.norm(r)
+    return np.r_[r, 0.5 * q_mul(np.r_[0.0, np.asarray(p, dtype=float)], r)]
+
+
+def waypoint_sequence_trajectory(x_start, legs):
+    """
+    多路标平滑轨迹（S3 抓取-搬运链）：从 x_start 出发，依次经
+    goto_trajectory 平滑过渡到每个路标，段间可插入静止保持（dwell）。
+
+    legs: [(p_target, r_target, duration, dwell), ...]
+        duration  过渡段时长 [s]（余弦平滑，首尾速度/加速度为 0）
+        dwell     到达后的静止保持时长 [s]（goto 到达后 s≡1 自动保持）
+
+    返回 (CompositeTrajectoryTNDQ, t_total)：t_total = 最后一段结束时刻，
+    便于在其后拼接圆周段。每段的 x_start 取上一段的解析终点位姿
+    （goto 到达后恰为 (p*, r*)），段间 C¹ 连续（速度为 0 处拼接）。
+    """
+    segments = []
+    t = 0.0
+    x_cur = np.asarray(x_start, dtype=float)
+    for p_t, r_t, duration, dwell in legs:
+        segments.append((goto_trajectory(x_cur, p_t, r_t, duration), t))
+        t += float(duration) + float(dwell)
+        x_cur = pose_dq(p_t, r_t)
+    return CompositeTrajectoryTNDQ(segments), t

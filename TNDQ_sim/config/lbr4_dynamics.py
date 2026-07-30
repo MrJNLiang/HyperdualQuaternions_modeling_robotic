@@ -41,26 +41,35 @@ import numpy as np
 # 【注意】正式对接实验前必须按场景引擎参数回填（场景篇 §1.2 第 5 项）。
 # ---------------------------------------------------------------------------
 
-LBR4_LINK_MASS = np.array([2.7, 2.7, 2.7, 2.7, 1.7, 1.6, 0.3])   # kg
+# 2026-07 回填（场景篇 §1.2 第 5 项）：直接读取 CoppeliaSim 引擎侧参数——
+# sim.getShapeMass / sim.getShapeInertia（含质心变换）/ sim.getObjectMatrix，
+# 将 LBR4p 子树全部动态 shape 按祖先关节数归属到 link1..7，质心与惯量
+# 变换到修正后 DH 连杆系（q=0）后聚合（平行轴定理合成）。
+# RG2 夹爪各动态 shape 并入 link7（合计 m7=0.950 kg），否则重力欠补腕部下坠。
+LBR4_LINK_MASS = np.array([2.7, 2.7, 2.7, 2.7, 1.7, 1.6, 0.950])   # kg
 
-LBR4_LINK_COM = np.array([          # 连杆 i 坐标系下的质心位置 [m]
-    [0.0,  0.02, -0.17],            # link1: 沿 -z 回指肩部
-    [0.0, -0.17,  0.02],            # link2
-    [0.0,  0.02, -0.20],            # link3
-    [0.0, -0.20,  0.02],            # link4
-    [0.0,  0.02, -0.20],            # link5
-    [0.0, -0.02,  0.00],            # link6（腕部短连杆）
-    [0.0,  0.00, -0.06],            # link7（法兰）
+# 质心位置：引擎实测值（DH 连杆系，帧 i = A_1..A_i 之后；q=0 时奇数帧
+# 姿态 Rx(90°)：y_i=+z_base, z_i=-y_base）。此前手工几何中点估计与实测
+# 差异显著（如 link7 实测 z=+0.0882 vs 估计 +0.031），导致重力欠补偿，
+# e_z 单调漂移、joint6 缓慢下坠撞限位（2026-07 t=0.515s 提前终止根源）。
+LBR4_LINK_COM = np.array([          # 连杆 i 坐标系下的质心位置 [m]（引擎实测）
+    [-0.0001, -0.0738, +0.0183],    # link1
+    [-0.0001, +0.0225, +0.0869],    # link2
+    [-0.0001, -0.0738, -0.0205],    # link3
+    [-0.0001, -0.0202, +0.0871],    # link4
+    [-0.0001, -0.0833, +0.0256],    # link5
+    [-0.0000, +0.0070, -0.0020],    # link6（腕部短连杆）
+    [-0.0000, -0.0001, +0.0882],    # link7（法兰 + RG2 夹爪聚合质心）
 ])
 
-LBR4_LINK_INERTIA = np.array([      # 质心系惯性张量对角元 [kg m^2]
-    [0.030, 0.030, 0.010],
-    [0.030, 0.010, 0.030],
-    [0.030, 0.030, 0.010],
-    [0.030, 0.010, 0.030],
-    [0.015, 0.015, 0.006],
-    [0.006, 0.006, 0.003],
-    [0.001, 0.001, 0.001],
+LBR4_LINK_INERTIA = np.array([      # 质心系惯性张量对角元 [kg m^2]（引擎实测聚合）
+    [0.0150, 0.0054, 0.0147],       # link1
+    [0.0157, 0.0154, 0.0050],       # link2
+    [0.0150, 0.0054, 0.0147],       # link3
+    [0.0157, 0.0154, 0.0050],       # link4
+    [0.0089, 0.0036, 0.0086],       # link5
+    [0.0030, 0.0032, 0.0032],       # link6
+    [0.0079, 0.0083, 0.0012],       # link7（含 RG2，平行轴合成）
 ])
 
 # 电机转子折算惯量 B_i = n_i² J_rotor,i [kg m^2]（关节轴侧）。
@@ -107,9 +116,15 @@ class LBR4NominalDynamics:
     dh_table       : 与 core/kinematics.TNDQSerialChain 相同格式的 DH 表
     mismatch_scale : E3 参数失配实验的统一缩放因子（1.0 = 无失配；
                      例如 1.2 表示控制器名义质量/惯量整体高估 20%）
+    motor_inertia  : 电机转子折算惯量对角元 (n,)；None = 默认表
+                     LBR4_MOTOR_INERTIA（真实 LWR4+ 量级）。内部力矩级
+                     对象与控制器成对使用；对接 CoppeliaSim 时接口层已
+                     把引擎关节 armature 写为同一张表（MuJoCo，
+                     interfaces/coppeliasim_interface.py），控制器用默认
+                     表即与引擎 M_total = M_links + diag(B) 严格匹配
     """
 
-    def __init__(self, dh_table, mismatch_scale=1.0):
+    def __init__(self, dh_table, mismatch_scale=1.0, motor_inertia=None):
         self.dh = np.asarray(dh_table, dtype=float)
         self.n = len(self.dh)
         s = float(mismatch_scale)
@@ -118,7 +133,9 @@ class LBR4NominalDynamics:
         self.com = LBR4_LINK_COM[:self.n].copy()
         self.I = np.array([np.diag(row) for row in LBR4_LINK_INERTIA[:self.n]]) * s
         # 电机折算惯量（对角阵，同受失配因子缩放）
-        self.B = LBR4_MOTOR_INERTIA[:self.n] * s
+        base_B = LBR4_MOTOR_INERTIA[:self.n] if motor_inertia is None \
+            else np.asarray(motor_inertia, dtype=float).reshape(self.n)
+        self.B = base_B * s
 
     # -- 内部：逐关节变换 -----------------------------------------------------
 

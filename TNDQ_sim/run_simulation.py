@@ -25,7 +25,7 @@
 实验场景（场景篇 §4/§5）：
     --scenario line / circle       原版基座系轨迹（回归基线）
     --scenario setpoint            S1 定点：杯口上方 0.10 m 预抓取位姿
-    --scenario cup-circle          S2 圆周：绕杯口上方 0.15 m、R=0.12 m 水平圆
+    --scenario cup-circle          S2 圆周：绕杯口上方 0.10 m、R=0.06 m 水平圆
 
 实验条件（总方案 §5.3 场景矩阵 E1–E7 + 场景篇 §6 扰动方案）：
     --condition none               E1 标称（定理 3(b) 指数型收敛）
@@ -66,6 +66,7 @@ from control.error_system import full_error_state
 from control.control_law import geometric_computed_torque_law, damped_pinv
 from control.performance import (
     PerformanceAccumulator, check_hinf_condition_merged, iss_ultimate_bound,
+    ResidualDisturbanceEstimator,
 )
 from simdata.trajectory_generator import (
     LineTrajectoryTNDQ, CircleTrajectoryTNDQ,
@@ -294,6 +295,13 @@ def main():
         q_init = params.Q_INIT + 0.05 * np.array([1, -1, 1, -1, 1, -1, 1],
                                                  dtype=float)
 
+    # 零空间居中参考：取任务初始位形而非限位中点 Q_CENTER=0
+    # （2026-07 诊断：Q_CENTER=0 对前伸任务位形是强自运动吸引子，
+    # 把 joint2/4 拉向竖直收拢位形，漂移到病态区后 joint6 被伪逆
+    # 路径冲过 -120° 限位触发 [abort]；初始位形由 IK + 零空间居中
+    # 求解，限位余量≥ 23°，是天然的安全姿态参考）
+    q_nullspace_center = q_init.copy()
+
     # E5 高速域：圆周角速率提至 2.5 rad/s（J̇q̇ / Cq̇ 不可忽略域，场景篇 §5.1）
     omega = params.CIRCLE_OMEGA_FAST if condition == "highspeed" \
         else params.CIRCLE_OMEGA
@@ -301,6 +309,9 @@ def main():
     # ---- 控制器端名义动力学模型（§2.4 力矩层；E3 时与对象端失配） -------------
     # 理论依据：τ = M̂ q̈_ref + Ĉ q̇ + ĝ，M̂/Ĉ/ĝ 取 Gaz–Flacco–De Luca
     # LWR4+ 辨识模型（总方案文献 [11]）的名义参数表
+    # CoppeliaSim 后端：接口层已把引擎关节 armature 写为同一张
+    # LBR4_MOTOR_INERTIA 表（MuJoCo，2026-07 诊断固化），控制器用
+    # 默认名义表即与引擎 M_total = M_links + diag(B) 严格匹配
     dyn_ctrl = LBR4NominalDynamics(params.KUKA_LBR4_DH, mismatch_scale=mismatch)
 
     # ---- 后端初始化 -----------------------------------------------------------
@@ -312,7 +323,8 @@ def main():
         )
         interface = CoppeliaSimLBR4Interface()
         try:
-            interface.connect(torque_mode=True)
+            interface.connect(torque_mode=True,
+                              engine_dt=params.COPPELIA_DT_TARGET)
         except CoppeliaSimError as exc:
             print(f"[error] CoppeliaSim 连接失败：{exc}")
             print("        请启动 CoppeliaSim 并加载 TNDQ_sim/KUKALBR4+_sim.ttt，"
@@ -355,6 +367,10 @@ def main():
     logger = DataLogger()
     perf = PerformanceAccumulator(params.K_D, params.K_P,
                                   params.KAPPA, params.GAMMA_A)
+    # 证书通道等效扰动反演器（§6.5(6)）：注入项 J w 仅覆盖 l2/bias 工况，
+    # 其余定理 3 诚实条款承认的扰动源（ΔM/Δg、噪声、伪逆残差、限幅/
+    # 治理器、离散化）靠反演 e_ξ 动态拿到；纯诊断量，不进控制律
+    d_est = ResidualDisturbanceEstimator(params.K_D, params.K_P, dt)
 
     n_steps = int(round(args.t_end / dt))
     print(f"Running {n_steps} steps ({args.t_end}s, dt={dt}s), "
@@ -428,7 +444,7 @@ def main():
             Jp = damped_pinv(fk["J"], damping=damping)
             N_proj = np.eye(n) - Jp @ fk["J"]
             qddot_ref = qddot_ref + N_proj @ (
-                params.NULLSPACE_K * (params.Q_CENTER - q_meas)
+                params.NULLSPACE_K * (q_nullspace_center - q_meas)
                 - params.NULLSPACE_D * q_dot_meas)
 
             # 指令限幅：保护力矩/限位预算（饱和残差计入 d(t)，
@@ -478,8 +494,12 @@ def main():
                 plant.apply_accel(qddot_ref + w)
 
             # ---- 监控层 --------------------------------------------------------
-            d_vec6 = fk["J"] @ w        # 等效任务空间扰动 d = J w（进入 e_ξ 动态）
-            V = perf.update(err["e_xi"], err["e_z"], d_vec6, dt)
+            # d̂ = 反演的证书通道等效扰动（全部源），d_inj = J w 仅注入分量；
+            # (5.6)/(5.7) 的判据走 d̂，旧口径的 d_inj 并行保留供对照（E4）
+            d_hat = d_est.update(err["e_xi"], err["e_z"], err["A"])
+            d_inj = fk["J"] @ w        # 等效任务空间注入扰动 d = J w
+            V = perf.update(err["e_xi"], err["e_z"], d_hat, dt,
+                            d_injected=d_inj)
 
             if fk["c0"] > params.C0_TOL or fk["c1"] > params.C1_TOL \
                     or fk["c2"] > params.C2_TOL:
@@ -493,7 +513,7 @@ def main():
                     x_d=des["x_d"], xi_d=des["xi_d"], xi_dot_d=des["xi_dot_d"],
                     x=fk["x"], xi=fk["xi"],
                     V=V, c0=fk["c0"], c1=fk["c1"], c2=fk["c2"],
-                    runtime=runtime)
+                    runtime=runtime, d_hat=d_hat)
 
     except KeyboardInterrupt:
         print("\n[interrupt] 用户中断，保存已记录数据后安全退出 ...")
