@@ -6,7 +6,7 @@ Provides:
     - gain design/verification per Theorem 3(c-1) (5.6a), (c-2) (5.6b)
       and the tightest certified L2 gain 1/lambda_min(K_d) (remark)
     - mean-square (RMS) limit bound (5.7), Theorem 3(d) -- NOT a pointwise
-      ISS ultimate ball: see the paper's correction note to Theorem 3(d)
+      ISS ultimate ball: see the paper's note after Theorem 3(d) / App. C.5
     - online energy accounting to measure the achieved L2 gain (experiment E4)
       and the Lyapunov decrease check dV <= -e_xi^T K_d e_xi + e_xi^T d
       (Theorem 3(b)/(c) proof, step 1).
@@ -107,7 +107,7 @@ def iss_ultimate_bound(K_d, d_inf_norm):
     i.e. a bound on the RMS of e_xi over a steady-state window, NOT a
     pointwise ISS ultimate ball radius (the storage function V has no
     dissipation in the e_z direction, so no pointwise ISS-Lyapunov argument
-    is available -- paper Theorem 3(d) correction note (i)-(iii)).
+    is available -- paper Theorem 3(d) note / Appendix C.5 (i)-(iii)).
 
     Two further honesty caveats carried over from the paper:
       * the bound presumes the trajectory stays in the working set Omega_c

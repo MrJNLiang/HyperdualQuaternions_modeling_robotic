@@ -41,7 +41,7 @@
 
 ### 1.3 论文结构
 
-§2 预备知识（记号约定、四元数、DQ、twist、HDQ）；§3 TNDQ 代数与运动学重构；§4 误差体系；§5 控制律与主定理（§5.1 不确定性模型、§5.2 控制律、§5.3 定理 3、§5.4 近恒等线性化通道、§5.5 与运动学外环的级联）；§6 仿真验证；§7 结论。关键定理的证明放正文，较长的验证性推导放附录 A（DQ/HDQ 层）、B（TNDQ 链构件）、C（控制层：C.1 扰动通道、C.2 收敛细节与 $A$ 的可逆性、C.3 二次型判据族、C.4 线性化通道与强化存储函数）。
+§2 预备知识（记号约定、四元数、DQ、twist、HDQ）；§3 TNDQ 代数与运动学重构；§4 误差体系；§5 控制律与主定理（§5.1 不确定性模型、§5.2 控制律、§5.3 定理 3、§5.4 近恒等线性化通道、§5.5 与运动学外环的级联）；§6 仿真验证；§7 结论。关键定理的证明放正文，较长的验证性推导放附录 A（DQ/HDQ 层）、B（TNDQ 链构件）、C（控制层：C.1 扰动通道、C.2 收敛细节与 $A$ 的可逆性、C.3 二次型判据族、C.4 强化存储函数路线、C.5 定理 3(d) 的界形态）。
 
 ---
 
@@ -303,7 +303,7 @@ $$
 >
 > **注记（截断一致性）**：由命题 2，$\breve x\,(\breve x_d)^*$ 与"先在 TNDQ 上作误差乘法 $\bar x\,(\bar x_d)^*$ 再截断"给出同一 HDQ 对象——误差体系落在 HDQ 上不产生任何截断误差。
 >
-> **注记（与 [P2] 的一致性）**：[P2] 控制律 (P2-12) 的前馈项 $\mathrm{vec}_6(\tilde x\boldsymbol\xi_d\tilde x^*)$ 正是 $\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d$；其闭环化简之所以成立，正因为控制律隐式地把 (4.4) 而非朴素差驱为反馈量。定理 1 把这一隐含结构显式化为体系的一阶误差通道。
+> **注记（与 [P2] 的一致性）**：[P2] 控制律 (P2-12) 的前馈项 $\mathrm{vec}_6(\tilde x\boldsymbol\xi_d\tilde x^*)$ 括号内正是 $\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d$；其闭环化简之所以成立，正因为控制律隐式地把 (4.4) 而非朴素差驱为反馈量。定理 1 把这一隐含结构显式化为体系的一阶误差通道。
 
 ### 4.4 定理 2：输出误差的级联运动学
 
@@ -338,6 +338,8 @@ $$
 
 ### 5.1 扰动通道：显式解算、乘法项分离与假设集
 
+> **本节定位**：本节的不确定性模型本身是标准的——(5.1a)(5.1b) 为经典刚体动力学与计算力矩／resolved-acceleration 律 [4, LWP80, Spo92]，(5.1d) 的"乘法 + 加性"分解是鲁棒控制的常规范式 [ZDG96, Abd91, Sag99]。本节不主张新的扰动模型，只主张**在 TNDQ 误差坐标下对它的精确记账**：$u_{\mathrm{fb}}$ 的 DQ 结构使乘法分量分裂为关于误差次数不同的两项，在定理 3 中分别进入有效阻尼与等效扰动幅值——该分裂是误差坐标特有的，一阶 DQ 律中不出现。逐项代数与适定性讨论见附录 C.1。
+
 **真实对象与标称模型**。真实关节空间动力学（含摩擦与外力）
 
 $$
@@ -352,26 +354,16 @@ $$
 \tag{5.1b}
 $$
 
-各符号的含义（本稿全文统一）：$\delta\boldsymbol\tau$ 为**执行器力矩实现误差**（量化、传输延迟、驱动器饱和与死区残差），$\boldsymbol\tau_{\mathrm{ext}}$ 为环境接触投影到关节的广义力，$\boldsymbol f$ 为摩擦；模型失配量统一定义为"标称减真实"：
-
-$$
-\Delta M\triangleq\hat M-M,\quad
-\Delta C\triangleq\hat C-C,\quad
-\Delta\boldsymbol g\triangleq\hat{\boldsymbol g}-\boldsymbol g,\quad
-\Delta\boldsymbol f\triangleq\hat{\boldsymbol f}-\boldsymbol f .
-\tag{5.1c}
-$$
-
-将 (5.1b) 代入 (5.1a) 并左乘 $M^{-1}$，得 $\ddot{\boldsymbol q}=\ddot{\boldsymbol q}_{\mathrm{ref}}+\boldsymbol w_{\mathrm{dyn}}$，其中
+其中 $\delta\boldsymbol\tau$ 为**执行器力矩实现误差**（量化、传输延迟、饱和与死区残差），$\boldsymbol\tau_{\mathrm{ext}}$ 为环境接触投影到关节的广义力，$\boldsymbol f$ 为摩擦；失配量统一取"标称减真实"：$\Delta M\triangleq\hat M-M$，$\Delta C,\Delta\boldsymbol g,\Delta\boldsymbol f$ 同理。将 (5.1b) 代入 (5.1a) 并左乘 $M^{-1}$，得 $\ddot{\boldsymbol q}=\ddot{\boldsymbol q}_{\mathrm{ref}}+\boldsymbol w_{\mathrm{dyn}}$，其中
 
 $$
 \boldsymbol w_{\mathrm{dyn}}=M^{-1}\bigl(\Delta M\,\ddot{\boldsymbol q}_{\mathrm{ref}}+\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\Delta\boldsymbol f+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr).
 \tag{5.1}
 $$
 
-**适定性（重要更正）**。(5.1) 是**显式等式**而非关于 $\boldsymbol w_{\mathrm{dyn}}$ 的隐式方程：控制量 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 (5.2) 给出，只依赖于 $(\boldsymbol q,\dot{\boldsymbol q},t)$（位姿、速度与期望轨迹），**不依赖于 $\ddot{\boldsymbol q}$**。因此只需 $M(\boldsymbol q)\succ0$（均成立）即可直接计算 $\boldsymbol w_{\mathrm{dyn}}$，**无需** Neumann 级数展开，也**无需** $\alpha<1$。下文的 $\alpha<1$ 型条件服务于另一个目的——封闭乘法反馈回路，而非保证方程可解。
+由于 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 (5.2) 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$ 而**不依赖 $\ddot{\boldsymbol q}$**，(5.1) 是对 $\ddot{\boldsymbol q}$ 的**显式赋值**而非隐式方程，仅需 $M(\boldsymbol q)\succ0$；(A3) 的 $\alpha$ 条件服务于闭合乘法回路的 Lyapunov 证书，与方程可解性无关。
 
-**任务空间扰动与乘法项的显式分离**。记 (5.2) 的任务空间指令为 $\ddot{\boldsymbol q}_{\mathrm{ref}}=J^{+}\bigl(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q}\bigr)$，其中
+**乘法分量与外生分量的分离**。记 (5.2) 的任务空间指令为 $\ddot{\boldsymbol q}_{\mathrm{ref}}=J^{+}\bigl(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q}\bigr)$，其中
 
 $$
 u_{\mathrm{ff}}=\mathrm{vec}_6\bigl(\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mathrm{ad}_{\tilde{\boldsymbol\xi}}\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr),
@@ -387,20 +379,13 @@ $$
 \tag{5.1d}
 $$
 
-$$
-d_{\mathrm{ex}}\triangleq\Theta\bigl(u_{\mathrm{ff}}-\dot J\dot{\boldsymbol q}\bigr)
-+JM^{-1}\bigl(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\Delta\boldsymbol f+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr)
-+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c .
-\tag{5.1e}
-$$
+其中 $d_{\mathrm{ex}}\triangleq\Theta(u_{\mathrm{ff}}-\dot J\dot{\boldsymbol q})+JM^{-1}(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\Delta\boldsymbol f+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}})+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$ 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$ 与外生信号、**不含**反馈量 $(e_\xi,e_z)$（逐项核对见附录 C.1）。$\Theta u_{\mathrm{fb}}$ 是唯一的回路内乘法分量——这是与 [P2] 仅含外生速度级扰动的关键区别；$\Theta$ 把关节空间失配映到任务空间，与 operational-space 惯量对模型误差的敏感性同源 [5, Nak08]。
 
-$d_{\mathrm{ex}}$ 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$ 与外生信号，**不含**反馈量 $(e_\xi,e_z)$；而 $\Theta u_{\mathrm{fb}}$ 是唯一的乘法（回路内）分量。本稿以后出现的“扰动”一律指 (5.1d) 的 $d$，而“外生扰动”指 $d_{\mathrm{ex}}$；它们在定理 3 中的角色不同，不得混用（这也是与 [P2] 仅有外生速度级扰动的关键区别）。
-
-按时间特性进一步分解 $d_{\mathrm{ex}}=d_{L_2}+d_b$：$d_{L_2}\in L_2$（噪声型：测量噪声导数、瞬时接触冲击），$d_b\in L_\infty$（偏差型：参数误差、未建模负载、摩擦残差、重力项偏差）。定理 3(c) 处理前者，定理 3(d) 处理后者。
+全文“扰动”指 (5.1d) 的 $d$、“外生扰动”指 $d_{\mathrm{ex}}$，两者在定理 3 中角色不同，不得混用。$d_{\mathrm{ex}}$ 再按时间特性分解为 $d_{\mathrm{ex}}=d_{L_2}+d_b$：$d_{L_2}\in L_2$（噪声型：测量噪声导数、接触冲击）由定理 3(c) 处理，$d_b\in L_\infty$（偏差型：参数误差、未建模负载、摩擦残差、重力偏差）由定理 3(d) 处理。
 
 **假设集**（定理 3 全文沉默使用，在此一次性列出）：
 
-- **(A1) 雅可比正则**：存在工作集 $\mathcal Q$ 使 $J(\boldsymbol q)$ 在 $\mathcal Q$ 上行满秩且 $\sigma_{\min}(J)\ge\underline\sigma>0$，从而 $JJ^{+}=I_6$（阻尼伪逆情形见定理 3 注记 i）。
+- **(A1) 雅可比正则**：存在工作集 $\mathcal Q$ 使 $J(\boldsymbol q)$ 在 $\mathcal Q$ 上行满秩且 $\sigma_{\min}(J)\ge\underline\sigma>0$，从而 $JJ^{+}=I_6$（奇异邻域取阻尼伪逆 [Nak86] 时的残差处理见定理 3 诚实边界 (i)）。
 - **(A2) 惯量与失配有界**：$M(\boldsymbol q)\succeq \underline m I_n$（$\underline m>0$），且 $\Delta M,\Delta C,\Delta\boldsymbol g,\Delta\boldsymbol f$ 在 $\mathcal Q\times\{\|\dot{\boldsymbol q}\|\le\bar v\}$ 上有界。
 - **(A3) 乘法小增益条件**：
   $$
@@ -408,10 +393,8 @@ $d_{\mathrm{ex}}$ 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$ 与外生信
   \;<\;\frac{\lambda_{\min}(K_d)}{\lambda_{\max}(K_d)}=\frac1{\mathrm{cond}_2(K_d)}\ \le 1 .
   \tag{5.1f}
   $$
-  各向同性阻尼 $K_d=k_dI_6$ 时 (5.1f) 退化为经典计算力矩鲁棒性条件 $\alpha<1$ [Spo92]；且由 $\|\Theta\|_2\le\|J\|\,\|J^+\|\,\|M^{-1}\Delta M\|_2$，它是 Spong 条件在任务空间的雅可比条件数修正版。
-- **(A4) 期望轨迹与外生信号**：$\hat{\underline x}_d(t)$ 为 $C^2$ 且 $\|\boldsymbol\xi_d\|,\|\dot{\boldsymbol\xi}_d\|$ 有界；$d_{L_2}\in L_2$、$d_b\in L_\infty$，且 $D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。
-
-详细代数推导（包括 (5.1d)(5.1e) 的逐项核对与 $\alpha$ 在耗散不等式中的使用方式）见附录 C.1。
+  各向同性阻尼 $K_d=k_dI_6$ 时 (5.1f) 退化为经典计算力矩鲁棒性条件 $\alpha<1$ [Spo92]；一般情形由 $\|\Theta\|_2\le\|J\|\,\|J^+\|\,\|M^{-1}\Delta M\|_2$ 可见它是该条件的任务空间（雅可比条件数修正）版本。
+- **(A4) 期望轨迹与外生信号**：$\hat{\underline x}_d(t)$ 为 $C^2$ 且 $\|\boldsymbol\xi_d\|,\|\dot{\boldsymbol\xi}_d\|$ 有界；$d_{L_2}\in L_2$、$d_b\in L_\infty$，且 $D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。其中对 $\dot{\boldsymbol v}_w$ 的有界性要求偏强（噪声型信号的直接微分会放大高频），实现上取滤波导数或观测器估计 [Ber93]，滤波带宽的影响并入 $D_{\mathrm{ex}}$——此为本节假设集的主要保守之处（§7）。
 
 ### 5.2 控制律
 
@@ -457,7 +440,7 @@ V(e_z,e_\xi)=\tfrac12\|e_\xi\|^2+\tfrac12\,e_z^{\top}K_pe_z\;\ge0 ,
 \tag{5.4a}
 $$
 
-$K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|^2$）。两点结构性观察决定了下文结论的强弱：(i) $V$ 关于 $e_\xi$ 径向无界，但 $e_z$ 的取值集本身有界（$\|\mathcal O\|\le1$，因 $\tilde r$ 为单位四元数），且 $\tilde\eta=0$ 处 $A(\tilde x)$ 奇异，故**不可能**有全局结论，全部收敛声明都是工作域（水平集）内的局部结论；(ii) $\dot V$ 只含 $-\|e_\xi\|^2$ 型负项而无 $-\|e_z\|^2$ 项（扰动到 $e_z$ 的相对阶为 2），故 $V$ 单独不能给出指数衰减率也不能给出 $e_\xi$ 的逐点极限球（详见定理 3(d) 后的重要更正）。
+$K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|^2$）。两点结构性观察决定了下文结论的强弱：(i) $V$ 关于 $e_\xi$ 径向无界，但 $e_z$ 的取值集本身有界（$\|\mathcal O\|\le1$，因 $\tilde r$ 为单位四元数），且 $\tilde\eta=0$ 处 $A(\tilde x)$ 奇异，故**不可能**有全局结论，全部收敛声明都是工作域（水平集）内的局部结论；(ii) $\dot V$ 只含 $-\|e_\xi\|^2$ 型负项而无 $-\|e_z\|^2$ 项（扰动到 $e_z$ 的相对阶为 2），故 $V$ 单独不能给出指数衰减率也不能给出 $e_\xi$ 的逐点极限球（见定理 3(d) 注记与附录 C.5）。
 
 > **定理 3(a)（闭环误差动态）**：误差坐标 $(e_z,e_\xi)$ 满足级联标准形
 >
@@ -467,7 +450,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > \tag{5.5}
 > $$
 >
-> 其中 $d=J\boldsymbol w_{\mathrm{dyn}}+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$ 汇集全部加速度层扰动，并按 (5.1d) 精确分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$（乘法分量 + 外生分量）。**术语约定**：下文“$d\in L_2$”、“$d\in L_\infty$”等说法均指**总扰动通道** $d$（定理 3(c) 的认证对象）；对**外生**扰动 $d_{\mathrm{ex}}$ 的结论需额外使用 (A3) 把 $\Theta u_{\mathrm{fb}}$ 回收到阻尼项与交叉项中（定理 3(d)）。两者不得混用。
+> 其中 $d=J\boldsymbol w_{\mathrm{dyn}}+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$ 汇集全部加速度层扰动，并按 (5.1d) 精确分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$。**术语约定**：下文“$d\in L_2/L_\infty$”均指**总扰动通道** $d$（定理 3(c) 的认证对象）；涉及**外生**扰动 $d_{\mathrm{ex}}$ 的结论须先用 (A3) 把 $\Theta u_{\mathrm{fb}}$ 回收到阻尼项与交叉项中（定理 3(d)），两者不得混用。
 
 > **证明**：
 >
@@ -518,11 +501,11 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > $$
 > 对该 LTI 系统同一个 $V$ 仍给出 $\dot V=-e_\xi^\top K_de_\xi\le0$，且 $A_0$ 可逆，重复第 4 步得 LTI 系统渐近稳定，故 $F$ 为 Hurwitz；再由 Lyapunov 线化定理（[Kha02] Thm 4.7）得非线性系统在原点邻域指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐通道解耦，其两个二阶多项式与极点由 (5.8) 显式给出。█
 
-> **注记（为何不能声称“全局指数稳定”——对早期版本的更正）**：本稿早期版本将 3(b) 表述为“（全局）指数稳定”并在摘要/引言中沿用，这是过强断言，现修正为上述形式。障碍有三：(i) 单位四元数对 $SO(3)$ 的双覆盖使 $\tilde x=-1$（$\tilde\eta=-1,\mathcal O=0$）也是 (5.5) 的平衡点，任何连续反馈都不可能使 $\tilde x=1$ 全局吸引（unwinding，拓扑障碍）；(ii) $\tilde\eta=0$ 处 $A$ 奇异，$e_z$ 对位姿的参数化在此退化；(iii) $\dot V$ 不含 $-\|e_z\|^2$ 项，故 $V$ 本身不提供任何指数率，指数性必须由线化获得，因而只在原点邻域成立。水平集条件 (5.5b) 是可数值核验的：§6 的调整增益取 $p_O=320$，故 $c^*=160$；而日志中的 $V$ 统一以 base 档权重（$K_p^{\mathrm{base}}=16I_6$）记录，换算到 tuned 权重需乘至多 $320/16=20$，得 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le20\times2.47\times10^{-2}=0.494\ll c^*$，工作域条件以约 **2.5 个数量级**的余度满足（§6.5(6)；本稿早期版本称"四个数量级"，系未做权重换算所致，现更正）。工程实现上，当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（$\breve{\tilde x}\to-\breve{\tilde x}$，由定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即可强制 $\tilde\eta\ge0$，这正是第 2 步“取 $\tilde\eta>0$ 分支”的实现（§6.2）。∎
+> **注记（结论为何只能是局部的）**：三条障碍使全局指数稳定不可得：(i) 单位四元数对 $SO(3)$ 的双覆盖使 $\tilde x=-1$（$\tilde\eta=-1,\mathcal O=0$）也是 (5.5) 的平衡点，任何连续反馈都不可能使 $\tilde x=1$ 全局吸引（unwinding，拓扑障碍）；(ii) $\tilde\eta=0$ 处 $A$ 奇异，$e_z$ 对位姿的参数化在此退化；(iii) $\dot V$ 不含 $-\|e_z\|^2$ 项，指数性必须由线化获得，因而只在原点邻域成立。水平集条件 (5.5b) 是可数值核验的：§6 tuned 档取 $p_O=320$，故 $c^{*}=160$，而换算到同一权重口径后实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494\ll c^{*}$，余度约 **2.5 个数量级**（§6.5(6)）。工程实现上，当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（$\breve{\tilde x}\to-\breve{\tilde x}$，由定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即可强制 $\tilde\eta\ge0$，这正是证明第 2 步“取 $\tilde\eta>0$ 分支”的落实（§6.2）。收敛论证的定量细节（$\sigma_{\min}(A)$ 的一致下界与 LaSalle 步骤的严格收尾）见附录 C.2。∎
 
 > **定理 3(c)（H∞ 通道：二次型/Schur 补判据与旋转/平移通道拆分）**：设 $d=d_{L_2}\in L_2$。
 >
-> **证书参数的定义**（下文反复使用，在此一次性固定）：$\kappa>0$ 是**误差罚权的倒数**（供给率中 $\|e_\xi\|^2$ 项的系数取 $\tfrac1{2\kappa}$，量纲 s），$\gamma_a>0$ 是**待认证的加速度层扰动衰减水平**（量纲 s$^{1/2}$）；二者联手给出的被认证量是从 $d$ 到 $e_\xi$ 的 $L_2$ 能量增益 $\gamma_a\sqrt\kappa$（无量纲）。两者均为**分析参数**：它们不出现在控制律 (5.2) 中，只出现在证书不等式 (5.6a) 中（与 [P2] 中 $\gamma$ 直接决定增益的综合参数角色不同，详见下方“$\gamma_a$ 的角色”注记）；通道拆分版本中 $(\kappa_\omega,\gamma_\omega)$ 与 $(\kappa_v,\gamma_v)$ 分别是旋转、平移通道的同名参数，可独立指定。
+> **证书参数**：$\kappa>0$ 是**误差罚权的倒数**（供给率中 $\|e_\xi\|^2$ 项的系数取 $\tfrac1{2\kappa}$，量纲 s），$\gamma_a>0$ 是**待认证的加速度层扰动衰减水平**（量纲 s$^{1/2}$），被认证量是 $d\to e_\xi$ 的 $L_2$ 能量增益 $\gamma_a\sqrt\kappa$（无量纲）。二者均为**分析参数**：不出现在控制律 (5.2) 中，只出现在证书 (5.6a) 中；通道拆分版本中 $(\kappa_\omega,\gamma_\omega)$ 与 $(\kappa_v,\gamma_v)$ 可独立指定。
 >
 > **(c-1) 合并判据**（$K_d$ 任意对称正定）：性能目标 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$ 对一切 $(e_\xi,d)$ 成立**当且仅当**
 >
@@ -540,9 +523,9 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > \tag{5.6}
 > $$
 >
-> 即加速度层扰动到 twist 误差能量的 $L_2$ 增益 $\le\gamma_a\sqrt\kappa$（零初值 $V(0)=0$ 时退化为纯增益界；此界只约束 $e_\xi$，见注记 iv）。
+> 即加速度层扰动到 twist 误差能量的 $L_2$ 增益 $\le\gamma_a\sqrt\kappa$（零初值时退化为纯增益界；此界只约束 $e_\xi$，见诚实边界 (iv)）。
 >
-> **(c-2) 通道拆分判据**（$K_d=\mathrm{diag}(K_\omega,K_v)$ 块对角，且 $K_p=\mathrm{diag}(K_{p,O},\,k_{p,T}I_3)$——平移刚度块须**各向同性**，必要性见第五步）：记 $e_\xi=[\tilde\omega;\tilde v]$、$d=[d_\omega;d_v]$，$V_\omega\triangleq\tfrac12\|\tilde\omega\|^2+\tfrac12\mathcal O^\top K_{p,O}\mathcal O$、$V_v\triangleq\tfrac12\|\tilde v\|^2+\tfrac{k_{p,T}}2\|\mathcal T\|^2$（$V=V_\omega+V_v$）。若
+> **(c-2) 通道拆分判据**（$K_d=\mathrm{diag}(K_\omega,K_v)$ 块对角，且 $K_p=\mathrm{diag}(K_{p,O},\,k_{p,T}I_3)$——平移刚度块须**各向同性**，必要性见附录 C.3）：记 $e_\xi=[\tilde\omega;\tilde v]$、$d=[d_\omega;d_v]$，$V_\omega\triangleq\tfrac12\|\tilde\omega\|^2+\tfrac12\mathcal O^\top K_{p,O}\mathcal O$、$V_v\triangleq\tfrac12\|\tilde v\|^2+\tfrac{k_{p,T}}2\|\mathcal T\|^2$（$V=V_\omega+V_v$）。若
 >
 > $$
 > K_\omega\succeq\tfrac12\bigl(\kappa_\omega^{-1}+\gamma_\omega^{-2}\bigr)I_3,
@@ -570,37 +553,32 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > $$
 > 精确成立（此式不含任何放缩；$e_\xi^\top d$ 可正可负）。
 >
-> *第二步（(c-1) 判据的等价性）*：性能目标 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$ 可以写成：
-> $$-e_\xi^\top K_d e_\xi + e_\xi^\top d + \frac{1}{2\kappa}\|e_\xi\|^2 - \frac{\gamma_a^2}{2}\|d\|^2 \leq 0$$
-> 等价于二次型不等式：
+> *第二步（(c-1) 判据的等价性）*：性能目标即 $-e_\xi^\top K_de_\xi+e_\xi^\top d+\tfrac1{2\kappa}\|e_\xi\|^2-\tfrac{\gamma_a^2}2\|d\|^2\le0$，等价于二次型不等式
 > $$
-> \begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!
-> \begin{bmatrix}K_d-\tfrac1{2\kappa}I & -\tfrac12 I\\ -\tfrac12 I & \tfrac{\gamma_a^2}2 I\end{bmatrix}\!
+> \begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!M\!
 > \begin{bmatrix}e_\xi\\ d\end{bmatrix}\ge0\quad\forall(e_\xi,d)\in\mathbb R^{12},
 > $$
-> 即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补：$M\succeq0\iff K_d-\tfrac1{2\kappa}I-\tfrac14\cdot\tfrac{2}{\gamma_a^2}I\succeq0$，即 (5.6a)。不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，不经任何符号放缩（Schur 补、配方法与 Young 三条判定路径的等价性见附录 C.3）。
+> 即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 (5.6a)。关键在于不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，不经任何符号放缩（Schur 补、配方法与 Young 三条路径的等价性见附录 C.3）。
 >
 > *第三步（全局存在性）*：由 $M\succeq0$ 得 $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$，故 $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$，$(e_z,e_\xi)$ 一致有界，解在 $[0,\infty)$ 上存在（无有限时间逃逸）。
 >
 > *第四步（积分收尾）*：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 (5.6)。
 >
-> *第五步（(c-2) 通道解耦）*：块对角 $K_d$ 与各向同性平移刚度 $K_{p,T}=k_{p,T}I_3$ 下两通道储能函数精确解耦，关键是两处三重积恒零。由 (4.5)，$A^\top=\begin{bmatrix}A_{11}^\top & [\mathcal T]_\times\\ 0 & I\end{bmatrix}$（$A_{11}=-\tfrac12(\tilde\eta I+[\mathcal O]_\times)$，$(-[\mathcal T]_\times)^\top=[\mathcal T]_\times$），故
+> *第五步（(c-2) 通道解耦）*：块对角 $K_d$ 与各向同性平移刚度 $K_{p,T}=k_{p,T}I_3$ 下两通道储能精确解耦，关键是两处混合积恒零：由 (4.5)，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$，故旋转反馈不含 $\mathcal T$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$；又 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中的耦合项做功为零（$\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$，与附录 A.3 同机制）。于是位姿交叉项在两通道内分别由 $K_{p,O}$ 对称与 $k_{p,T}$ 为标量而精确相消，
 > $$
-> (A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+\underbrace{k_{p,T}[\mathcal T]_\times\mathcal T}_{=\,k_{p,T}\,\mathcal T\times\mathcal T\,=\,0}=A_{11}^\top K_{p,O}\mathcal O,
+> \dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega+\tilde\omega^\top d_\omega,
 > \qquad
-> (A^\top K_pe_z)_v=k_{p,T}\mathcal T,
+> \dot V_v=-\tilde v^\top K_v\tilde v+\tilde v^\top d_v ,
 > $$
-> 故 $(A^\top K_pe_z)_\omega$ 不含 $\mathcal T$；又 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中的耦合项做功为零：$k_{p,T}\mathcal T^\top[\mathcal T]_\times\tilde\omega=k_{p,T}\,\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$（与附录 A.3 “叉积项与 $\mathcal T$ 正交”同机制）。**各向同性的必要性**：若平移块 $K_{p,T}$ 非标量，上述两处分别退化为 $\mathcal T\times(K_{p,T}\mathcal T)$ 与 $(K_{p,T}\mathcal T)\cdot(\mathcal T\times\tilde\omega)$，仅当 $\mathcal T$ 恰为 $K_{p,T}$ 的特征向量时才恒零，通道解耦不再成立；§6.4 三档增益均取 $K_{p,T}=k_{p,T}I_3$，满足该条件（旋转块 $K_{p,O}$ 可为一般对称正定阵，不受此限）。于是
+> 对每条通道重复第二至第四步的论证（$I_6\to I_3$）即得 (5.6b)⇒(5.6$'$)。两处恒零为代数恒等式，故 (c-1)/(c-2) 的全部结论均不依赖工作域 $\tilde\eta>0$（见诚实边界 (v)）。逐项代数、$K_{p,T}$ 各向同性的必要性与失效条件见附录 C.3。∎
+
+> **注记（最紧可证增益与 $\gamma_a$ 的角色）**：(i) 各向同性罚权下 (5.6a) 与 Young 路的标量条件重合；矩阵判据的收益不在放宽条件，而在从构造上免除符号放缩、并使罚权分块化后自然产出 (c-2)。(ii) 供给率整体缩放 $\theta>0$ 给出条件族 $K_d\succeq(\theta\kappa^{-1}+\tfrac1{4\theta}\gamma_a^{-2})I$，对 $\theta$ 极小化（$\theta^*=\sqrt\kappa/2\gamma_a$）得**最紧可证条件**
 > $$
-> \dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega
-> \underbrace{-\tilde\omega^\top A_{11}^\top K_{p,O}\mathcal O+\mathcal O^\top K_{p,O}A_{11}\tilde\omega}_{=0\ (\text{用 }K_{p,O}=K_{p,O}^\top)}
-> +\tilde\omega^\top d_\omega,
-> \qquad
-> \dot V_v=-\tilde v^\top K_v\tilde v
-> \underbrace{-k_{p,T}\tilde v^\top\mathcal T+k_{p,T}\mathcal T^\top\tilde v}_{=0}
-> +\tilde v^\top d_v ,
+> \lambda_{\min}(K_d)\ \ge\ \frac{1}{\gamma_a\sqrt\kappa}
+> \qquad\Longleftrightarrow\qquad
+> \text{认证 }L_2\text{ 增益 }\le\ \frac{1}{\lambda_{\min}(K_d)} ;
 > $$
-> 对每条通道重复第二至第四步的论证（$I_6\to I_3$）即得 (5.6b)⇒(5.6$'$)。两处恒零为代数恒等式，故 (c-1)/(c-2) 的全部结论均不依赖工作域 $\tilde\eta>0$（见注记 v）。∎
+> (5.6a) 是该族在 $\theta=\tfrac12$ 处的成员，仅在 $\kappa=\gamma_a^2$ 时最紧（AM–GM 等号）。该值与定理 3(d) 均方界的 $\alpha\to0$ 极限、以及线性极限 $\|(sI+K_d)^{-1}\|_{H_\infty}=1/\lambda_{\min}(K_d)$ 三者一致——同一个一阶耗散通道 $\dot e_\xi=-K_de_\xi+d$ 在三种度量下的同一增益，也是这条 Lyapunov 路线可证增益的**天花板**（附录 C.3）。(iii) 与 [P2] 中 $\gamma$ 直接决定增益（$k=\sqrt2/\gamma$）的**综合参数**角色不同，$\gamma_a$ 是**分析参数**，由此得两条可实验证伪的推论：固定 $K_d$ 扫 $\gamma_a$ 时闭环轨迹与误差**严格不变**，变的只是证书可行域边界 $\gamma_a\ge[2\lambda_{\min}(K_d)-\kappa^{-1}]^{-1/2}$；要让 $\gamma_a$ 影响误差必须经 $\gamma$-$\kappa$ 规则**回写增益**（$\kappa^*=\gamma_a^2$、$\lambda_{\min}(K_d)=\gamma_a^{-2}$），此时认证增益 $=\gamma_a^2$，而 $\gamma_a$ 的可达下界由指令峰值与离散化余量决定。两条通道的实验化见 §6.7，设计规则见附录 C.3。
 
 > **定理 3(d)（$L_\infty$ 通道：乘法分量分离与 twist 误差的均方极限界）**：设 (A1)–(A4) 成立，扰动通道按 (5.1d) 分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$，$\alpha\triangleq\sup_t\|\Theta\|_2$ 满足小增益条件 (5.1f)，$D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。记**有效阻尼**
 >
@@ -609,7 +587,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > \tag{5.7a}
 > $$
 >
-> （正性由 (5.1f) 保证）。设轨迹在所考察时段内留在水平集 $\Omega_c$ 内（(5.5b)；该前提仅用于界定 $\|e_z\|$，需事后数值核验，见下方更正 (iii)），并记**等效扰动幅值**
+> （正性由 (5.1f) 保证）。设轨迹在所考察时段内留在水平集 $\Omega_c$ 内（(5.5b)；该前提仅用于界定 $\|e_z\|$，需事后数值核验，见下方注记），并记**等效扰动幅值**
 >
 > $$
 > D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{\lambda_{\min}(K_{p,T})}}\Bigr)\sqrt{\tfrac{2c}{\lambda_{\min}(K_p)}} .
@@ -634,7 +612,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > \tag{5.7}
 > $$
 >
-> 即：偏差型（$L_\infty$）不确定性不破坏有界性，只按 $D/\lambda_{\mathrm{eff}}$ 抬高 twist 误差的均方稳态水平；乘法分量 $\Theta u_{\mathrm{fb}}$ 的作用有二——以 $\alpha\lambda_{\max}(K_d)$ 折减有效阻尼（分母）、以 $\alpha\lambda_{\max}(K_p)\|e_z\|$ 抬高等效扰动幅值（分子）；二者均在 $\alpha\to0$ 时消失。位姿误差 $e_z$ 不在本定理的结论之内，其稳态量级由近恒等线性化通道 (5.9) 给出准静态估计。
+> 即：偏差型（$L_\infty$）不确定性不破坏有界性，只按 $D/\lambda_{\mathrm{eff}}$ 抬高 twist 误差的均方稳态水平。乘法分量 $\Theta u_{\mathrm{fb}}$ 的作用有二——以 $\alpha\lambda_{\max}(K_d)$ 折减有效阻尼（分母）、以 $\alpha\lambda_{\max}(K_p)\|e_z\|$ 抬高等效扰动幅值（分子）——二者均在 $\alpha\to0$ 时消失。位姿误差 $e_z$ 不在本定理结论之内，其稳态量级由近恒等线化通道 (5.9) 给出准静态估计。
 
 > **证明**：
 >
@@ -643,11 +621,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > \dot V=-e_\xi^\top K_de_\xi\;\underbrace{-\,e_\xi^\top\Theta K_de_\xi}_{\text{与阻尼同类}}\;\underbrace{-\,e_\xi^\top\Theta A^\top K_pe_z}_{\text{与扰动同类}}\;+\;e_\xi^\top d_{\mathrm{ex}} .
 > $$
 > 2. *两类乘法项的分别回收*：$|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$（回收进阻尼，得 (5.7a) 的 $\lambda_{\mathrm{eff}}$；由 (A3)/(5.1f) 即 $\alpha<\lambda_{\min}(K_d)/\lambda_{\max}(K_d)$ 得 $\lambda_{\mathrm{eff}}>0$）；$|e_\xi^\top\Theta A^\top K_pe_z|\le\alpha\|A\|_2\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$（回收进等效扰动幅值 $D$）。
-> 3. *$A$ 的谱范数界*：由 $A_{11}^\top A_{11}=\tfrac14(\tilde\eta I_3-[\mathcal O]_\times)(\tilde\eta I_3+[\mathcal O]_\times)=\tfrac14\bigl((\tilde\eta^2+\|\mathcal O\|^2)I_3-\mathcal O\mathcal O^\top\bigr)=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（**精确值**，与 $\tilde x$ 无关）；将 $A$ 拆为块对角部分 $\mathrm{diag}(A_{11},I_3)$ 与严格下三角部分，得
-> $$
-> \|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\| .
-> $$
-> 在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步即得 (5.7b) 与
+> 3. *$A$ 的谱范数界*：由 $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（**精确值**，与 $\tilde x$ 无关；奇异值计算见附录 C.2），再由 $A$ 的块下三角结构得 $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$。在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步即得 (5.7b) 与
 > $$
 > \dot V\ \le\ -\lambda_{\mathrm{eff}}\|e_\xi\|^2+D\,\|e_\xi\| .
 > \tag{5.7d}
@@ -658,27 +632,9 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > $$
 > 两端除以 $\tfrac{\lambda_{\mathrm{eff}}}2T$ 即 (5.7c)；令 $T\to\infty$ 得 (5.7)。$\alpha\to0$ 时 $D\to D_{\mathrm{ex}}$、$\lambda_{\mathrm{eff}}\to\lambda_{\min}(K_d)$，退化为经典形式。█
 
-> **重要更正（为何是均方界而非逐点极限球）**：本稿早期版本将 3(d) 写作“系统对 $d_b$ 输入-状态稳定，$\limsup_{t\to\infty}\|e_\xi(t)\|\le\|d_b\|_\infty/\lambda_{\min}(K_d)$（[Kha02] Thm 4.19 形态）”，该推理有三处缺口，现一并更正。
->
-> (i) **“球”不是水平集**。(5.7d) 只给出“$\|e_\xi\|>D/\lambda_{\mathrm{eff}}\Rightarrow\dot V<0$”。要由此断言轨迹进入并**停留**于 $\{\|e_\xi\|\le r\}$，需该集合是 $V$ 的水平集（或可被水平集夹逼）；但 $V=\tfrac12\|e_\xi\|^2+\tfrac12e_z^\top K_pe_z$ 不是 $\|e_\xi\|$ 的函数，$\{\|e_\xi\|\le r\}$ 是 $(e_z,e_\xi)$ 空间中沿 $e_z$ 方向无界的“板状”集，$V$ 在其上无上界，故“$V$ 在板外单调下降”不蕴含轨迹被板捕获。
->
-> (ii) **[Kha02] Thm 4.19 的前提不满足**。该定理要求存在 $\mathcal K_\infty$ 函数对**全状态**范数作夹逼 $\alpha_1(\|x\|)\le V\le\alpha_2(\|x\|)$，且 $\dot V\le-W(\|x\|)+\rho(\|u\|)$ 的负定项含**全状态**。此处 $x=(e_z,e_\xi)$ 而 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2，$e_z$ 方向无耗散），故 $V$ 不是全状态的 ISS-Lyapunov 函数，只能提供 $e_\xi$ 方向的耗散信息——这正是结论必须取积分（均方）形式而非逐点形式的根源。相应地，本定理不再自称“ISS”，而称为“$L_\infty$ 通道的均方极限界”（它是 ISS 极限球的积分类比物）。
->
-> (iii) **$\Omega_c$ 前提是真实缺口而非笔误**。定理 3(b)(i) 的水平集不变性依赖 $d\equiv0$；含扰时 $\dot V$ 可正，$\Omega_c$ 未必不变，而 (5.7b) 的 $D$ 又依赖 $\Omega_c$ 上的 $\|e_z\|$ 界，形成循环。本稿的处理是把“轨迹留在 $\Omega_c$”列为定理 3(d) 的**显式前提**并事后数值核验（§6.5(6)：实测 $V^{\mathrm{base}}_{\mathrm{peak}}=2.47\times10^{-2}$，换算到 tuned 权重后 $\le0.494$，而 tuned 档 $c^*=160$，余度约 2.5 个数量级）。彻底解除该循环需强化存储函数 $W=V+\epsilon\,e_z^\top K_pA(\tilde x)e_\xi$ 使 $\dot W$ 含 $-\|e_z\|^2$ 项（须处理 $\dot A$，附录 C.4），届时可得**真正的**全状态 ISS 与逐点极限球；本稿将其列为开放问题（§7）。
->
-> (iv) **数值结论不受影响，但语义变了**。(5.7) 的界值 $D/\lambda_{\mathrm{eff}}$ 在 $\alpha\to0$ 极限下与早期逐点表达式同为 $\|d_{\mathrm{ex}}\|_\infty/\lambda_{\min}(K_d)$（Young 放缩并未抬高常数），故 §6.5 关于“界成立且保守约 1.5 个数量级”的核验数值不变；变的是被核验对象的**语义**——从“任意时刻误差的上限”改为“稳态窗口内误差 RMS 的上限”。后者恰好就是 §6.5 实际统计的量（`exi_rms`），理论与实测的口径因这一更正反而变得一致（代码实现处 `performance.iss_ultimate_bound` 的语义注释应同步修正）。∎
+> **注记（界为何是均方而非逐点）**：(5.7d) 只给出“$\|e_\xi\|>D/\lambda_{\mathrm{eff}}\Rightarrow\dot V<0$”。$\{\|e_\xi\|\le r\}$ 在 $(e_z,e_\xi)$ 空间中沿 $e_z$ 方向无界、并非 $V$ 的水平集，故“$V$ 在其外单调下降”不蕴含轨迹被它捕获；根源是 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2），$V$ 只是 $e_\xi$ 方向的耗散证书而非全状态 ISS-Lyapunov 函数。因此本定理不自称 ISS，结论取积分（均方）形式——ISS 极限球的积分类比物，其被界定的量恰为 §6.5 实际统计的稳态窗口 RMS。此外，$\Omega_c$ 前提与 (5.7b) 的 $D$ 相互依赖，构成需事后核验的循环（§6.5(6)：实测余度约 2.5 个数量级）。三点的完整论证见附录 C.5，彻底解除循环的 strictification 路线见附录 C.4 与 §7。∎
 
-> **注记（Schur 判据 vs. Young 放缩、以及最紧可证增益）**：(i) 在各向同性罚权下二者恰好重合：(5.6a) 即 $\lambda_{\min}(K_d)\ge\tfrac12(\gamma_a^{-2}+\kappa^{-1})$，与 Young 路的标量条件相同——矩阵判据在**同一**供给率下不提供额外自由度；其真正收益是 (a) 从构造上免除符号放缩、(b) 罚权分块化后自然产出 (c-2) 的通道拆分（各向异性设计空间来自供给率加权的分块化，而非同一各向同性目标的改写）。(ii) 供给率整体缩放 $\theta>0$（目标 $\dot V\le-\theta\kappa^{-1}\|e_\xi\|^2+\theta\gamma_a^2\|d\|^2$，认证同一增益 $\gamma_a\sqrt\kappa$、偏置项 $V(0)/\theta$）给出条件族 $K_d\succeq(\theta\kappa^{-1}+\tfrac1{4\theta}\gamma_a^{-2})I$；对 $\theta$ 极小化（$\theta^*=\sqrt\kappa/2\gamma_a$）得**最紧可证条件**
-> $$
-> \lambda_{\min}(K_d)\ \ge\ \frac{1}{\gamma_a\sqrt\kappa}
-> \qquad\Longleftrightarrow\qquad
-> \text{认证 }L_2\text{ 增益 }\le\ \frac{1}{\lambda_{\min}(K_d)} .
-> $$
-> 由 AM–GM，$\tfrac12(\gamma_a^{-2}+\kappa^{-1})\ge(\gamma_a\sqrt\kappa)^{-1}$，等号当且仅当 $\kappa=\gamma_a^2$——(5.6a) 是该族在 $\theta=\tfrac12$ 处的成员，仅在 $\kappa=\gamma_a^2$ 时最紧（推导见附录 C.3）。最紧界与定理 3(d) 的均方极限界 $D/\lambda_{\mathrm{eff}}$（$\alpha\to0$ 时为 $\|d_{\mathrm{ex}}\|_\infty/\lambda_{\min}(K_d)$）及线性极限 $\|(sI+K_d)^{-1}\|_{H_\infty}=1/\lambda_{\min}(K_d)$（$K_d$ 对称时）一致；三者同为 $1/\lambda_{\min}(K_d)$ 并非巧合，而是同一个一阶耗散通道 $\dot e_\xi=-K_de_\xi+d$ 在三种度量下的同一增益。
-
-> **注记（$\gamma_a$ 的角色：分析参数，及其两种"影响误差"的通道）**：与 [P2] 的一阶 DQ H∞ 律形成结构性对照——[P2] 中 $\gamma$ 直接决定增益（$k_O=\sqrt2/\gamma_O$、$k_T=\sqrt2/\gamma_T$），是**综合参数**，扫 $\gamma$ 天然改变闭环误差；而控制律 (5.2) 不含 $\gamma_a$——$\gamma_a/\kappa$ 只出现在证书 (5.6a) 中，是**分析参数**。由此得到两条可实验证伪的推论。(i) **证书通道**：固定 $K_d$ 时扫 $\gamma_a$，闭环轨迹与误差**严格不变**，变的只是 (5.6a) 的可判定性——当 $\tfrac12(\kappa^{-1}+\gamma_a^{-2})>\lambda_{\min}(K_d)$ 时证书失效，但系统行为分毫不动（对给定 $\kappa$，证书可行域的边界为 $\gamma_a\ge[2\lambda_{\min}(K_d)-\kappa^{-1}]^{-1/2}$）。(ii) **综合通道**：$\gamma_a$ 要影响误差，必须经 $\gamma$-$\kappa$ 设计规则**回写增益**——给定目标 $\gamma_a$，取 $\kappa^*=\gamma_a^2$（AM–GM 等号，族内最紧）、$\lambda_{\min}(K_d)=1/(\gamma_a\sqrt{\kappa^*})=\gamma_a^{-2}$（最紧条件取等号，证书恰紧），则认证 $L_2$ 能量增益 $=1/\lambda_{\min}(K_d)=\gamma_a^2$：$\gamma_a$ 越小增益要求越高、误差越小，与 [P2] 的 $\gamma$ 实验同构；代价是 $K_d=\gamma_a^{-2}I$ 带来的指令峰值与离散化余量（极点 $\cdot\,\Delta t$ 上限、执行器预算），给出可达 $\gamma_a$ 的下界。两条通道的实验化为 §6.7 γ 扫描协议（A 组验证 (i)，B 组验证 (ii)，C 组复刻 [P2] 的综合参数扫描作对照）；设计规则细节见附录 C.3。
->
-> **注记（诚实边界）**：(i) 奇异邻域内 $J^+$ 用阻尼伪逆时 $JJ^+\ne I$，残差归入 $d_{\mathrm{ex}}$（而非 $\Theta u_{\mathrm{fb}}$，因它不正比于 $\Delta M$）；(ii) 本定理是内环单层的严格结果（$L_2$ 通道充要判据 + $L_\infty$ 通道均方界），**不**声称全状态 ISS（见定理 3(d) 后的重要更正），也**不**声称与运动学外环级联后的整体 H∞ 界（开放问题）；(iii) Lyapunov 与耗散技术本身是标准的，本文的新内容在误差坐标的选择（HDQ 误差元素 + $A^\top$ 整形使两处相消都精确成立）与两类扰动的通道化归属；(iv) (5.6)/(5.6$'$) 与 (5.7) 均只约束 $e_\xi$ 而非 $e_z$——扰动到 $e_z$ 的相对阶为 2，当前 $V$ 的导数中无 $-\|e_z\|^2$ 项；若需 $e_z$ 的直接 $L_2$ 或极限球界，须在 $V$ 中加交叉项（strictification，形如 $\epsilon\,e_z^\top K_pAe_\xi$）并处理 $\dot A$，留作后续（附录 C.4）；在本稿范围内，$e_z$ 的稳态量级**只**由近恒等线性化通道 (5.9) 给出准静态估计（$\|\mathcal T\|_{\mathrm{ss}}\approx\|d_v\|/p_T$、$\|\mathcal O\|_{\mathrm{ss}}\approx2\|d_\omega\|/p_O$），该估计是工程指标而非严格上界；(v) 含扰时轨迹可能离开 $\tilde\eta>0$（unwinding 域边界），定理 3(c) 的 twist 误差界仍成立（其推导不用到 $A$ 可逆），但该域外不附带任何位姿收敛结论；(vi) 通道拆分 (c-2) 依赖 $K_d$ 块对角、平移刚度各向同性与 $[\mathcal T]_\times\mathcal T=0$、$\mathcal T^\top[\mathcal T]_\times\tilde\omega=0$ 两处恒零，一般正定 $K_d$ 或非标量 $K_{p,T}$ 退回合并判据 (c-1)。
+> **注记（诚实边界）**：(i) 奇异邻域内取阻尼伪逆时 $JJ^+\ne I$，残差归入 $d_{\mathrm{ex}}$（不正比于 $\Delta M$，故不属 $\Theta u_{\mathrm{fb}}$）；(ii) 本定理是内环单层的严格结果（$L_2$ 通道充要判据 + $L_\infty$ 通道均方界），**不**声称全状态 ISS，也**不**声称与运动学外环级联后的整体 H∞ 界（开放问题，§7）；(iii) Lyapunov 与耗散技术本身是标准的，本文的新内容在误差坐标的选择（HDQ 误差元素 + $A^\top$ 整形使两处相消都精确成立）与两类扰动的通道化归属；(iv) (5.6)/(5.6$'$)/(5.7) 均只约束 $e_\xi$ 而非 $e_z$——$V$ 在 $e_z$ 方向无耗散项；本稿范围内 $e_z$ 的稳态量级**只**由近恒等线化通道 (5.9) 给出准静态估计（$\|\mathcal T\|_{\mathrm{ss}}\approx\|d_v\|/p_T$、$\|\mathcal O\|_{\mathrm{ss}}\approx2\|d_\omega\|/p_O$），属工程指标而非严格上界，严格化需 strictification（附录 C.4）；(v) 含扰时轨迹可能离开 $\tilde\eta>0$（unwinding 域边界），定理 3(c) 的 twist 误差界仍成立（其推导不用到 $A$ 可逆），但域外不附带任何位姿收敛结论；(vi) 通道拆分 (c-2) 依赖 $K_d$ 块对角与 $K_{p,T}$ 各向同性，否则退回合并判据 (c-1)。
 
 ### 5.4 近恒等线性化通道与静态刚度标度律
 
@@ -714,11 +670,11 @@ $$
 
 即稳态残差**只**由静态刚度决定、与阻尼无关（$K_d$ 只改变过渡过程）。(5.9) 给出两个可伪造的预言：**(P1) 反比标度**——刚度提高 $\rho$ 倍，稳态位姿残差降低至 $1/\rho$；**(P2) 等效扰动反演的一致性**——同一物理工况下用**不同增益档**的实测残差反演 $\|d_v\|=k_{p,T}\|\mathcal T\|_{\mathrm{ss}}$、$\|d_\omega\|=\tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}$，应得到**同一个**幅值。(P2) 比 (P1) 严苛得多（它要求两个独立档位的两个独立数字重合），是 §6.5 对本节模型的主检验（实测偏差 $\approx2\%$）。代码侧 `control/gain_design.py` 的 `c1_channels()` 逐字实现 (5.8)（旋转通道传入 `p_O/4` 与扰动增益 $-0.5$，平移通道传入 `p_T` 与 $+1.0$），可作为本节与实现一致性的交叉校验点。
 
-**适用边界**：(5.8)–(5.9) 是 $\tilde x\to1$ 的一阶近似，与定理 3(b)(iv) 的局部指数稳定共用同一个线性化雅可比矩阵 $F$（因而也共用其适用域）；它不是严格上界，大误差区的 $[\mathcal T]_\times$ 耦合与 $\tilde\eta<1$ 导致的刚度变异均未计入。严格结论仍以定理 3 为准；(5.9) 的定位是**增益整定与扰动反演的工程模型**，同时承担定理 3(d) 注记 (iv) 中 $e_z$ 稳态量级估计的职能。
+**适用边界**：(5.8)–(5.9) 是 $\tilde x\to1$ 的一阶近似，与定理 3(b)(iv) 的局部指数稳定共用同一个线性化雅可比矩阵 $F$（因而也共用其适用域）；它不是严格上界，大误差区的 $[\mathcal T]_\times$ 耦合与 $\tilde\eta<1$ 导致的刚度变异均未计入。严格结论仍以定理 3 为准；(5.9) 的定位是**增益整定与扰动反演的工程模型**，同时承担定理 3(d) 诚实边界 (iv) 中 $e_z$ 稳态量级估计的职能。
 
 ### 5.5 与运动学外环的级联
 
-外环照旧运行 [P2] 控制律（保持其 H∞ 保证），内环 (5.2) 以期望轨迹（或外环整形后的参考）为输入。内环的 $L_2$ 证书 (5.6) 与外环对执行残差的 H∞ 鲁棒性结合，在**小增益条件成立**时可给出级联系统的 $L_2$ 界；内环的效果等价于把外环感受到的速度级扰动变小。**诚实陈述**：本稿早期版本写作“内环 ISS + 外环 H∞ ‹⇒› 级联系统分别保持 $L_2$ 界与极限球界（标准级联 ISS 定理）”，这一断言并未在本稿证明：其一，定理 3(d) 只给出 $e_\xi$ 的均方界而非全状态 ISS（见该定理后的重要更正），标准级联 ISS 定理的前提不满足；其二，两环共用同一执行器与同一量测，其互连不是单向级联。因此本节只作**结构性陈述与设计指引**，整体级联的定量保证列为开放问题（§7 局限 i）。
+外环照旧运行 [P2] 控制律（保持其 H∞ 保证），内环 (5.2) 以期望轨迹（或外环整形后的参考）为输入。内环的 $L_2$ 证书 (5.6) 与外环对执行残差的 H∞ 鲁棒性结合，在**小增益条件成立**时可给出级联系统的 $L_2$ 界；内环的效果等价于把外环感受到的速度级扰动变小。**诚实陈述**：本稿早期版本写作“内环 ISS + 外环 H∞ ‹⇒› 级联系统分别保持 $L_2$ 界与极限球界（标准级联 ISS 定理）”，这一断言并未在本稿证明：其一，定理 3(d) 只给出 $e_\xi$ 的均方界而非全状态 ISS（见该定理后的注记与附录 C.5），标准级联 ISS 定理的前提不满足；其二，两环共用同一执行器与同一量测，其互连不是单向级联。因此本节只作**结构性陈述与设计指引**，整体级联的定量保证列为开放问题（§7 局限 i）。
 
 ---
 
@@ -867,7 +823,7 @@ $$
 
 **(6) Lyapunov 收敛、水平集与均方界的核验**。空载 C1-tuned 从初始扰动 $V^{\mathrm{base}}_{\mathrm{peak}}=7.74\times10^{-5}$ 衰减 2.5 个数量级至 $V^{\mathrm{base}}_{ss}=2.20\times10^{-7}$（无扰渐近收敛，与定理 3(b)(iii)(iv) 一致）；带载在杯附着后 $V^{\mathrm{base}}_{\mathrm{peak}}=2.47\times10^{-2}$，随后在 $t_{\mathrm{conv}}=\mathbf{1.50}$ s 内回落至 $V^{\mathrm{base}}_{ss}=3.36\times10^{-4}$；$V_{ss}$ 随增益档单调递减（$2.42\times10^{-2}\to3.36\times10^{-4}\to6.89\times10^{-5}$）。三点定量核验：
 
-- **水平集条件 (5.5b)**：按上文权重口径换算，$V^{\mathrm{tuned}}_{\mathrm{peak}}\le20\times2.47\times10^{-2}=0.494$，而 tuned 档 $c^*=\tfrac12\lambda_{\min}(K_{p,O})=160$，余度约 **2.5 个数量级**（本稿早期版本称"四个数量级"，系直接把 base 权重的 $V$ 与 tuned 权重的 $c^*$ 相比所致，现更正）。base 档 $c^*=8$ 对其自身 $V_{\mathrm{peak}}$ 亦有 2 个数量级余度。故定理 3(b)/3(d) 所需的工作域前提在全部 19 组运行中以充分余度成立——这是把定理 3(d) 的 $\Omega_c$ 前提"事后数值核验"（定理 3(d) 更正注记 (iii)）的具体落实。
+- **水平集条件 (5.5b)**：按上文权重口径换算，$V^{\mathrm{tuned}}_{\mathrm{peak}}\le20\times2.47\times10^{-2}=0.494$，而 tuned 档 $c^*=\tfrac12\lambda_{\min}(K_{p,O})=160$，余度约 **2.5 个数量级**（本稿早期版本称"四个数量级"，系直接把 base 权重的 $V$ 与 tuned 权重的 $c^*$ 相比所致，现更正）。base 档 $c^*=8$ 对其自身 $V_{\mathrm{peak}}$ 亦有 2 个数量级余度。故定理 3(b)/3(d) 所需的工作域前提在全部 19 组运行中以充分余度成立——这是把定理 3(d) 的 $\Omega_c$ 前提"事后数值核验"（定理 3(d) 注记与附录 C.5）的具体落实。
 - **均方极限界 (5.7) 的保守性**：由 (P2) 反演得 $\|d_{\mathrm{ex}}\|\approx\sqrt{0.389^2+0.683^2}=0.786$；带载时 $\alpha$ 主要来自 $\Delta M$（杯质量相对末端等效惯量），取 $\alpha\to0$ 的乐观极限，(5.7) 给出 $\mathrm{RMS}(e_\xi)\le0.786/\lambda_{\min}(K_d)=0.786/24=3.27\times10^{-2}$；实测 $\mathrm{RMS}(e_\xi)=9.399\times10^{-4}$，比值 **34.8**。即该界成立但**保守约 1.54 个数量级**。保守性的来源可以逐项归因：(5.7d) 中 $\|A\|_2\le1+\|\mathcal T\|$ 与 $\|A_{11}\|_2=\tfrac12$ 均按最坏方向取值，而实际 $d_{\mathrm{ex}}$ 与 $e_\xi$ 在圆周段近似正交（扰动主要沿重力方向、误差主要沿切向），故 $e_\xi^\top d$ 远小于 $\|e_\xi\|\|d\|$；Young 不等式的等号条件（$\|e_\xi\|=D/\lambda_{\mathrm{eff}}$）也远未达到。这一量级的保守性与 [P2] γ 扫描观察到的 H∞ 界保守性同源。
 - **H∞ 证书 (5.6a)**：tuned 档按 §6.4 读法 B 认证 $L_2$ 增益上界 $1/\lambda_{\min}(K_d)=0.042$。须注意本章的带载工况扰动是**偏差型**（$d_{\mathrm{ex}}$ 近似常值，$\|d_{\mathrm{ex}}\|_{L_2}=\infty$），严格来说不落在定理 3(c) 的 $d\in L_2$ 前提内；能够核验的只有有限时窗上的能量比，实测该比值远小于 0.042。因此本文对 (5.6a) 的实验支持仅限于"未被违反"，**不构成对 $L_2$ 增益界紧性的检验**——后者需要 §6.7 的 γ 扫描协议（配合 $L_2$ 型注入扰动）才能完成。
 
@@ -935,11 +891,15 @@ $$
 \ddot{\boldsymbol q}=M^{-1}\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+M^{-1}\bigl(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr),
 \qquad M^{-1}\hat M=I+M^{-1}\Delta M ,
 $$
-即 (5.1)。
+即 (5.1)。注意 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 (5.2) 完全由**当前可测量** $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出，**不依赖 $\ddot{\boldsymbol q}$**，故 (5.1) 对 $\ddot{\boldsymbol q}$ 是**显式赋值**：不存在隐式代数环，既不需要移项、也不需要 Neumann 级数，更不会产生 $\alpha/(1-\alpha)$ 型的等效扰动增益因子。
 
-> **对早期版本的更正**：本稿早期版本在此写作“$\ddot{\boldsymbol q}_{\mathrm{ref}}$ 本身含反馈项，故 (5.1) 是隐式方程；$\alpha<1$ 时把乘性项移项、$(I+M^{-1}\Delta M)$ 可逆（Neumann 级数），解出的等效扰动增益 $\le\alpha/(1-\alpha)$”。这一段是**错的**：$\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 (5.2) 完全由**当前可测量**$(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出，**不依赖 $\ddot{\boldsymbol q}$**；因此 (5.1) 对 $\ddot{\boldsymbol q}$ 是一个**显式赋值**，不存在隐式代数环，既不需要移项也不需要 Neumann 级数，也不会产生 $\alpha/(1-\alpha)$ 因子。与新 §5.1 的表述保持一致。
+由此可见 $\alpha<1/\mathrm{cond}_2(K_d)$（(5.1f)）与适定性无关，而是为了使定理 3(d) 中的**有效阻尼保持正定**：乘性分量 $\Theta u_{\mathrm{fb}}$ 中与 $-K_de_\xi$ 同向的部分会削弱阻尼，由 $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 得 $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$，正性恰好等价于 (5.1f)。换句话说，$\alpha$ 条件是一个**小增益型的证书条件**，而不是微分方程适定性条件；若 $\alpha$ 过大，闭环仍然定义良好，但本文的 Lyapunov 证书失效（并不意味着失稳，只是不可证）。
 
-那么 $\alpha<1/\mathrm{cond}_2(K_d)$（(5.1f)）的作用到底在哪里？它与适定性无关，而是为了使定理 3(d) 中的**有效阻尼保持正定**：乘性分量 $\Theta u_{\mathrm{fb}}$ 中与 $-K_de_\xi$ 同向的部分会削弱阻尼，由 $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 得 $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$，正性恰好等价于 (5.1f)。换句话说，$\alpha$ 条件是一个**小增益型的证书条件**，而不是微分方程适定性条件；若 $\alpha$ 过大，闭环仍然定义良好，但本文的 Lyapunov 证书失效（并不意味着失稳，只是不可证）。
+**(5.1d) 与 $d_{\mathrm{ex}}$ 的逐项核对。** 将 $\ddot{\boldsymbol q}_{\mathrm{ref}}=J^{+}(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q})$ 代入 $d=J\boldsymbol w_{\mathrm{dyn}}+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$，只有 $JM^{-1}\Delta M\,\ddot{\boldsymbol q}_{\mathrm{ref}}$ 一项含控制量；用 (A1) 的 $JJ^{+}=I_6$ 得
+$$
+JM^{-1}\Delta M\,\ddot{\boldsymbol q}_{\mathrm{ref}}=\underbrace{JM^{-1}\Delta MJ^{+}}_{=\,\Theta}\bigl(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q}\bigr)=\Theta u_{\mathrm{fb}}+\Theta\bigl(u_{\mathrm{ff}}-\dot J\dot{\boldsymbol q}\bigr).
+$$
+右端第一项即 (5.1d) 的乘法分量；第二项与剩余的 $JM^{-1}(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\Delta\boldsymbol f+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}})+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$ 合成 $d_{\mathrm{ex}}$。关键记账点：$u_{\mathrm{ff}}$ 虽由控制律生成，但只依赖期望轨迹与位姿误差的**前馈**结构、不包含 $(K_d,K_p)$ 反馈增益，故归入外生部分；若将其也计入乘法通道，定理 3(d) 中的 $\lambda_{\mathrm{eff}}$ 不变而 $D$ 会被重复计数。
 
 分解 $\boldsymbol w_b/\boldsymbol w_{L_2}$ 按各源时间特性归类：参数误差与摩擦残差持续存在（$L_\infty$），测量噪声能量有限或可白化（$L_2$ 类）。注意此处的分类是按**时间特性**（$L_2$ vs $L_\infty$），与 (5.1d) 按**依赖关系**的分解（乘性 $\Theta u_{\mathrm{fb}}$ vs 外生 $d_{\mathrm{ex}}$）是两个正交的划分维度，不得混用（定理 3(a) 的术语约定）。
 
@@ -968,10 +928,9 @@ $$
 $$
 \sigma_{\min}(A)=\frac1{\|A^{-1}\|_2}\;\ge\;\Bigl[\frac{2(1+\|\mathcal T\|)}{\tilde\eta}+1\Bigr]^{-1} .
 $$
-> **更正**：本稿早期版本在此处对 $A_{11}^{-1}$ 的三项逐项用三角不等式放缩，得 $\|A_{11}^{-1}\|_2\le6/\tilde\eta$ 与常数 6，而 §5.2 定理 3(b) 处的脚注引用的是常数 2，两处自相矛盾。上面的奇异值计算表明 $2/\tilde\eta$ 是**精确值**（放缩带来了 3 倍的多余保守性），故常数 2 正确，两处现已统一。
 在 $\Omega_c$ 内 $\tilde\eta\ge\eta_0$（(5.5c)）且 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$，故 $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ 一致成立。于是 LaSalle 第 4 步中由 $A^\top K_pe_z\equiv0$ 推出 $\|e_z\|\le\|K_p^{-1}\|_2\|A^{-\top}\|_2\cdot0=0$ 严格成立。局部指数率由线化矩阵 $F$ 的谱给出，逐通道具体极点见 (5.8)。域限制 $\tilde\eta>0$ 与 [P2] Remark 1 的 unwinding 条件一致。
 
-> 注：本稿早期版本在此处写作“LaSalle / 级联 ISS 均可闭合”。后一项已被撤回：级联 ISS 论证需要 $e_\xi\to e_z$ 通道的 ISS 增益，而本文的 $V$ 在 $e_z$ 方向无耗散项，无法由 $V$ 直接提供该增益（参见定理 3(d) 更正注记 (ii) 与 §5.5）。无扰情形下 LaSalle 路线自身是完整的。
+> 注：无扰情形下 LaSalle 路线自身是完整的，但**不能**改用级联 ISS 论证闭合——后者需要 $e_\xi\to e_z$ 通道的 ISS 增益，而 $V$ 在 $e_z$ 方向无耗散项，无法直接提供该增益（参见附录 C.5 与 §5.5）。
 
 ### C.3 定理 3(c) 的二次型/Schur 补细节与最紧增益族
 
@@ -981,7 +940,7 @@ $$
 $$
 M\succeq0\iff K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0\iff K_d\succeq\tfrac12(\kappa^{-1}+\gamma_a^{-2})I .
 $$
-（本稿早期版本在此处写作 $\tfrac12(\tfrac{\gamma_a^2}2)^{-1}\!\cdot\tfrac14I=\tfrac1{4\gamma_a^2}I$，多写了一个 $\tfrac12$，与同行的结论 $\tfrac12(\kappa^{-1}+\gamma_a^{-2})$ 自相矛盾，现更正为 $\tfrac1{2\gamma_a^2}I$。）这是**当且仅当**判据：不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，无任何符号放缩。
+这是**当且仅当**判据：不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，无任何符号放缩。
 2. **配方法**：对 $\dot V$ 直接完成平方，
 $$
 \dot V=-\Bigl\|K_d^{1/2}e_\xi-\tfrac12K_d^{-1/2}d\Bigr\|^2+\tfrac14 d^\top K_d^{-1}d\ \le\ \tfrac14 d^\top K_d^{-1}d ,
@@ -1005,6 +964,8 @@ $$
 
 **(c-2) 两处恒零的几何含义与失效条件。** 拆分精确成立依赖两条叉积混合积恒等式：(i) $(A^\top e_z)_\omega$ 中 $[\mathcal T]_\times\mathcal T=\mathcal T\times\mathcal T=0$——平移误差对旋转反馈通道的耦合以"作用在自身上的叉积"形式进入，恒零；(ii) $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中耦合项对 $\tfrac12\|\mathcal T\|^2$ 不做功，$\mathcal T^\top(\mathcal T\times\tilde\omega)=0$——与附录 A.3 中 [P2] 平移通道"叉积项与 $\mathcal T$ 正交"同一机制。二者是代数恒等式，不依赖工作域，故 (c-2) 与 (c-1) 一样是全局（$\tilde\eta$ 无关）结论。若 $K_d$ 非块对角，$-e_\xi^\top K_de_\xi$ 含 $\tilde\omega^\top K_{\omega v}\tilde v$ 型交叉项，两通道能量不再分离，退回合并判据 (c-1)。
 
+**$K_{p,T}$ 各向同性的必要性。** 将平移刚度写作一般对称正定 $K_{p,T}$ 时，上述两处恒零均失效：(i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$，而 $[\mathcal T]_\times K_{p,T}\mathcal T=\mathcal T\times(K_{p,T}\mathcal T)\ne0$ 除非 $\mathcal T$ 是 $K_{p,T}$ 的特征向量，故旋转反馈重新含 $\mathcal T$；(ii) 平移储能变为 $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$，其导数中的耦合项 $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$ 不再为零（仅当 $K_{p,T}=k_{p,T}I_3$ 时由 $\mathcal T^\top[\mathcal T]_\times=0$ 而消失）。两项残留均是 $\tilde\omega$–$\mathcal T$ 型耦合，使 $V_\omega,V_v$ 不再各自闭合，因而同样退回 (c-1)。这与 §5.2 说明 (c) 中“$K_p$ 写在 $A^\top$ 内侧”的要求是同一代数机制的两个侧面。
+
 **$\gamma$-$\kappa$ 设计规则（实验化，对应 §6.7）。** 上述 θ 族给出从目标增益到增益矩阵的完整综合流程：给定目标 $\gamma_a$，① 取 $\kappa^*=\gamma_a^2$（AM–GM 等号，(5.6a) 在族内最紧）；② 取 $\lambda_{\min}(K_d)=1/(\gamma_a\sqrt{\kappa^*})=\gamma_a^{-2}$（最紧条件取等号，证书恰紧，对应 $\theta^*=\sqrt{\kappa^*}/2\gamma_a=\tfrac12$）；③ 位姿增益另行配置动态品质：正文自 (5.2) 起已统一采用**对称正定矩阵** $K_p$（$V$ 中为 $\tfrac12e_z^\top K_pe_z$、(5.2) 中为 $A^\top K_pe_z$，$K_p$ 必须写在 $A^\top$ **内侧**，否则对各向异构或带耦合块的 $K_p$，定理 3(b) 第 1 步的交叉项不再相消（块各向同性情形下两种写法恰巧等价，见 §5.2 说明 (c)）；标量情形 $K_p=k_pI_6$ 是其特例。取 $K_p=\mathrm{diag}(p_OI_3,p_TI_3)$，当 $K_\omega=K_v=k_dI_3$ 时临界阻尼可取 $p_T=(k_d/2)^2$、$p_O=4p_T$（**1/4 旋转折减**的补偿，见 (5.8)），两线性化通道双重极点。此时认证 $L_2$ 能量增益 $=1/\lambda_{\min}(K_d)=\gamma_a^2$，$\gamma_a$ 成为单参数性能旋钮。可达下界由工程约束给出：离散化余量 $\max_i|p_i|\Delta t\le c_{\mathrm{disc}}$（显式积分稳定裕度）与指令峰值预算 $\lambda_{\max}(K_d)\|e_\xi\|+\tfrac12\lambda_{\max}(K_p)\|e_z\|\le\ddot q_{\max}$ 均随 $\gamma_a^{-2}$ 增长，两者中先达界者决定 $\gamma_a^{\min}$。反之，若固定 $K_d$ 不回写（仅分析已有设计），则 $\gamma_a$ 扫描只移动证书可行域边界 $\gamma_a\ge[2\lambda_{\min}(K_d)-\kappa^{-1}]^{-1/2}$，对闭环轨迹无任何影响——这是"分析参数"与 [P2] "综合参数"（$k=\sqrt2/\gamma$ 直接进控制律）的可观测判别。
 
 ### C.4 待完成的一步：strictification 与真正的局部 ISS（未来工作）
@@ -1023,6 +984,18 @@ $$
 $$
 这才是一个真正的（局部）ISS-Lyapunov 函数：它同时给出全状态的逐点极限球、$\Omega_c$ 的受限不变性（从而解除定理 3(d) 中“$D$ 依赖 $\Omega_c$ 而 $\Omega_c$ 又未必不变”的循环）、以及 $e_z$ 的指数收敛率。代价是：$c_1,c_2,\epsilon$ 的可行域会变得保守（依赖 $c,\eta_0,\mathrm{cond}(K_p)$），且不再保持定理 3(c) 的“当且仅当”品质。本文**没有**完成这一验证（关键难点是 $\dot A$ 项的一致界与 $\epsilon$ 的可行区间非空性），故定理 3(d) 保守地只声明均方界。此项列为 §7 局限 (i)。
 
+### C.5 定理 3(d) 的界形态：为何不是逐点 ISS 极限球
+
+对一阶耗散系统，“$\|e\|$ 较大时 $\dot V<0$”通常直接给出逐点极限球 $\limsup_t\|e(t)\|\le r$（[Kha02] Thm 4.19）。本文的 (5.7d) 不能这样收尾，原因有三条，它们共同决定了定理 3(d) 只能取均方（积分）形式。
+
+**(i) “球”不是水平集。** (5.7d) 给出的是“$\|e_\xi\|>D/\lambda_{\mathrm{eff}}\Rightarrow\dot V<0$”。要由此断言轨迹进入并**停留**于 $\{\|e_\xi\|\le r\}$，需该集合是 $V$ 的水平集或可被水平集夹逼。但 $V=\tfrac12\|e_\xi\|^2+\tfrac12e_z^\top K_pe_z$ 不是 $\|e_\xi\|$ 的函数，$\{\|e_\xi\|\le r\}$ 是 $(e_z,e_\xi)$ 空间中沿 $e_z$ 方向无界的“板状”集，$V$ 在其上无上界；因此“$V$ 在板外单调下降”不蕴含轨迹被板捕获。
+
+**(ii) ISS-Lyapunov 函数的前提不满足。** [Kha02] Thm 4.19 要求存在 $\mathcal K_\infty$ 函数对**全状态**范数作夹逼 $\alpha_1(\|x\|)\le V\le\alpha_2(\|x\|)$，且 $\dot V\le-W(\|x\|)+\rho(\|u\|)$ 的负定项含全状态。此处 $x=(e_z,e_\xi)$，而 $\dot V$ 的负项只含 $-\|e_\xi\|^2$——扰动到 $e_z$ 的相对阶为 2，$e_z$ 方向没有耗散。故 $V$ 不是全状态的 ISS-Lyapunov 函数，只能提供 $e_\xi$ 方向的耗散信息。相应地，定理 3(d) 不自称 “ISS”，而称为“$L_\infty$ 通道的均方极限界”——它是 ISS 极限球的积分类比物。同理，级联 ISS 路线也无法由 $V$ 直接闭合（§5.5、附录 C.2）。
+
+**(iii) $\Omega_c$ 前提与 $D$ 的循环。** 定理 3(b)(i) 的水平集不变性依赖 $d\equiv0$；含扰时 $\dot V$ 可正，$\Omega_c$ 未必不变，而 (5.7b) 的 $D$ 又依赖 $\Omega_c$ 上的 $\|e_z\|$ 界。本稿的处理是把“轨迹留在 $\Omega_c$”列为定理 3(d) 的**显式前提**并事后数值核验（§6.5(6)：实测 $V^{\mathrm{base}}_{\mathrm{peak}}=2.47\times10^{-2}$，换算到 tuned 权重后 $\le0.494$，而 tuned 档 $c^*=160$，余度约 2.5 个数量级）。彻底解除该循环需强化存储函数使 $\dot W$ 含 $-\|e_z\|^2$ 项（附录 C.4），届时可得真正的全状态局部 ISS 与逐点极限球；本稿将其列为开放问题（§7 局限 i）。
+
+**数值与语义。** (5.7) 的界值 $D/\lambda_{\mathrm{eff}}$ 在 $\alpha\to0$ 极限下为 $\|d_{\mathrm{ex}}\|_{L_\infty}/\lambda_{\min}(K_d)$，与逐点形态的常数一致（Young 放缩并未抬高常数），故 §6.5 的核验数值与保守性结论不受影响；受影响的是被核验对象的**语义**——不是“任意时刻误差的上限”，而是“稳态窗口内误差 RMS 的上限”。后者恰好就是 §6.5 实际统计的量（代码侧 `exi_rms`），理论与实测的口径因此一致。
+
 ---
 
 ## 参考文献
@@ -1037,4 +1010,11 @@ $$
 8. **[Ch20]** A. Chandra, J.A. Corrales-Ramon, Y. Mezouar, *Resolved-acceleration control of serial robotic manipulators using unit dual quaternions*, IFAC-PapersOnLine 53(2) (2020) 8500–8505.
 9. **[Gaz14]** C. Gaz, F. Flacco, A. De Luca, *Identifying the dynamic model used by the KUKA LWR: A reverse engineering approach*, Proc. IEEE Int. Conf. Robotics and Automation (ICRA), 2014, 1386–1392.
 10. **[Roh13]** E. Rohmer, S.P.N. Singh, M. Freese, *V-REP: A versatile and scalable robot simulation framework*, Proc. IEEE/RSJ Int. Conf. Intelligent Robots and Systems (IROS), 2013, 1321–1326.
-11. 项目文档：主文档 `docs/数学理论与代码实现详解.md`；扩展篇 `docs/HDQ动力学建模扩展_Jdot与Hessian.md`；误差篇 `docs/HDQ动力学误差体系重构_几何一致二阶误差方案.md`；仿真篇 `docs/TNDQ论文_仿真验证章节.md`（含完整逐相位数据表、图位预留与理论–代码一致性核对表）。
+11. **[LWP80]** J.Y.S. Luh, M.W. Walker, R.P.C. Paul, *Resolved-acceleration control of mechanical manipulators*, IEEE Trans. Automatic Control 25(3), 1980.
+12. **[Abd91]** C. Abdallah, D. Dawson, P. Dorato, M. Jamshidi, *Survey of robust control for rigid robots*, IEEE Control Systems Magazine 11(2), 1991.
+13. **[Sag99]** H.G. Sage, M.F. De Mathelin, E. Ostertag, *Robust control of robot manipulators: a survey*, International Journal of Control 72(16), 1999.
+14. **[ZDG96]** K. Zhou, J.C. Doyle, K. Glover, *Robust and Optimal Control*, Prentice Hall, 1996.
+15. **[Nak86]** Y. Nakamura, H. Hanafusa, *Inverse kinematic solutions with singularity robustness for robot manipulator control*, ASME J. Dynamic Systems, Measurement, and Control 108(3), 1986.
+16. **[Nak08]** J. Nakanishi, R. Cory, M. Mistry, J. Peters, S. Schaal, *Operational space control: A theoretical and empirical comparison*, International Journal of Robotics Research 27(6), 2008.
+17. **[Ber93]** H. Berghuis, H. Nijmeijer, *A passivity approach to controller–observer design for robots*, IEEE Trans. Robotics and Automation 9(6), 1993.
+18. 项目文档：主文档 `docs/数学理论与代码实现详解.md`；扩展篇 `docs/HDQ动力学建模扩展_Jdot与Hessian.md`；误差篇 `docs/HDQ动力学误差体系重构_几何一致二阶误差方案.md`；仿真篇 `docs/TNDQ论文_仿真验证章节.md`（含完整逐相位数据表、图位预留与理论–代码一致性核对表）。
