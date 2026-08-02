@@ -407,11 +407,7 @@ $$
 \tag{5.2}
 $$
 
-四点说明：(a) 前馈中 $\dot{\boldsymbol\xi}_d$ 来自期望轨迹（解析或期望链 TNDQ 表示 $\bar x_d$ 的 $\sigma^2$ 通道），$\mathrm{ad}$ 输运项由引理 1（下）决定——两者使前馈与误差动态中的非反馈项精确相消；(b) 位姿反馈经 $A^\top$ 整形，其目的将在定理 3 证明中显现（Lyapunov 交叉项精确相消）；(c) **增益矩阵 $K_p$ 的位置不可互换**——必须写作 $A^\top K_pe_z$（$K_p$ 在 $A^\top$ **内侧**），而不是 $K_pA^\top e_z$：只有前者才与存储函数的位姿项 $\tfrac12e_z^\top K_pe_z$ 配对成精确相消的交叉项（对任意对称 $K_p$ 成立，见定理 3(b) 证明第 1 步）。两种写法的 $\dot V$ 之差可以显式算出：由 (4.5) 的分块结构，$A^\top K_p-K_pA^\top=\begin{bmatrix}0&(p_T-p_O)[\mathcal T]_\times\\0&0\end{bmatrix}$，故
-$$
-\Delta\dot V=e_\xi^\top\bigl(A^\top K_p-K_pA^\top\bigr)e_z=(p_T-p_O)\,\tilde{\boldsymbol\omega}^\top[\mathcal T]_\times\mathcal T\equiv0 ,
-$$
-因为 $e_z$ 的平移分块**恰好就是** $\mathcal T$ 而 $[\mathcal T]_\times\mathcal T=0$。因此对本文实际采用的**块各向同性** $K_p=\mathrm{diag}(p_OI_3,p_TI_3)$，两种写法恰巧给出完全相同的 $\dot V$（已数值核验：残差 $\sim10^{-16}$）；但只要 $K_{p,T}$ 各向异构、或 $K_p$ 带旋转–平移耦合块，$\Delta\dot V\ne0$ 且交叉项不再相消（同样的数值核验下残差分别为 $3.7\times10^{-2}$ 与 $1.6$）。所以“$K_p$ 写在内侧”是一般对称 $K_p$ 下的**必要**要求，只在块各向同性情形（含标量 $K_p=k_pI$）下可以不计——本稿均按内侧形式书写以保证定理 3 在推广到各向异构 $K_p$ 时仍逐字成立。(d) $\dot J\dot{\boldsymbol q}$ 由 TNDQ 链按 (3.5) 免构造获得。全部反馈量取自定理 1 的 HDQ 误差元素——不需要任何加速度误差的测量或估计。
+四点说明：(a) 前馈中 $\dot{\boldsymbol\xi}_d$ 来自期望轨迹（解析或期望链 TNDQ 表示 $\bar x_d$ 的 $\sigma^2$ 通道），$\mathrm{ad}$ 输运项由引理 1（下）决定——两者使前馈与误差动态中的非反馈项精确相消；(b) 位姿反馈经 $A^\top$ 整形，其目的将在定理 3 证明中显现（Lyapunov 交叉项精确相消）；(c) $\dot J\dot{\boldsymbol q}$ 由 TNDQ 链按 (3.5) 免构造获得。全部反馈量取自定理 1 的 HDQ 误差元素——不需要任何加速度误差的测量或估计。
 
 符号约定（与代码实现对齐）：$K_d,K_p\succ0$ 为**正**定矩阵，反馈项前的负号已显式写在 (5.2) 中；即任务空间反馈为 $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$。
 

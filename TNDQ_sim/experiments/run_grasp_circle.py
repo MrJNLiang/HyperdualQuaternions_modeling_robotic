@@ -80,7 +80,7 @@ S3 抓取-搬运实验：抓杯 -> 带载圆周 -> 空载/带载定量对比
     python3 experiments/run_grasp_circle.py --compare-only --plot       # 对比+出图
 
     # 敏感条件（每个条件建议跑齐三律；C1 用 --gains tuned 保同预算公平）：
-    python3 experiments/run_grasp_circle.py --mode noload --gains tuned --condition noise
+    python3 experiments/run_grasp_circle.py --mode load --gains tuned --condition highspeed
     python3 experiments/run_grasp_circle.py --mode noload --law dq-ctc  --condition noise
     python3 experiments/run_grasp_circle.py --mode noload --law dq-hinf --condition noise
     #（--condition ∈ {none, highspeed, fast-transit, noise, coarse-dt}）
