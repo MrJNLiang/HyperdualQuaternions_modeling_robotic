@@ -18,7 +18,9 @@ acceleration level qddot = qddot_ref + w_dyn (formula (5.1)).
 
 import numpy as np
 
-from core.dq_algebra import dq_Ad, dq_ad, dq_vec6, vec6_to_pure_dq
+from core.dq_algebra import (
+    dq_Ad, dq_ad, dq_vec6, vec6_to_pure_dq, dq_log2_vec6,
+)
 
 
 def damped_pinv(J, damping=1e-6):
@@ -140,15 +142,97 @@ def dq_hinf_kinematic_law(err, xi_d_vec6, gamma_O, gamma_T):
 
 
 # ---------------------------------------------------------------------------
-# Baseline C2: second-order DQ computed-torque law (literature DQ-CTC form,
-# comparison plan Sec. 5.2 row C2/C3 "现有 DQ 动力学控制" -- second-order
-# task-space PD on the DQ pose error with *numerically differentiated*
-# feedforward and Jdot, i.e. a DQ CTC without the TNDQ sigma^2 channels):
+# Baseline C2: FAITHFUL implementation of the [Ch20] resolved-acceleration
+# law (paper Sec. 6.4 comparison row C2):
+#
+#   [Ch20] R. Chandra, J.A. Corrales-Ramon, Y. Mezouar, "Resolved-Acceleration
+#   Control of Serial Robotic Manipulators Using Unit Dual Quaternions",
+#   IFAC-PapersOnLine 53(2) (2020) 8500-8505, eqs. (32)-(35) + (2):
+#
+#       omega_e = Ad_{x_e} xi_d - xi                                  (32)
+#       a_cmd   = Ad_{x_e} xi_dot_d + transport correction
+#                 + K_v omega_e + K_P vec6(2 ln x_e)                  (35)
+#       qddot_ref = J^+ (a_cmd - Jdot qdot)                           (2)
+#
+# Translated into this project's conventions (omega_e = -e_xi with the
+# right-invariant error x_tilde = x x_d*): the feedforward pair
+# (Ad xi_dot_d + transport correction) is TERM-IDENTICAL to the Lemma 1
+# feedforward of (5.2) -- the Ad transport and its ad correction are part
+# of [Ch20]'s theory (their eqs. (33)/(34) expand d(Ad)/dt exactly as
+# Lemma 1 does).  Hence the ONLY structural difference between the faithful
+# [Ch20] law and C1 (5.2) is the pose feedback: screw-log shaping on
+# vec6(2 ln x_e) instead of -A^T(x_tilde) K_p e_z (A^T shaping, which is
+# what enables the exact dissipation equality and the H-inf/ISS
+# certificates of Theorem 3 for arbitrary symmetric K_p).
+# SIGN CONVENTION: [Ch20]'s literal pose feedback +2 K_P ln(x_e) acts on
+# their pose error x_e, whose handedness satisfies d/dt(2 ln x_e) = omega_e.
+# Our right-invariant error x_tilde = x x_d* instead satisfies
+# d/dt vec6(2 ln x_tilde) = e_xi = -omega_e near identity, so the same
+# theory reads u_pose = -K_P vec6(2 ln x_tilde) here (verified by the
+# closed-loop oracle below: the + sign diverges, the - sign converges).
+# Information set follows the source paper: xi_dot_d and Jdot qdot are
+# ANALYTIC (desired-chain sigma^2 channel / construction-free readout (3.5));
+# [Ch20] itself uses analytic desired-twist rate and Jdot, no finite
+# differences.  The log map's derivative is singular at phi = pi: the
+# genuine large-error weakness of this baseline (paper E4 differentiator).
+# Oracle test: tests/test_math_properties.py::test_chandra20_law_oracle
+# verifies the closed-loop cancellation d(e_xi)/dt = a_cmd - u_ff and
+# asymptotic convergence of the faithful law (sign included).
+# ---------------------------------------------------------------------------
+
+def dq_chandra2020_law(err, xi_d_vec6, xi_dot_d_vec6,
+                       J, Jdot_qdot, K_v, K_P, damping=1e-6):
+    """
+    Baseline C2: faithful [Ch20] resolved-acceleration law (accel. level).
+
+    Parameters
+    ----------
+    err            : dict from control.error_system.full_error_state
+                     (uses x_tilde, xi_tilde, e_xi -- same conventions as C1)
+    xi_d_vec6      : desired twist vec6(xi_d) (analytic, desired TNDQ chain)
+    xi_dot_d_vec6  : desired twist rate vec6(xi_dot_d) (analytic, sigma^2
+                     channel -- [Ch20]'s information set, no differencing)
+    J              : geometric Jacobian (6 x n)
+    Jdot_qdot      : vec6, construction-free readout from the TNDQ chain (3.5)
+                     ([Ch20] eq. (2) uses the analytic Jdot qdot as well)
+    K_v            : 6x6 twist-error gain (their K_v on omega_e = -e_xi)
+    K_P            : 6x6 pose gain applied to -vec6(2 ln x_tilde)
+
+    Returns qddot_ref (n,) and the 6D task-space acceleration command.
+    """
+    # feedforward: Ad xi_dot_d + transport correction -- (35)'s first two
+    # terms, term-identical to the Lemma 1 feedforward of (5.2)
+    u_ff = feedforward_term(err["x_tilde"], err["xi_tilde"],
+                            xi_d_vec6, xi_dot_d_vec6)
+
+    # (32): omega_e = Ad_{x_e} xi_d - xi = -e_xi
+    omega_e = -np.asarray(err["e_xi"], dtype=float)
+
+    # (35) pose feedback: screw-log shaping.  Under our right-invariant
+    # error convention d/dt vec6(2 ln x_tilde) = e_xi = -omega_e, so
+    # [Ch20]'s +2 K_P ln(x_e) becomes -K_P vec6(2 ln x_tilde) here.
+    K_p = np.asarray(K_P, dtype=float)
+    ell = dq_log2_vec6(err["x_tilde"])
+    u_pose = -(K_p @ ell if K_p.ndim == 2 else K_p * ell)
+
+    a_cmd = u_ff + np.asarray(K_v, dtype=float) @ omega_e + u_pose
+    u_task = a_cmd - np.asarray(Jdot_qdot, dtype=float)   # their eq. (2)
+    qddot_ref = damped_pinv(J, damping=damping) @ u_task
+    return qddot_ref, u_task
+
+
+# ---------------------------------------------------------------------------
+# Ablation baseline C2-abl: naive second-order DQ CTC (NOT [Ch20]'s law).
+# Kept for ablation of C1's structure only -- it does NOT correspond to any
+# published theory: [Ch20] transports the desired twist via Ad (their eq.
+# (32)) and [P2]'s feedforward contains Ad_{x_tilde} xi_d as well, so the
+# "naive twist difference" variant is a strawman of both.  Paper Sec. 6.4
+# labels it C2-abl accordingly:
 #
 #     u_task = xi_dot_d_num + K_d (xi_d - xi) + [p_O O; -p_T T]
 #     qddot_ref = J^+ ( u_task - (Jdot qdot)_num )
 #
-# Structural differences probed by the three-way S3 comparison:
+# Structural properties probed by the ablation (relative to C1):
 #   - naive twist difference xi_d - xi (no Ad transport -> spurious term of
 #     Sec. 4.1 grows with ||xi_d||);
 #   - no A^T(x_tilde) shaping -> the Lyapunov cross terms do NOT cancel,
@@ -166,7 +250,11 @@ def dq_hinf_kinematic_law(err, xi_d_vec6, gamma_O, gamma_T):
 def dq_ctc_law(err, xi_vec6, xi_d_vec6, xi_dot_d_num, Jdot_qdot_num,
                J, K_d, K_p, damping=1e-6):
     """
-    Baseline C2: second-order DQ computed-torque law (acceleration level).
+    Ablation baseline C2-abl: naive second-order DQ CTC (acceleration level).
+
+    NOT a published controller -- an ablation of C1's structure (Ad
+    transport + A^T shaping + analytic channels all removed); see the block
+    comment above and paper Sec. 6.4.
 
     Parameters
     ----------
@@ -175,8 +263,7 @@ def dq_ctc_law(err, xi_vec6, xi_d_vec6, xi_dot_d_num, Jdot_qdot_num,
     xi_vec6        : measured twist vec6(xi)
     xi_d_vec6      : desired twist vec6(xi_d)
     xi_dot_d_num   : finite-difference desired twist rate
-                     (xi_d - xi_d_prev)/dt -- the honest realisation of a
-                     DQ CTC without the analytic sigma^2 channel
+                     (xi_d - xi_d_prev)/dt
     Jdot_qdot_num  : finite-difference (J - J_prev)/dt @ qdot
     K_d            : 6x6 symmetric positive definite twist-error gain
     K_p            : 6x6 K_p = diag(p_O I3, p_T I3) or scalar pose gain

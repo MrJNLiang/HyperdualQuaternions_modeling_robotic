@@ -21,15 +21,20 @@ S3 抓取-搬运实验：抓杯 -> 带载圆周 -> 空载/带载定量对比
   5. 对比分析 —— 两个维度的交叉对比：
      ① 负载维：--mode noload / load 跑同一条轨迹（唯一差别：是否附着 +
         杯质量改写 CUP_LOAD_MASS）；
-     ② 控制律维（总方案 §4/§5.2 同台三方对比）：--law tndq / dq-ctc /
-        dq-hinf 在完全相同的实验环境（同轨迹/同力矩出口/同安全预算/
-        同监控）下切换：
-          tndq    = C1 几何一致计算力矩律（式 5.2，本文新理论）
-          dq-ctc  = C2 二阶 DQ 计算力矩律（文献式 DQ CTC：朴素 twist 差 +
-                    数值差分前馈/J̇q̇，无 Ad 输运/Aᵀ 整形/证书；params DQC_*，
-                    增益与 C1 tuned、C3 逐通道恒等 -> 同预算公平比较）
-          dq-hinf = C3 一阶 DQ H∞ 运动学律（hdq_hinf_coppeliasim 原实现，
+     ② 控制律维（总方案 §4/§5.2 同台对比）：--law tndq / dq-chandra /
+        dq-hinf / dq-ctc 在完全相同的实验环境（同轨迹/同力矩出口/同安全
+        预算/同监控）下切换：
+          tndq      = C1 几何一致计算力矩律（式 5.2，本文新理论）
+          dq-chandra= C2 忠实 [Ch20] resolved-acceleration 律（式 32–35：
+                    Ad 搬运 twist 误差 ω_e=Ad ξ_d−ξ、screw-log 位姿反馈
+                    K_P·vec6(2 ln x̃)、解析 ξ̇_d/J̇q̇；params CH20_*；与 C1
+                    的唯一结构差异 = 位姿反馈形式，增益与 C1 tuned/C3
+                    逐通道恒等 -> 同预算公平比较）
+          dq-hinf   = C3 一阶 DQ H∞ 运动学律（hdq_hinf_coppeliasim 原实现，
                     “之前理论”；基线增益带宽对齐 -4 /s，params DQH_*）
+          dq-ctc    = C2-abl 朴素 twist 差消融律（不对应任何已发表理论，
+                    [Ch20]/[P2] 均含 Ad 搬运；仅消融 C1 结构：无 Ad 输运/
+                    无 Aᵀ 整形/差分前馈；params DQC_*，增益同预算配平）
      ③ 增益维（§5.3 整定，仅 tndq）：--gains base / tuned / fast 切换
         params.GAIN_SETS。base = 出厂标量 k_p=16（旋转刚度只有平移 1/4，
         旋转主导极点 -0.54/s）；tuned = 与 C3 逐通道恒等的同预算设计点
@@ -48,10 +53,10 @@ S3 抓取-搬运实验：抓杯 -> 带载圆周 -> 空载/带载定量对比
                         控制器只见带噪测量、安全检查用真值；差分放大 ∝1/dt）
           coarse-dt     控制周期 5 -> 15 ms（GRASP_CTRL_DECIM=3，非控制步
                         ZOH 保持力矩；差分前馈一拍滞后 ×3，解析前馈不受影响）
-        动机：准静态标准场景下三律同预算必然趋同（误差被 DC 刚度垄断）；
+        动机：准静态标准场景下各律同预算必然趋同（误差被 DC 刚度垄断）；
         敏感条件把结构差异（解析 vs 差分前馈、二阶通道有无、Aᵀ 整形）推到
         线性化失效/高频域，使其可观测。公平性：敏感条件下 C1 建议
-        --gains tuned（与 C2/C3 同预算，残余差异纯属结构）。
+        --gains tuned（与各基线同预算，残余差异纯属结构）。
      npz 齐备后自动打印：分相位误差/力矩/接触力的 空载↔带载、
      新律↔基线、整定前↔整定后 全交叉对比表（--compare-only 可单独重印，
      --plot 出图）。
@@ -70,26 +75,29 @@ S3 抓取-搬运实验：抓杯 -> 带载圆周 -> 空载/带载定量对比
 
     python3 experiments/run_grasp_circle.py --mode noload               # C1 空载
     python3 experiments/run_grasp_circle.py --mode load                 # C1 带载
-    python3 experiments/run_grasp_circle.py --law dq-ctc --mode noload  # C2 空载
-    python3 experiments/run_grasp_circle.py --law dq-ctc --mode load    # C2 带载
+    python3 experiments/run_grasp_circle.py --law dq-chandra --mode noload  # C2 空载
+    python3 experiments/run_grasp_circle.py --law dq-chandra --mode load    # C2 带载
     python3 experiments/run_grasp_circle.py --law dq-hinf --mode noload # C3 空载
     python3 experiments/run_grasp_circle.py --law dq-hinf --mode load   # C3 带载
+    python3 experiments/run_grasp_circle.py --law dq-ctc --mode noload  # C2-abl 空载
+    python3 experiments/run_grasp_circle.py --law dq-ctc --mode load    # C2-abl 带载
     python3 experiments/run_grasp_circle.py --gains tuned --mode noload # C1 整定后
     python3 experiments/run_grasp_circle.py --gains tuned --mode load
     python3 experiments/run_grasp_circle.py --compare-only              # 只打印对比
     python3 experiments/run_grasp_circle.py --compare-only --plot       # 对比+出图
 
-    # 敏感条件（每个条件建议跑齐三律；C1 用 --gains tuned 保同预算公平）：
+    # 敏感条件（每个条件建议跑齐各律；C1 用 --gains tuned 保同预算公平）：
     python3 experiments/run_grasp_circle.py --mode load --gains tuned --condition highspeed
-    python3 experiments/run_grasp_circle.py --mode noload --law dq-ctc  --condition noise
-    python3 experiments/run_grasp_circle.py --mode noload --law dq-hinf --condition noise
+    python3 experiments/run_grasp_circle.py --mode load --law dq-ctc  --condition highspeed
+    python3 experiments/run_grasp_circle.py --mode load --law dq-chandra  --condition highspeed
+    python3 experiments/run_grasp_circle.py --mode load --law dq-hinf --condition highspeed
     #（--condition ∈ {none, highspeed, fast-transit, noise, coarse-dt}）
 
-输出：results/grasp_circle_[dqctc_|dqhinf_|tuned_|fast_]{noload|load}
+输出：results/grasp_circle_[chandra_|dqctc_|dqhinf_|tuned_|fast_]{noload|load}
 [_hspeed|_ftrans|_noise|_cdt].npz/.csv（逐步 CSV 含 d_hat_norm 列 =
 反演的证书通道等效扰动 ‖d̂‖，§6.5(6)；纯诊断量，不进控制律）
 + 终端分相位统计、空载/带载 ×
-控制律（C1/C2/C3 三方）× 增益组 × 敏感条件对比表 + 全部已有结果的关键
+控制律（C1/C2/C2-abl/C3）× 增益组 × 敏感条件对比表 + 全部已有结果的关键
 指标汇总表 results/grasp_metrics_summary.csv（定量分析用，行 = law ×
 gains × mode × condition × phase）；--plot 时另存
 results/grasp_compare_*.png（含敏感条件分组柱状图
@@ -118,6 +126,7 @@ from control.error_system import full_error_state
 from control.control_law import (
     geometric_computed_torque_law, damped_pinv,
     dq_hinf_kinematic_law, velocity_to_accel_ref, dq_ctc_law,
+    dq_chandra2020_law,
 )
 from control.performance import (
     PerformanceAccumulator, check_hinf_condition_merged, pose_weight,
@@ -141,12 +150,15 @@ PHASE_NAMES = ["descend", "hold", "lift", "retreat", "transit",
 # 兼容已有结果文件 grasp_circle_{mode}.npz）
 LAWS = {
     "tndq": "C1 TNDQ 几何一致 CTC (5.2)",
-    "dq-ctc": "C2 二阶 DQ CTC (差分前馈基线)",
+    "dq-chandra": "C2 忠实 [Ch20] resolved-acceleration 律 (式 32–35)",
     "dq-hinf": "C3 一阶 DQ H∞ 运动学律 (hdq_hinf 原实现)",
+    "dq-ctc": "C2-abl 朴素 twist 差消融律 (非 [Ch20] 理论)",
 }
 
-# 三方对比的基线列表（compare_laws / export_metrics_csv 共用）
-BASELINE_LAWS = [("dq-ctc", "C2 dq-ctc"), ("dq-hinf", "C3 dq-hinf")]
+# 对比的基线列表（compare_laws / export_metrics_csv 共用）
+BASELINE_LAWS = [("dq-chandra", "C2 dq-chandra"),
+                 ("dq-hinf", "C3 dq-hinf"),
+                 ("dq-ctc", "C2-abl dq-ctc")]
 
 
 # 增益组（仅对 tndq 有意义；base 保持无前缀以兼容已有 npz）
@@ -181,6 +193,8 @@ def _npz_tag(law, mode, gains="base", condition="none"):
     suffix = COND_TAG[condition]
     if law == "dq-hinf":
         return f"dqhinf_{mode}{suffix}"
+    if law == "dq-chandra":
+        return f"chandra_{mode}{suffix}"
     if law == "dq-ctc":
         return f"dqctc_{mode}{suffix}"
     base = mode if gains == "base" else f"{gains}_{mode}"
@@ -253,8 +267,9 @@ def run(mode, t_end, law="tndq", gains="base", condition="none"):
         CoppeliaSimLBR4Interface, CoppeliaSimError,
     )
 
-    # 增益组：tndq 可选 base/tuned/fast；C2/C3 基线用各自的 DQC_*/DQH_*
-    # 增益，仅借 base 权重作为 V 的参考存储函数（基线无证书）。
+    # 增益组：tndq 可选 base/tuned/fast；C2/C2-abl/C3 基线用各自的
+    # CH20_*/DQC_*/DQH_* 增益，仅借 base 权重作为 V 的参考存储函数
+    # （基线无证书）。
     gset = params.GAIN_SETS[gains if law == "tndq" else "base"]
     K_d, k_p = gset["K_d"], gset["k_p"]
 
@@ -266,9 +281,13 @@ def run(mode, t_end, law="tndq", gains="base", condition="none"):
             K_d, params.KAPPA, params.GAMMA_A)
         print(f"Gain condition (5.6a): lambda_min(K_d)={lam_min:.3f} "
               f">= {level:.3f} required -> {'OK' if ok else 'NOT SATISFIED'}")
+    elif law == "dq-chandra":
+        print(f"Baseline gains (C2 忠实 [Ch20]): K_v={params.CH20_K_V[0, 0]:.0f} I6, "
+              f"K_P={params.CH20_K_P[0, 0]:.0f} I6 "
+              f"(ℓ̈+K_v ℓ̇+K_P ℓ=0 与 C1 tuned / C3 逐通道恒等，params.CH20_*)")
     elif law == "dq-ctc":
         p = np.diag(params.DQC_K_P)
-        print(f"Baseline gains (C2): K_d={params.DQC_K_D[0, 0]:.0f} I6, "
+        print(f"Baseline gains (C2-abl): K_d={params.DQC_K_D[0, 0]:.0f} I6, "
               f"p_O={p[0]:.0f}, p_T={p[3]:.0f} "
               f"(线性化通道与 C1 tuned / C3 逐通道恒等，params.DQC_*)")
     else:
@@ -319,7 +338,7 @@ def run(mode, t_end, law="tndq", gains="base", condition="none"):
     # (5.6)/(5.7) 全部空值；由闭环误差动态 (5.1e) 反演 d̂ 可以把定理 3 诚实
     # 条款里的全部扰动源（杯子的 ΔM/Δg、测量噪声、伪逆残差、限幅/治理器、
     # 离散化）归入证书口径。纯诊断量：不进控制律 -> 闭环轨迹逐比特不变。
-    # C2/C3 借用 base 档证书增益，反演值额外含「实际反馈 − 证书反馈」的
+    # 各基线借用 base 档证书增益，反演值额外含「实际反馈 − 证书反馈」的
     # 结构差，不可跟 C1 比绝对值（同律跨工况比仍公平，见 performance.py）。
     d_est = ResidualDisturbanceEstimator(K_d, k_p, dt_ctrl)
     # extra 通道（与 LOG_EVERY 同步采样）
@@ -337,8 +356,8 @@ def run(mode, t_end, law="tndq", gains="base", condition="none"):
     attached = False
     aborted = False
     qdot_cmd_prev = None       # 基线律差分前馈状态（C3 无二阶通道）
-    xi_d_prev = None           # C2 差分状态：ξ̇_d^num = Δξ_d/dt（无 σ² 通道）
-    J_prev = None              # C2 差分状态：(J̇q̇)^num = ΔJ/dt · q̇
+    xi_d_prev = None           # C2-abl 差分状态：ξ̇_d^num = Δξ_d/dt（忠实 C2 不用）
+    J_prev = None              # C2-abl 差分状态：(J̇q̇)^num = ΔJ/dt · q̇
     tau_prev = None            # coarse-dt：非控制步 ZOH 重发的上一拍力矩
 
     try:
@@ -390,10 +409,18 @@ def run(mode, t_end, law="tndq", gains="base", condition="none"):
                     err, des["xi_d"], des["xi_dot_d"],
                     fk["J"], fk["Jdot_qdot"],
                     K_d, k_p, damping=damping)
+            elif law == "dq-chandra":
+                # [C2] 忠实 [Ch20] resolved-acceleration 律（式 32–35）：
+                # Ad 搬运 twist 误差 ω_e = −e_ξ + screw-log 位姿反馈
+                # K_P·vec6(2 ln x̃)；ξ̇_d/J̇q̇ 按原文信息集为解析量（无差分）
+                qddot_ref, _ = dq_chandra2020_law(
+                    err, des["xi_d"], des["xi_dot_d"],
+                    fk["J"], fk["Jdot_qdot"],
+                    params.CH20_K_V, params.CH20_K_P, damping=damping)
             elif law == "dq-ctc":
-                # [C2] 二阶 DQ CTC：朴素 twist 差 + 数值差分 ξ̇_d/J̇q̇
-                # （无 Ad 输运/Aᵀ 整形/证书，前馈一拍滞后 + 差分噪声；
-                # coarse-dt 下差分步长 = dt_ctrl，滞后/噪声相应放大）
+                # [C2-abl] 朴素 twist 差消融律：数值差分 ξ̇_d/J̇q̇，无 Ad
+                # 输运/Aᵀ 整形/证书（前馈一拍滞后 + 差分噪声；coarse-dt
+                # 下差分步长 = dt_ctrl，滞后/噪声相应放大）
                 xi_dot_d_num = (np.zeros(6) if xi_d_prev is None
                                 else (des["xi_d"] - xi_d_prev) / dt_ctrl)
                 Jdot_qdot_num = (np.zeros(6) if J_prev is None
@@ -860,8 +887,9 @@ def compare_gains(mode, ref="base", cands=("tuned", "fast")):
 
 
 def compare_laws(mode, gains="base", condition="none"):
-    """三方控制律同台对比（同 mode、同 condition、同轨迹、同力矩出口）：
-    C1 TNDQ (5.2) vs C2 DQ CTC vs C3 DQ-H∞；缺失的基线自动降级为双方表。"""
+    """控制律同台对比（同 mode、同 condition、同轨迹、同力矩出口）：
+    C1 TNDQ (5.2) vs C2 忠实 [Ch20] vs C3 DQ-H∞（+ C2-abl 消融档，若已有
+    结果）；缺失的基线自动降级为可用子集对比表。"""
     d0 = _load_npz(mode, "tndq", gains, condition)
     if d0 is None:
         return
@@ -870,21 +898,21 @@ def compare_laws(mode, gains="base", condition="none"):
     base_avail = [(law, lab, d) for law, lab, d in base_avail if d is not None]
     if not base_avail:
         cond_txt = "" if condition == "none" else f"/{condition}"
-        print(f"[note] [{mode}{cond_txt}] 无基线（dq-ctc/dq-hinf）结果，跑齐 "
-              f"--law 后自动输出三方控制律对比表。")
+        print(f"[note] [{mode}{cond_txt}] 无基线（dq-chandra/dq-hinf/dq-ctc）结果，"
+              f"跑齐 --law 后自动输出控制律对比表。")
         return
     s0 = _phase_stats(d0)
     stats = [(lab, _phase_stats(d)) for _, lab, d in base_avail]
     print("=" * 78)
-    print(f"控制律三方对比（mode={mode}，condition={condition}，"
+    print(f"控制律对比（mode={mode}，condition={condition}，"
           f"C1 增益组={gains}）：C1 TNDQ (5.2) vs "
           + " vs ".join(lab for lab, _ in stats))
     if condition != "none":
         print(f"  敏感条件：{CONDITIONS[condition]}")
     print(f"  公平条件（需求 5）：同参考轨迹/同初始位姿/同负载/同 dt/"
           f"同力矩出口与安全预算；")
-    print(f"  C2 增益（K_d=24I, p_O=160, p_T=80）与 C1 tuned/C3 的线性化 "
-          f"d->e 传递函数逐通道恒等")
+    print(f"  C2（K_v=24I, K_P=80I）/C2-abl（K_d=24I, p_O=160, p_T=80）与")
+    print(f"  C1 tuned/C3 的线性化 d->e 传递函数逐通道恒等")
     print("=" * 78)
     cols = "".join(f" {lab:>11}" for lab, _ in stats)
     rcols = "".join(f" {lab.split()[0] + '/C1':>7}" for lab, _ in stats)
@@ -911,21 +939,21 @@ def compare_laws(mode, gains="base", condition="none"):
                    + [(lab, d) for _, lab, d in base_avail])
     if condition != "none":
         print("  解读（层 3 结构敏感域）：本表唯一变量 = 敏感条件，同预算增益下的")
-        print("  差异反映结构属性：C1 解析二阶前馈不受控制周期/轨迹加速度影响；")
-        print("  C2/C3 差分前馈滞后与噪声放大 ∝ 1/dt_ctrl，随条件加剧。")
+        print("  差异反映结构属性：C1/C2 解析二阶前馈不受控制周期/轨迹加速度影响；")
+        print("  C2-abl/C3 差分前馈滞后与噪声放大 ∝ 1/dt_ctrl，随条件加剧。")
     elif gains == "base":
         print("  解读（忠于实测）：本任务准静态（圆周 ω=1 rad/s），带载稳态误差由")
         print("  对常值重力失配的等效直流刚度决定：C2（刚度 80）/C3（级联 kT*K_servo")
         print(f"  ≈ {np.sqrt(2.0) / params.DQH_GAMMA_T * params.DQH_K_SERVO:.0f}/s²）均高于 base 组的 k_p={float(np.asarray(params.K_P)):.0f} -> 稳态 |T| 更小（增益分配")
         print("  效应，非结构优势；该分配已由 --gains tuned 修正，见增益整定对比表）。")
     elif gains == "tuned":
-        print("  解读（忠于实测）：tuned 组与 C2/C3 的线性化 d->e 传递函数逐通道恒等")
+        print("  解读（忠于实测）：tuned 组与 C2/C2-abl/C3 的线性化 d->e 传递函数逐通道恒等")
         print("  （极点 {-4,-20}、直流刚度 80），因此本表差异不含增益分配成分，只反映")
-        print("  结构差别：C1 解析二阶前馈+证书 vs C2 差分前馈+朴素 twist 差（无证书）")
-        print("  vs C3 无二阶通道+内环差分桥接（证书失效）。")
+        print("  结构差别：C1 Aᵀ 整形+证书 vs C2 忠实 [Ch20] screw-log 位姿反馈（无证书）")
+        print("  vs C2-abl 差分前馈+朴素 twist 差 vs C3 无二阶通道+内环差分桥接（证书失效）。")
     else:
         print("  解读（忠于实测）：fast 组把两通道极点推到 {-6,-30}（直流刚度 180），")
-        print("  已超出 C2/C3 的预算，不再是同预算对比；给出的是同一安全约束下")
+        print("  已超出各基线的预算，不再是同预算对比；给出的是同一安全约束下")
         print("  式 (5.2) 可达的上限，以及它的代价（附着瞬态抓握力上升）。")
     print("=" * 78)
 
@@ -940,7 +968,7 @@ def export_metrics_csv(path=None):
     （_phase_stats/_V_metrics/_rms_bound），保证图/表/CSV 三者数值一致。
 
     d_hat_* 列（§6.5(6) 反演的证书通道等效扰动）：对 C1 = 证书真正看到
-    的扰动；对 C2/C3 额外含「实际反馈 − 证书反馈」的结构差，因此绝对值
+    的扰动；对各基线（C2/C2-abl/C3）额外含「实际反馈 − 证书反馈」的结构差，因此绝对值
     不可跨律比（同律跨工况比仍公平）；旧 npz 无该通道 -> 空单元格。"""
     import csv
     if path is None:
@@ -1008,13 +1036,14 @@ def export_metrics_csv(path=None):
 
 
 def compare_all():
-    """全交叉对比：负载维 × 控制律维（C1/C2/C3）× 增益组维 ×
+    """全交叉对比：负载维 × 控制律维（C1/C2/C2-abl/C3）× 增益组维 ×
     敏感条件维 + 指标 CSV。负载/增益对比只看标准场景（none）；
-    三方控制律表遍历全部条件（层 3 结构敏感域对比的主表）。"""
+    控制律对比表遍历全部条件（层 3 结构敏感域对比的主表）。"""
     for gains in GAIN_LABELS:
         compare(law="tndq", gains=gains)
-    compare(law="dq-ctc")
+    compare(law="dq-chandra")
     compare(law="dq-hinf")
+    compare(law="dq-ctc")
     for mode in ("noload", "load"):
         compare_gains(mode)
     for cond in CONDITIONS:
@@ -1044,7 +1073,8 @@ def plot_compare():
     series = {("tndq", "base"): ("tab:blue", "C1 base"),
               ("tndq", "tuned"): ("tab:green", "C1 tuned"),
               ("tndq", "fast"): ("tab:olive", "C1 fast"),
-              ("dq-ctc", "base"): ("tab:purple", "C2 DQ-CTC"),
+              ("dq-chandra", "base"): ("tab:brown", "C2 [Ch20]"),
+              ("dq-ctc", "base"): ("tab:purple", "C2-abl DQ-CTC"),
               ("dq-hinf", "base"): ("tab:red", "C3 DQ-H∞")}
     runs = {}
     for (law, gains), _ in series.items():
@@ -1090,7 +1120,7 @@ def plot_compare():
         # （杯子的 ΔM/Δg、噪声、伪逆残差、限幅/治理器、离散化）可视化
         ("grasp_compare_disturbance.png", 1, [
             ("等效扰动 ‖d̂‖（反演，§6.5(6)；C1=证书所见扰动，"
-             "C2/C3 额外含结构差 -> 不跨律比绝对值）",
+             "各基线额外含结构差 -> 不跨律比绝对值）",
              _d_hat_norm, True),
         ]),
     ]
@@ -1129,9 +1159,9 @@ def plot_compare():
 
 
 def plot_condition_compare(mode="load"):
-    """敏感条件分组柱状图（层 3 结构敏感域对比）：condition 组 × 三律柱。
+    """敏感条件分组柱状图（层 3 结构敏感域对比）：condition 组 × 各律柱。
 
-    C1 优先取 tuned（与 C2/C3 同预算，残余差异纯属结构），缺失时回退
+    C1 优先取 tuned（与各基线同预算，残余差异纯属结构），缺失时回退
     base；只画已存在的结果。图存 results/grasp_compare_conditions_{mode}.png。"""
     import matplotlib
     matplotlib.use("Agg")
@@ -1141,7 +1171,8 @@ def plot_condition_compare(mode="load"):
     plt.rcParams["axes.unicode_minus"] = False
 
     bars = [("tndq", "C1 TNDQ", "tab:green"),
-            ("dq-ctc", "C2 DQ-CTC", "tab:purple"),
+            ("dq-chandra", "C2 [Ch20]", "tab:brown"),
+            ("dq-ctc", "C2-abl DQ-CTC", "tab:purple"),
             ("dq-hinf", "C3 DQ-H∞", "tab:red")]
     # (相位, 指标, 面板标题)：稳态品质 ×3 + 快相位跟踪品质 ×1
     panels = [("circle-ss", "T_rms", "圆周稳态 |T| RMS [m]"),
@@ -1172,12 +1203,12 @@ def plot_condition_compare(mode="load"):
 
     fig, axes = plt.subplots(2, 2, figsize=(11, 7))
     x = np.arange(len(conds))
-    w = 0.26
+    w = 0.2
     for ax, (phase, key, title) in zip(axes.ravel(), panels):
         for i, (law, lab, color) in enumerate(bars):
             vals = [stats.get((c, law), {}).get(phase, {}).get(key, np.nan)
                     for c in conds]
-            ax.bar(x + (i - 1) * w, vals, w, color=color, label=lab)
+            ax.bar(x + (i - 1.5) * w, vals, w, color=color, label=lab)
         ax.set_yscale("log")
         ax.set_xticks(x)
         ax.set_xticklabels(
@@ -1186,7 +1217,7 @@ def plot_condition_compare(mode="load"):
         ax.set_title(title, fontsize=11)
         ax.grid(alpha=0.3, axis="y")
         ax.legend(fontsize=8)
-    fig.suptitle(f"结构敏感条件 × 三方控制律（mode={mode}；"
+    fig.suptitle(f"结构敏感条件 × 各控制律（mode={mode}；"
                  f"同预算增益，差异 = 结构属性）", fontsize=12)
     fig.tight_layout()
     out = os.path.join(RESULTS_DIR, f"grasp_compare_conditions_{mode}.png")
@@ -1198,13 +1229,16 @@ def plot_condition_compare(mode="load"):
 def main():
     ap = argparse.ArgumentParser(
         description="S3 抓取-搬运实验：抓杯 + 带载圆周 + 空载/带载 × 控制律"
-                    "（C1 TNDQ vs C2 DQ-CTC vs C3 DQ-H∞ 三方）全交叉对比")
+                    "（C1 TNDQ vs C2 忠实[Ch20] vs C3 DQ-H∞，+ C2-abl 消融档）"
+                    "全交叉对比")
     ap.add_argument("--mode", choices=["noload", "load"], default=None,
                     help="noload=同轨迹不附着（空载基线）；load=刚性附着+满杯")
     ap.add_argument("--law", choices=list(LAWS), default="tndq",
                     help="控制律：tndq=C1 几何一致 CTC（式 5.2）；"
-                         "dq-ctc=C2 二阶 DQ CTC（差分前馈基线，params.DQC_*）；"
-                         "dq-hinf=C3 一阶 DQ H∞ 基线（hdq_hinf 原实现）")
+                         "dq-chandra=C2 忠实 [Ch20] resolved-acceleration 律"
+                         "（params.CH20_*）；dq-hinf=C3 一阶 DQ H∞ 基线"
+                         "（hdq_hinf 原实现）；dq-ctc=C2-abl 朴素 twist 差"
+                         "消融律（params.DQC_*，非 [Ch20] 理论）")
     ap.add_argument("--gains", choices=list(GAIN_LABELS), default="base",
                     help="C1 增益组（params.GAIN_SETS）：base=出厂标量 k_p=16；"
                          "tuned=整定后矩阵 K_p（与 C3 逐通道恒等）；"
@@ -1233,8 +1267,8 @@ def main():
     if args.mode is None:
         ap.error("请指定 --mode noload / load（或 --compare-only）")
     if args.law != "tndq" and args.gains != "base":
-        ap.error("--gains 仅对 --law tndq 有意义（C2/C3 基线分别用 "
-                 "params.DQC_*/DQH_* 增益）")
+        ap.error("--gains 仅对 --law tndq 有意义（C2/C2-abl/C3 基线分别用 "
+                 "params.CH20_*/DQC_*/DQH_* 增益）")
 
     path = run(args.mode, args.t_end, law=args.law, gains=args.gains,
                condition=args.condition)

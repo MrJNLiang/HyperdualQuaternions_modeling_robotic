@@ -196,6 +196,40 @@ def dq_unit_residual(x):
     return float(np.linalg.norm(dq_mul(x, dq_conj(x)) - dq_identity()))
 
 
+def dq_log2_vec6(x):
+    """
+    Screw coordinates of a unit pose DQ:  vec6(2 ln x) = [phi*n; d*n + phi*m].
+
+    Used by the faithful [Ch20] baseline (control/control_law.py::
+    dq_chandra2020_law), whose pose feedback is -K_P * vec6(2 ln x_tilde)
+    under the project's right-invariant error convention.
+
+    With x = r + eps*q_d, q_d = (p r)/2 (formula (2.1)) and the screw form
+    x = cos(phi_hat/2) + n_hat sin(phi_hat/2), phi_hat = phi + eps*d,
+    n_hat = n + eps*m (n unit axis, m moment, d pitch), one obtains
+        q_d = -(d/2) sin(phi/2) + sin(phi/2) m + (d/2) cos(phi/2) n
+    hence the extraction below (d = n^T p follows because the transverse
+    part of a screw displacement is perpendicular to the axis).
+    Near identity vec6(2 ln x) -> [2 Im(r); p] = [-2 O; T] with the (O, T)
+    pose error convention of the project (correction O(phi |p|)).  The
+    derivative of the log map is singular at phi -> pi: the genuine
+    large-error weakness of the [Ch20] pose feedback (paper Sec. 6.4,
+    E4 differentiator).
+    """
+    r = np.asarray(x[:4], dtype=float)
+    qd = np.asarray(x[4:], dtype=float)
+    eta, mu = r[0], r[1:]
+    s = float(np.linalg.norm(mu))
+    p = (2.0 * q_mul(qd, q_conj(r)))[1:4]      # translation, formula (2.1)
+    if s < 1e-10:                              # small angle: phi*n -> 2*mu
+        return np.r_[2.0 * mu, p]
+    phi = 2.0 * np.arctan2(s, eta)
+    n = mu / s
+    d = float(n @ p)                           # screw pitch
+    m = (qd[1:] - 0.5 * d * eta * n) / s       # screw moment
+    return np.r_[phi * n, d * n + phi * m]
+
+
 # ---------------------------------------------------------------------------
 # Elementary pose factors (used to build DH joint factors, Appendix B.1)
 # ---------------------------------------------------------------------------

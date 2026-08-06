@@ -2,12 +2,13 @@
 """S3 抓杯实验论文级出图脚本（仿真验证章节 图 6.0-6.6 配图）。
 
 基于 results/grasp_circle_*.npz 原始数据出图，与 run_grasp_circle.py 的
---plot 快速对比图互补：本脚本聚焦"三律带载对比"视角（论文第 6 章），
-默认 C1 取 tuned 档（与 C2/C3 同预算，残余差异纯属结构）。
+--plot 快速对比图互补：本脚本聚焦"各律带载对比"视角（论文第 6 章，
+C1 / C2 忠实 [Ch20] / C2-abl / C3），默认 C1 取 tuned 档（与各基线同预算，
+残余差异纯属结构）。
 
 生成图表（存 results/）：
   1. grasp_paper_errors_{mode}.png    位置|T|/姿态|O|/twist|e_ξ| 三误差时序
-                                      三律对比（图 6.2，含相位分界与标注）
+                                      各律对比（图 6.2，含相位分界与标注）
   2. grasp_paper_traj3d_{mode}.png    三维轨迹 + 圆周段俯视 + 径向偏差放大
                                       （图 6.0，轨迹重合故用径向偏差曝光差异）
   3. grasp_paper_effort_{mode}.png    力矩时序 + 分相位 τ_rms 柱状（图 6.3）
@@ -23,7 +24,7 @@
     拿图上数值去比余度前必须先乘权重比 p_O/16 = 20。
   * (5.7) 是均方（RMS）极限界，不是逐点 ISS 极限球；左侧泛函就是 e_ξ
     的 RMS，故可与实测 RMS 直接对比。
-  * d̂ 对 C1 = 证书真正看到的扰动；对 C2/C3 额外含「实际反馈 − 证书反馈」
+  * d̂ 对 C1 = 证书真正看到的扰动；对各基线（C2/C2-abl/C3）额外含「实际反馈 − 证书反馈」
     的结构差，绝对值不可跨律比（同律跨工况比仍公平）。
 
 用法：
@@ -56,15 +57,16 @@ plt.rcParams["font.family"] = ["WenQuanYi Micro Hei", "Noto Sans CJK JP",
                                "Droid Sans Fallback", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
-# 三律统一配色（与 run_grasp_circle.plot_condition_compare 保持一致）
+# 各律统一配色（与 run_grasp_circle.plot_condition_compare 保持一致）
 LAW_STYLE = [("tndq", "C1 TNDQ (式 5.2)", "tab:green"),
-             ("dq-ctc", "C2 DQ-CTC", "tab:purple"),
+             ("dq-chandra", "C2 [Ch20] 忠实", "tab:brown"),
+             ("dq-ctc", "C2-abl DQ-CTC", "tab:purple"),
              ("dq-hinf", "C3 DQ-H∞", "tab:red")]
 
 
-def load_three_laws(mode, gains, condition):
-    """加载三律结果：C1 用指定增益档（缺失回退），C2/C3 固定 base 档名。
-    返回 {law: npz dict}（只含已存在的结果）。"""
+def load_law_runs(mode, gains, condition):
+    """加载各律结果：C1 用指定增益档（缺失回退），C2/C2-abl/C3 固定
+    base 档名。返回 {law: npz dict}（只含已存在的结果）。"""
     runs = {}
     for law, _, _ in LAW_STYLE:
         if law == "tndq":
@@ -142,7 +144,7 @@ def plot_errors(runs, mode, tag):
         ax.grid(alpha=0.3, which="both")
         ax.legend(fontsize=8, loc="lower right")
     axes[-1].set_xlabel("t [s]")
-    fig.suptitle(f"三律误差时序对比（mode={mode}{tag}；同预算增益，"
+    fig.suptitle(f"各律误差时序对比（mode={mode}{tag}；同预算增益，"
                  "差异 = 结构属性）", fontsize=12)
     _save(fig, f"grasp_paper_errors_{mode}{tag}.png")
 
@@ -176,7 +178,7 @@ def plot_traj3d(runs, mode, tag):
     ax_top = fig.add_subplot(1, 3, 2)
     ax_rad = fig.add_subplot(1, 3, 3)
 
-    # -- 面板 A：全程 3D 轨迹（三律轨迹肉眼重合，取 C1 代表 + 参考） -----
+    # -- 面板 A：全程 3D 轨迹（各律轨迹肉眼重合，取 C1 代表 + 参考） -----
     ref_law = "tndq" if "tndq" in runs else next(iter(runs))
     d0 = runs[ref_law]
     p, p_d = ee_positions(d0)
@@ -193,7 +195,7 @@ def plot_traj3d(runs, mode, tag):
     m0 = circle_slice(d0)
     c_xy, R_ref = fit_circle_xy(p_d[m0, :2])
 
-    # -- 面板 B：圆周段俯视图（三律 vs 参考圆） --------------------------
+    # -- 面板 B：圆周段俯视图（各律 vs 参考圆） --------------------------
     th = np.linspace(0, 2 * np.pi, 361)
     ax_top.plot(c_xy[0] + R_ref * np.cos(th), c_xy[1] + R_ref * np.sin(th),
                 color="0.4", lw=1.2, ls="--", label=f"参考圆 R={R_ref:.3f} m")
@@ -206,7 +208,7 @@ def plot_traj3d(runs, mode, tag):
         ax_top.plot(pa[m, 0], pa[m, 1], color=color, lw=0.9, label=lab)
     ax_top.set_aspect("equal")
     ax_top.set_xlabel("x [m]"), ax_top.set_ylabel("y [m]")
-    ax_top.set_title("圆周稳态段俯视（三律重合）", fontsize=10)
+    ax_top.set_title("圆周稳态段俯视（各律重合）", fontsize=10)
     ax_top.grid(alpha=0.3)
     ax_top.legend(fontsize=7)
 
@@ -249,20 +251,20 @@ def plot_effort(runs, mode, tag):
                   color=color, lw=1.0, label=lab)
     annotate_phases(ax_t, next(iter(runs.values())))
     ax_t.set_xlabel("t [s]"), ax_t.set_ylabel("|τ| [N·m]")
-    ax_t.set_title("力矩范数时序（三律基本重合 → 无 effort 代价）",
+    ax_t.set_title("力矩范数时序（各律基本重合 → 无 effort 代价）",
                    fontsize=11)
     ax_t.grid(alpha=0.3)
     ax_t.legend(fontsize=8)
 
     phases = PHASE_NAMES + ["circle-ss"]
     x = np.arange(len(phases))
-    w = 0.26
+    w = 0.2
     for i, (law, lab, color) in enumerate(LAW_STYLE):
         if law not in runs:
             continue
         st = _phase_stats(runs[law])
         vals = [st.get(ph, {}).get("tau_rms", np.nan) for ph in phases]
-        ax_b.bar(x + (i - 1) * w, vals, w, color=color, label=lab)
+        ax_b.bar(x + (i - 1.5) * w, vals, w, color=color, label=lab)
     ax_b.set_xticks(x), ax_b.set_xticklabels(phases, fontsize=8)
     ax_b.set_ylabel("τ_rms [N·m]")
     ax_b.set_title("分相位力矩 RMS", fontsize=11)
@@ -353,18 +355,18 @@ def plot_disturbance(runs, mode, tag):
     # -- 面板 B：分相位 d̂_rms + (5.7) 保守倍数 --------------------------
     phases = PHASE_NAMES + ["circle-ss"]
     x = np.arange(len(phases))
-    w = 0.26
+    w = 0.2
     have = {a[0] for a in avail}
     for i, (law, lab, color) in enumerate(LAW_STYLE):
         if law not in have:
             continue
         st = _phase_stats(runs[law])
         vals = [st.get(ph, {}).get("d_hat_rms", np.nan) for ph in phases]
-        ax_b.bar(x + (i - 1) * w, vals, w, color=color, label=lab)
+        ax_b.bar(x + (i - 1.5) * w, vals, w, color=color, label=lab)
     ax_b.set_xticks(x), ax_b.set_xticklabels(phases, fontsize=8)
     ax_b.set_yscale("log")
     ax_b.set_ylabel("d̂_rms")
-    ax_b.set_title("分相位等效扰动 RMS（C2/C3 含结构差 -> 不跨律比绝对值）",
+    ax_b.set_title("分相位等效扰动 RMS（各基线含结构差 -> 不跨律比绝对值）",
                    fontsize=11)
     ax_b.grid(alpha=0.3, axis="y")
     ax_b.legend(fontsize=8)
@@ -402,7 +404,7 @@ def plot_phase_bars(runs, mode, tag):
               ("exi_rms", "twist 误差 RMS")]
     phases = PHASE_NAMES + ["circle-ss"]
     x = np.arange(len(phases))
-    w = 0.26
+    w = 0.2
     fig, axes = plt.subplots(3, 1, figsize=(9, 8.4), sharex=True)
     for ax, (key, title) in zip(axes, panels):
         for i, (law, lab, color) in enumerate(LAW_STYLE):
@@ -410,7 +412,7 @@ def plot_phase_bars(runs, mode, tag):
                 continue
             st = _phase_stats(runs[law])
             vals = [st.get(ph, {}).get(key, np.nan) for ph in phases]
-            ax.bar(x + (i - 1) * w, vals, w, color=color, label=lab)
+            ax.bar(x + (i - 1.5) * w, vals, w, color=color, label=lab)
         ax.set_yscale("log")
         ax.set_title(title, fontsize=11)
         ax.grid(alpha=0.3, axis="y")
@@ -427,17 +429,17 @@ def plot_phase_bars(runs, mode, tag):
 
 def main():
     ap = argparse.ArgumentParser(
-        description="S3 抓杯实验论文级出图（三律带载对比 + 3D 圆周轨迹）")
+        description="S3 抓杯实验论文级出图（各律带载对比 + 3D 圆周轨迹）")
     ap.add_argument("--mode", choices=["noload", "load"], default="load")
     ap.add_argument("--gains", choices=["base", "tuned", "fast"],
-                    default="tuned", help="C1 增益档（默认 tuned 与 C2/C3 "
+                    default="tuned", help="C1 增益档（默认 tuned 与各基线"
                                           "同预算；缺失自动回退）")
     ap.add_argument("--condition", default="none",
                     choices=["none", "highspeed", "fast-transit",
                              "noise", "coarse-dt"])
     args = ap.parse_args()
 
-    runs = load_three_laws(args.mode, args.gains, args.condition)
+    runs = load_law_runs(args.mode, args.gains, args.condition)
     if not runs:
         print(f"[error] 无可用结果文件（mode={args.mode}, "
               f"condition={args.condition}），请先运行 run_grasp_circle.py")

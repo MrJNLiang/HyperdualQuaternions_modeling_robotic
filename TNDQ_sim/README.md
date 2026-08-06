@@ -38,10 +38,11 @@ TNDQ_sim/
 ├── output/
 │   └── data_logger.py           #   npz + CSV + 定宽文本表 + 数值摘要
 ├── tests/
-│   └── test_math_properties.py  #   11 项数学性质单元测试（全部通过）
+│   └── test_math_properties.py  #   14 项数学性质单元测试（全部通过，含忠实
+│                                #   C2 [Ch20] 的符号/闭环 oracle T10–T12）
 ├── experiments/
 │   ├── run_grasp_circle.py      #   S3 抓取-搬运实验：抓杯 + 带载圆周 +
-│   │                            #   空载/带载 × 控制律（C1/C2/C3 三方）全交叉
+│   │                            #   空载/带载 × 控制律（C1/C2/C2-abl/C3）全交叉
 │   │                            #   对比 + 指标汇总 CSV（grasp_metrics_summary.csv）
 │   └── run_gamma_sweep.py       #   γ 影响实验（E8）：新理论 γ_a 证书/综合双通道
 │                                #   vs 旧理论 γ_O/γ_T 综合参数，图 + CSV
@@ -103,14 +104,25 @@ python3 run_simulation.py --backend coppeliasim --scenario cup-circle --conditio
 - **负载维** `--mode noload|load`：同一条轨迹，唯一差别是是否刚性附着杯子
   （力传感器焊接 + 杯质量改写为 CUP_LOAD_MASS=0.25 kg）；控制器名义模型
   不含杯 → 负载即 ΔM/Δg 模型失配扰动，由定理 3(c)/(d) H∞/ISS 证书兜底。
-- **控制律维** `--law tndq|dq-ctc|dq-hinf`（总方案 §4/§5.2 三方同台对比）：
+- **控制律维** `--law tndq|dq-chandra|dq-ctc|dq-hinf`（总方案 §4/§5.2 同台对比）：
   - `tndq` = **C1** 几何一致计算力矩律（式 5.2，本文新理论）；
-  - `dq-ctc` = **C2** 二阶 DQ CTC 基线（差分前馈）：同一 DQ 位姿误差
-    (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项基线）、位姿反馈不经
-    Aᵀ 整形（无定理 3 证书）、前馈 ξ̇_d 与 J̇q̇ 均取数值差分（一拍滞后 +
-    差分噪声），接入**同一力矩出口**。公平性：DQC_K_D=24I、
-    DQC_K_P=diag(160,80)（params.py DQC_* 参数节），使其线性化 d→e 传递
-    函数与 C1(tuned)/C3 逐通道恒等（极点 {−4,−20}、DC 刚度 80）；
+  - `dq-chandra` = **C2** 忠实 [Ch20] resolved-acceleration 律（原文式
+    (32)–(35) + 式 (2) 逐项移植）：twist 误差取经伴随搬运的差
+    ω_e = Ad(x̃)ξ_d − ξ（与定理 1 的 −e_ξ 同一），位姿反馈取螺旋对数
+    −K_P·vec₆(2 ln x̃)（本项目右不变约定下的忠实换算，见
+    `control/control_law.py::dq_chandra2020_law` 符号注释），ξ̇_d 与
+    J̇q̇ 均为解析量（无差分）。公平性：CH20_K_V=24I、CH20_K_P=80I
+    （params.py CH20_* 参数节），线性化 ℓ̈+K_vℓ̇+K_Pℓ=0 无折减，与
+    C1(tuned)/C3 逐通道恒等（极点 {−4,−20}、DC 刚度 80）；
+  - `dq-ctc` = **C2-abl** 朴素 twist 差消融基线（**非文献律**）：同一 DQ
+    位姿误差 (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项）、位姿
+    反馈不经 Aᵀ 整形（无定理 3 证书）、前馈 ξ̇_d 与 J̇q̇ 均取数值差分
+    （一拍滞后 + 差分噪声），接入**同一力矩出口**。注意：[Ch20] 原文式
+    (32) 与 [P2] 前馈均含 Ad 搬运，朴素坐标差不对应任何已发表理论，本档
+    仅用于消融 C1 结构属性的代价量化。公平性：DQC_K_D=24I、
+    DQC_K_P=diag(160,80)（params.py DQC_* 参数节，1/2 折减配平），使其
+    线性化 d→e 传递函数与 C1(tuned)/C3 逐通道恒等（极点 {−4,−20}、
+    DC 刚度 80）；
   - `dq-hinf` = **C3** 一阶 DQ H∞ 运动学律（`hdq_hinf_coppeliasim` 原实现
     逐行移植，“之前理论”）：任务速度 = [k_O·O; −k_T·T] + vec₆(x̃ ξ_d x̃*)，
     经同一阻尼伪逆得 q̇_cmd，再由内环伺服 q̈_ref = Δq̇_cmd/dt +
@@ -118,11 +130,11 @@ python3 run_simulation.py --backend coppeliasim --scenario cup-circle --conditio
     公平性：基线增益 k_T=4、k_O=8、K_servo=20（params.py DQH_* 参数节）。
 - **增益维** `--gains base|tuned|fast`（仅对 `--law tndq` 有效，见 §4.1）：
   `base` 是出厂增益，只对齐了 C1/C3 的**主导极点**、没有对齐级联第二极点
-  带来的**直流刚度**，因此不构成同预算对比；`tuned` 使 C1/C2/C3 三律的
-  线性化 d→e 传递函数**逐通道恒等**，才是公平对比点；`fast` 是同一安全
-  约束下的可达上限档。
+  带来的**直流刚度**，因此不构成同预算对比；`tuned` 使 C1 与各基线（C2/
+  C2-abl/C3）的线性化 d→e 传递函数**逐通道恒等**，才是公平对比点；
+  `fast` 是同一安全约束下的可达上限档。
 - **敏感条件维** `--condition none|highspeed|fast-transit|noise|coarse-dt`
-  （层 3 结构敏感域对比）：准静态标准场景下三律同预算必然趋同（误差被
+  （层 3 结构敏感域对比）：准静态标准场景下各律同预算必然趋同（误差被
   DC 刚度垄断），敏感条件把结构差异（解析 vs 差分前馈、二阶通道有无、
   Aᵀ 整形）推到线性化失效/高频域使其可观测。全部只改时间/测量/控制
   周期参数，**路标几何与场景完全不变**（IK 限位验证仍有效、无穿模风险）：
@@ -135,7 +147,7 @@ python3 run_simulation.py --backend coppeliasim --scenario cup-circle --conditio
   - `coarse-dt`：控制周期 5→15 ms（非控制步 ZOH 保持力矩；差分前馈一拍
     滞后 ×3，解析前馈不受影响）。
 
-  公平性：敏感条件下 C1 建议配 `--gains tuned`（与 C2/C3 同预算，残余
+  公平性：敏感条件下 C1 建议配 `--gains tuned`（与各基线同预算，残余
   差异纯属结构）。参数：params.py `GRASP_FAST_PHASE_SCALE`/
   `GRASP_CTRL_DECIM`/`CIRCLE_OMEGA_FAST`/`NOISE_SIGMA_*`。
 
@@ -146,19 +158,22 @@ python3 experiments/run_grasp_circle.py --mode load                 # C1 带载�
 python3 experiments/run_grasp_circle.py --gains tuned --mode noload # C1 空载（整定后）
 python3 experiments/run_grasp_circle.py --gains tuned --mode load   # C1 带载（整定后）
 python3 experiments/run_grasp_circle.py --gains fast  --mode load   # C1 带载（上限档）
-python3 experiments/run_grasp_circle.py --law dq-ctc  --mode noload # C2 空载
-python3 experiments/run_grasp_circle.py --law dq-ctc  --mode load   # C2 带载
+python3 experiments/run_grasp_circle.py --law dq-chandra --mode noload # C2 空载（忠实 [Ch20]）
+python3 experiments/run_grasp_circle.py --law dq-chandra --mode load   # C2 带载（忠实 [Ch20]）
+python3 experiments/run_grasp_circle.py --law dq-ctc  --mode noload # C2-abl 空载
+python3 experiments/run_grasp_circle.py --law dq-ctc  --mode load   # C2-abl 带载
 python3 experiments/run_grasp_circle.py --law dq-hinf --mode noload # C3 空载
 python3 experiments/run_grasp_circle.py --law dq-hinf --mode load   # C3 带载
-python3 experiments/run_grasp_circle.py --compare-only              # 只重印三方对比 + 导出指标 CSV
+python3 experiments/run_grasp_circle.py --compare-only              # 只重印各律对比 + 导出指标 CSV
 python3 experiments/run_grasp_circle.py --compare-only --plot       # 对比 + 出图
 
-# 敏感条件（每个条件跑齐三律；C1 用 tuned 保同预算公平），以 highspeed 为例：
+# 敏感条件（每个条件跑齐各律；C1 用 tuned 保同预算公平），以 highspeed 为例：
 python3 experiments/run_grasp_circle.py --mode load --gains tuned --condition highspeed
+python3 experiments/run_grasp_circle.py --mode load --law dq-chandra --condition highspeed
 python3 experiments/run_grasp_circle.py --mode load --law dq-ctc  --condition highspeed
 python3 experiments/run_grasp_circle.py --mode load --law dq-hinf --condition highspeed
 #（同理替换为 fast-transit / noise / coarse-dt；跑齐后 --compare-only 自动
-# 输出各条件的三方对比表，--plot 另存条件分组柱状图）
+# 输出各条件的对比表，--plot 另存条件分组柱状图）
 ```
 
 相位时间线（路标经 IK 扫描验证，params.py S3 参数节）：descend
@@ -172,11 +187,11 @@ descend2 → circle（R=0.06 m，ramp 2 s + 稳态 >1.5 圈，总时长 22.5 s�
 穿透 FAIL）。npz 齐备后自动打印：分相位（descend/hold/lift/
 retreat/transit/descend2/circle/circle-ss）的 |T|/|O|/|e_ξ|/|τ| RMS、
 抓握力均值、V 收敛特性（统一 base 权重折算，跨增益组可比）、饱和/治理
-步数——空载↔带载、新律↔基线（C1/C2/C3 三方）、整定前↔整定后三张交叉
+步数——空载↔带载、新律↔基线（C1/C2/C2-abl/C3）、整定前↔整定后三张交叉
 对比表；`--plot` 另存 `results/grasp_compare_{errors,effort,interaction,
 lyapunov}.png` 与敏感条件分组柱状图 `grasp_compare_conditions_{noload,
-load}.png`（condition 组 × 三律柱，C1 优先取 tuned）。轨迹级输出：
-`results/grasp_circle_[dqhinf_|dqctc_|tuned_|fast_]{noload|load}
+load}.png`（condition 组 × 各律柱，C1 优先取 tuned）。轨迹级输出：
+`results/grasp_circle_[chandra_|dqhinf_|dqctc_|tuned_|fast_]{noload|load}
 [_hspeed|_ftrans|_noise|_cdt].npz/.csv`（敏感条件加后缀，`none` 无后缀、
 完全兼容已有结果文件）；指标级输出：每次对比后自动导出
 `results/grasp_metrics_summary.csv`（law × gains × mode × condition ×
@@ -427,25 +442,30 @@ CSV 同时记录 ①-② 的误差与 ③ 的核验结果，三者闭环互证�
   杯接触力仅出现在附着瞬态邻域（引擎焊接冲击，合法支撑），圆周段零接触。
 - 控制器单步耗时：C1 ~9.5 ms，C3 ~10.1 ms（同一力矩出口，开销相当）。
 
-## 四种控制理论对比（总方案 §4；C2/C3 已在 S3 三方同台实现，C4 为规划位）
+## 五种控制理论对比（总方案 §4；C2/C2-abl/C3 已在 S3 同台实现，C4 为规划位）
 
 | 控制器 | 误差定义 | 姿态处理 | 前馈结构 | 已知短板 |
 |---|---|---|---|---|
 | **C1 TNDQ 几何一致 CTC（本实现）** | HDQ 群误差 x̃=x x̂_d⁻¹（定理 1），e_ξ/e_z 同一几何对象 | 单位 DQ 无奇异；unwinding 由符号翻转处置（定理 1(i)）| 引理 1 解析前馈 + J̇q̇ 免构造读出 | 力矩层 RNEA 装配开销（6.9 ms，可缓存优化） |
-| C2 二阶 DQ CTC（差分前馈基线；**已同台实现** `--law dq-ctc`）| 同一 DQ 位姿误差 (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项）| 单位 DQ，同 C1 符号翻转 | ξ̇_d 与 J̇q̇ 均数值差分（一拍滞后 + 差分噪声），位姿反馈不经 Aᵀ 整形 | 伪项随 ‖ξ_d‖ 线性增长（E6 对照组实证）；Lyapunov 交叉项不相消 → 无定理 3 证书 |
+| C2 忠实 [Ch20] resolved-acceleration 律（**已同台实现** `--law dq-chandra`）| twist 误差 ω_e=Ad(x̃)ξ_d−ξ（式 (32)，经伴随搬运，与定理 1 的 −e_ξ 同一）| 位姿反馈取螺旋对数 −K_P·vec₆(2 ln x̃) | ξ̇_d、J̇q̇ 均解析（原文式 (2)），无差分 | 螺旋对数导数映射在 φ→π 奇异（大误差弱点）；无对任意正定增益成立的耗散等式结构 → 无定理 3 类证书 |
+| C2-abl 朴素 twist 差消融基线（**非文献律**；已同台实现 `--law dq-ctc`）| 同一 DQ 位姿误差 (O, T)，但速度层用朴素 twist 差 ξ_d−ξ（§4.1 伪项）| 单位 DQ，同 C1 符号翻转 | ξ̇_d 与 J̇q̇ 均数值差分（一拍滞后 + 差分噪声），位姿反馈不经 Aᵀ 整形 | 伪项随 ‖ξ_d‖ 线性增长（E6 对照组实证）；差分前馈噪声放大；Lyapunov 交叉项不相消 → 无定理 3 证书 |
 | C3 一阶 DQ H∞ 运动学律（[P2] 系；**已同台实现** `--law dq-hinf`）| DQ 误差 x̃=x x_d*（与 C1 同约定）| 单位 DQ，unwinding 需额外处理 | 一阶 DQ 无二阶通道，速度→力矩需差分前馈 + 内环伺服桥接 | 缺 (3.5) 二阶免构造通道 → 前馈滞后（S3 实测：附着冲击 ×1.5）；桥接后一阶 H∞ 证书失效 |
 | C4 关节空间 CTC | q̃ = q − q_d(逆解) | 依赖逆运动学采样 | 关节级前馈精确 | 任务空间误差不受直接调控；逆解在奇异/冗余下不适定 |
 
 **TNDQ/HDQ 的实测优势**（对应上表数据）：
-① 误差收敛性——E4 174° 近对拓初值仍指数收敛（C2 对数映射在 π 处病态）；
+① 误差收敛性——E4 174° 近对拓初值仍指数收敛（忠实 C2 的螺旋对数导数
+映射在 φ→π 处奇异，大误差域不适用）；
 ② 前馈精度——E5 高速域跟踪误差仅增大 ~4 倍且仍在 1e-4 量级（ξ̇_d 解析、J̇q̇ 免构造，
 无数值差分噪声）；③ 证书可核验——实测 L2 增益 0.108 与认证 0.125 之差即为
 理论保守度的直接度量，H∞/ISS 证书在力矩级+失配下依然成立；
 ④ 数值稳定性——约束残差 (3.8) 全程机器精度，重投影（§3.4）零漂移。
-**C2/C3 的三方同台数值对比已按总方案 §5.2（同一力矩出口、同一扰动、
-同一预算：三律线性化 d→e 传递函数逐通道恒等）在 S3 抓取-搬运实验中支持**
-（C2 = `dq-ctc` 差分前馈基线，C3 = `hdq_hinf_coppeliasim` 原实现逐行移植，
-见上文 S3 实测表与解读；指标汇总见 `results/grasp_metrics_summary.csv`）；
+**各基线的同台数值对比已按总方案 §5.2（同一力矩出口、同一扰动、
+同一预算：各律线性化 d→e 传递函数逐通道恒等）在 S3 抓取-搬运实验中支持**
+（C2 = `dq-chandra` 忠实 [Ch20] 律，C2-abl = `dq-ctc` 朴素差分前馈消融档，
+C3 = `hdq_hinf_coppeliasim` 原实现逐行移植。**数据口径**：`results/
+grasp_metrics_summary.csv` 中既有 dq-ctc 数值为 C2-abl 实测，忠实 C2
+（`grasp_circle_chandra_*.npz`）的 CoppeliaSim 测量在 `--law dq-chandra`
+接入后补跑；见上文 S3 实测表与解读）；
 γ 维度的新旧理论对照见 §5 γ 影响实验（E8）；C4 属后续实验里程碑。
 
 ## 实现要点与符号约定

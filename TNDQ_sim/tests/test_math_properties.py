@@ -11,6 +11,9 @@ Coverage (paper reference in brackets):
     T7  Theorem 2: output error kinematics e_z_dot = A e_xi       [(4.5)]
     T8  Lemma 1: transport rule d/dt(Ad_{x_tilde} xi_d)           [(5.3)/(5.4)]
     T9  Reprojection restores the constraint family               [Sec. 3.4]
+    T10 Screw-log map vec6(2 ln x): identity limit, exact screws  [Sec. 6.4 C2]
+    T11 Screw-log derivative d/dt vec6(2 ln x_tilde) = e_xi       [Sec. 6.4 C2]
+    T12 Faithful [Ch20] law oracle: cancellation + convergence    [Sec. 6.4 C2]
 
 Numerical differentiation only appears on the *reference* side of each
 comparison (central differences); the TNDQ side is purely algebraic.
@@ -24,6 +27,7 @@ import numpy as np
 
 from core.dq_algebra import (
     dq_mul, dq_conj, dq_identity, dq_vec6, dq_Ad, dq_ad, vec6_to_pure_dq,
+    dq_log2_vec6,
 )
 from core.tndq_algebra import (
     TNDQ, twist_from_tndq, twist_dot_from_tndq,
@@ -269,6 +273,165 @@ def test_reprojection_restores_constraints():
     assert c_after[0] < 1e-12                          # exact unit pose
     assert c_after[1] < 1e-12 and c_after[2] < 1e-12   # pure twist / rate
     assert all(a <= b + 1e-15 for a, b in zip(c_after, c_before))
+
+
+# ---------------------------------------------------------------------------
+# T10 -- screw-log map vec6(2 ln x)  (baseline C2 pose feedback, Sec. 6.4)
+# ---------------------------------------------------------------------------
+
+def _quat_axis_angle(n, phi):
+    n = np.asarray(n, dtype=float) / np.linalg.norm(n)
+    return np.array([np.cos(phi / 2), *(np.sin(phi / 2) * n)])
+
+
+def _pose_dq(r, p):
+    """Unit pose DQ from rotation quaternion r and translation p, (2.1):
+    x = (1 + eps p/2) r  as a DQ product."""
+    r = np.asarray(r, dtype=float)
+    t_dq = np.array([1.0, 0, 0, 0, 0.0, *(np.asarray(p, dtype=float) / 2)])
+    return dq_mul(t_dq, np.r_[r, np.zeros(4)])
+
+
+def _normalize_udq(x):
+    """Renormalize to a unit DQ (|r| = 1, <r, qd> = 0)."""
+    r = x[:4] / np.linalg.norm(x[:4])
+    qd = x[4:] - np.dot(x[4:], r) * r
+    return np.r_[r, qd]
+
+
+def test_dq_log2_identity_limit_and_screws():
+    """
+    vec6(2 ln x) = [phi n; d n + phi m]:
+      (a) near identity  -> [-2 O; T] with O = -Im(r), T = p;
+      (b) pure translation -> [0; p];
+      (c) exact screw roundtrip: (phi, n) from axis-angle, pitch d = n.p,
+          axis line c = n x m reproduces p = (I - R) c + d n.
+    """
+    # (a) near-identity limit (correction is O(phi |p|): the exact dual
+    # part d n + phi m approaches p only linearly in phi)
+    n = np.array([0.2, -0.9, 0.4])
+    n /= np.linalg.norm(n)
+    phi, p = 1e-3, np.array([0.01, -0.02, 0.03])
+    x = _pose_dq(_quat_axis_angle(n, phi), p)
+    ell = dq_log2_vec6(x)
+    O, T = -x[1:4], p
+    assert np.allclose(ell, np.r_[-2.0 * O, T], atol=2e-5)
+
+    # (b) pure translation
+    x_t = _pose_dq(np.array([1.0, 0, 0, 0]), p)
+    assert np.allclose(dq_log2_vec6(x_t), np.r_[np.zeros(3), p], atol=1e-12)
+
+    # (c) exact screw roundtrip on random poses away from phi = pi
+    for _ in range(10):
+        n = RNG.standard_normal(3)
+        n /= np.linalg.norm(n)
+        phi = float(RNG.uniform(0.2, 2.6))
+        p = RNG.standard_normal(3) * 0.2
+        x = _pose_dq(_quat_axis_angle(n, phi), p)
+        ell = dq_log2_vec6(x)
+        # rotation part: phi n
+        assert np.allclose(ell[:3], phi * n, atol=1e-10)
+        # pitch: projection of the dual part on the axis = n . p
+        d = float(n @ p)
+        assert abs(ell[3:] @ n - d) < 1e-10
+        # moment: axis line c = n x m reproduces p = (I - R) c + d n
+        m = (ell[3:] - d * n) / phi
+        c = np.cross(n, m)
+        ctheta, stheta = np.cos(phi), np.sin(phi)
+        R = (ctheta * np.eye(3) + (1 - ctheta) * np.outer(n, n)
+             + stheta * np.array([[0, -n[2], n[1]],
+                                  [n[2], 0, -n[0]],
+                                  [-n[1], n[0], 0]]))
+        assert np.allclose(p, (np.eye(3) - R) @ c + d * n, atol=1e-10)
+
+
+# ---------------------------------------------------------------------------
+# T11 -- log-map derivative: d/dt vec6(2 ln x_tilde) = e_xi near identity
+# ---------------------------------------------------------------------------
+
+def test_dq_log2_derivative_equals_twist_error():
+    """
+    Near identity the screw-log coordinates differentiate to the right-
+    invariant twist error: ell_dot = e_xi + O(||ell||^2).  This is the
+    convention fact that fixes the sign of C2's pose feedback ([Ch20]'s
+    +2 K_P ln(x_e) becomes -K_P vec6(2 ln x_tilde) in our conventions).
+    """
+    n = np.array([0.3, 0.8, -0.5])
+    n /= np.linalg.norm(n)
+    amp_phi, amp_p = 1e-3, 2e-3
+
+    def x_tilde_of(t):
+        phi = amp_phi * np.sin(0.7 * t)
+        p = amp_p * np.array([np.sin(1.1 * t), np.cos(0.9 * t),
+                              np.sin(0.5 * t)])
+        return _pose_dq(_quat_axis_angle(n, phi), p)
+
+    t0, h = 1.3, 1e-6
+    x0 = x_tilde_of(t0)
+    ell_dot_num = (dq_log2_vec6(x_tilde_of(t0 + h))
+                   - dq_log2_vec6(x_tilde_of(t0 - h))) / (2 * h)
+    # e_xi = vec6(2 x_dot x*)  (numerical x_dot, exact twist extraction)
+    x_dot = (x_tilde_of(t0 + h) - x_tilde_of(t0 - h)) / (2 * h)
+    e_xi = dq_vec6(2.0 * dq_mul(x_dot, dq_conj(x0)))
+    assert np.allclose(ell_dot_num, e_xi, atol=5e-6)
+
+
+# ---------------------------------------------------------------------------
+# T12 -- faithful [Ch20] law oracle: composition + closed-loop convergence
+# ---------------------------------------------------------------------------
+
+def test_chandra20_law_oracle():
+    """
+    Oracle for control/control_law.py::dq_chandra2020_law:
+      (a) composition: with a perfect model (xi_dot = a_cmd), substitution
+          cancels the feedforward, d(e_xi)/dt = a_cmd - u_ff
+          = -K_v e_xi - K_P vec6(2 ln x_tilde)  (sign convention locked);
+      (b) closed loop: integrating xi_dot = a_cmd on the true error
+          kinematics x_dot = (1/2) xi x with xi_d = 0 drives both
+          vec6(2 ln x_tilde) and e_xi to zero (asymptotic stability).
+    """
+    from control.control_law import dq_chandra2020_law, feedforward_term
+    from config.params import CH20_K_V, CH20_K_P
+
+    # (a) composition on real trajectory error data
+    x_breve, des = _measured_and_desired(0.9)
+    err = full_error_state(x_breve, des["x_breve_d"])
+    zero6 = np.zeros(6)
+    qdd_ref, u_task = dq_chandra2020_law(
+        err, des["xi_d"], des["xi_dot_d"], np.eye(6), zero6,
+        CH20_K_V, CH20_K_P, damping=0.0)
+    u_ff = feedforward_term(err["x_tilde"], err["xi_tilde"],
+                            des["xi_d"], des["xi_dot_d"])
+    ell = dq_log2_vec6(err["x_tilde"])
+    expected = u_ff - CH20_K_V @ err["e_xi"] - CH20_K_P @ ell
+    assert np.allclose(u_task, expected, atol=1e-12)
+    assert np.allclose(qdd_ref, u_task, atol=1e-12)     # J = I6, no damping
+
+    # (b) closed-loop convergence with a stationary target (xi_d = 0)
+    n = np.array([1.0, 2.0, -1.0])
+    n /= np.linalg.norm(n)
+    x = _pose_dq(_quat_axis_angle(n, 0.5), np.array([0.05, -0.03, 0.04]))
+    e = np.zeros(6)
+    dt, t_end = 5e-4, 4.0
+
+    def deriv(x, e):
+        err_s = {"x_tilde": x, "xi_tilde": vec6_to_pure_dq(e), "e_xi": e}
+        _, a_cmd = dq_chandra2020_law(err_s, zero6, zero6, np.eye(6), zero6,
+                                      CH20_K_V, CH20_K_P, damping=0.0)
+        xi = vec6_to_pure_dq(e)               # xi_d = 0 -> xi = e_xi
+        x_dot = 0.5 * dq_mul(xi, x)
+        return x_dot, a_cmd
+
+    for _ in range(int(round(t_end / dt))):
+        dx1, de1 = deriv(x, e)
+        dx2, de2 = deriv(_normalize_udq(x + 0.5 * dt * dx1), e + 0.5 * dt * de1)
+        dx3, de3 = deriv(_normalize_udq(x + 0.5 * dt * dx2), e + 0.5 * dt * de2)
+        dx4, de4 = deriv(_normalize_udq(x + dt * dx3), e + dt * de3)
+        x = _normalize_udq(x + dt / 6 * (dx1 + 2 * dx2 + 2 * dx3 + dx4))
+        e = e + dt / 6 * (de1 + 2 * de2 + 2 * de3 + de4)
+
+    assert np.linalg.norm(dq_log2_vec6(x)) < 1e-4
+    assert np.linalg.norm(e) < 1e-4
 
 
 # ---------------------------------------------------------------------------
