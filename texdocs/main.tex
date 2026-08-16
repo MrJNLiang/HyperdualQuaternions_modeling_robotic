@@ -1,0 +1,120 @@
+% !TEX program = xelatex
+% ------------------------------------------------------------------------
+% main.tex —— TNDQ 论文主文件
+% 编译：xelatex main.tex（建议连续编译两遍以生成正确的交叉引用）
+% ------------------------------------------------------------------------
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{tndq-style}
+
+\title{Third-Order Dual Quaternion (TODQ) Kinematics with Geometrically
+       Consistent Error Systems:\\
+       A Computed Torque Approach to $H_\infty$/ISS Control}
+\author{（作者姓名）\\（单位，城市，国家）}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+% ================================ 摘要 ================================
+\begin{abstract}
+\noindent
+对偶四元数（DQ）为机械臂位姿提供了全局无奇异参数化，但现有框架仅携带零阶信息，向动力学接口延伸时存在位姿/速度误差分离、加速度扰动无入口、偏差型不确定性不满足 $L_2$ 假设三个结构性缺口。本文引入\textbf{三阶对偶四元数}（TODQ）代数 $\mathcal A_2$ \cite{Con25}，使正运动学一次连乘同时输出位姿、twist 与任务空间加速度。在此基础上，利用 HDQ 截断与乘法的相容性，将误差体系定义在两项 HDQ 上：一次乘法同时生成右不变位姿误差与几何一致 twist 误差（定理 1），并导出严格级联误差运动学（定理 2）。针对动力学接口设计几何一致计算力矩律，证明闭环满足精确耗散等式 $\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$（无任何放缩），据此给出无扰时的水平集不变性与渐近收敛、$L_2$ 扰动下 H∞ 增益的 Schur 补充分必要条件，以及 $L_\infty$ 扰动下 twist 误差的均方极限界（定理 3）。在 7 自由度机械臂力矩模式仿真中验证静态刚度标度律与定理 3 的性能保证。
+\end{abstract}
+
+\medskip
+\noindent\textbf{关键词}：对偶四元数；超对偶四元数；三阶对偶四元数；多项式代数；几何一致误差；H∞ 控制；输入-状态稳定
+
+\bigskip
+
+% ================================ 正文 ================================
+\input{sections/sec1-introduction}
+\input{sections/sec2-preliminaries}
+\input{sections/sec3-todq}
+\input{sections/sec4-error}
+\input{sections/sec5-control}
+\input{sections/sec6-simulation}
+\input{sections/sec7-conclusion}
+
+% ================================ 附录 ================================
+\input{sections/appendix}
+
+% ================================ 参考文献 ================================
+% 编号与标签均与原文档一致（[P1]、[P2]、[Ch20] 等；第 3--5 条原文无标签，
+% 按其在列表中的序号 [3]、[4]、[5] 引用）。
+\begin{thebibliography}{18}
+\raggedright
+
+\bibitem[P1]{P1}
+A.~Cohen, M.~Shoham, \emph{Hyper Dual Quaternions representation of rigid bodies kinematics},
+Mechanism and Machine Theory 150 (2020) 103861.
+
+\bibitem[P2]{P2}
+L.F.C. Figueredo, B.V. Adorno, J.Y. Ishihara, \emph{Robust H$\infty$ kinematic control of manipulator robots using dual quaternion algebra},
+Automatica 132 (2021) 109817.
+
+\bibitem[3]{Fike11}
+J.A. Fike, J.J. Alonso, \emph{The Development of Hyper-Dual Numbers for Exact Second-Derivative Calculations}, AIAA 2011-886.
+
+\bibitem[4]{Lynch17}
+K.M. Lynch, F.C. Park, \emph{Modern Robotics: Mechanics, Planning, and Control}, Cambridge University Press, 2017.
+
+\bibitem[5]{Khatib87}
+O. Khatib, \emph{A unified approach for motion and force control of robot manipulators: The operational space formulation},
+IEEE J. Robotics and Automation 3(1), 1987.
+
+\bibitem[Spo92]{Spo92}
+M.W. Spong, \emph{On the robust control of robot manipulators},
+IEEE Trans. Automatic Control 37(11), 1992.
+
+\bibitem[Kha02]{Kha02}
+H.K. Khalil, \emph{Nonlinear Systems}, 3rd ed., Prentice Hall, 2002.
+
+\bibitem[Ch20]{Ch20}
+A. Chandra, J.A. Corrales-Ramon, Y. Mezouar, \emph{Resolved-acceleration control of serial robotic manipulators using unit dual quaternions},
+IFAC-PapersOnLine 53(2) (2020) 8500--8505.
+
+\bibitem[Gaz14]{Gaz14}
+C. Gaz, F. Flacco, A. De Luca, \emph{Identifying the dynamic model used by the KUKA LWR: A reverse engineering approach},
+Proc. IEEE Int. Conf. Robotics and Automation (ICRA), 2014, 1386--1392.
+
+\bibitem[Roh13]{Roh13}
+E. Rohmer, S.P.N. Singh, M. Freese, \emph{V-REP: A versatile and scalable robot simulation framework},
+Proc. IEEE/RSJ Int. Conf. Intelligent Robots and Systems (IROS), 2013, 1321--1326.
+
+\bibitem[LWP80]{LWP80}
+J.Y.S. Luh, M.W. Walker, R.P.C. Paul, \emph{Resolved-acceleration control of mechanical manipulators},
+IEEE Trans. Automatic Control 25(3), 1980.
+
+\bibitem[Abd91]{Abd91}
+C. Abdallah, D. Dawson, P. Dorato, M. Jamshidi, \emph{Survey of robust control for rigid robots},
+IEEE Control Systems Magazine 11(2), 1991.
+
+\bibitem[Sag99]{Sag99}
+H.G. Sage, M.F. De Mathelin, E. Ostertag, \emph{Robust control of robot manipulators: a survey},
+International Journal of Control 72(16), 1999.
+
+\bibitem[ZDG96]{ZDG96}
+K. Zhou, J.C. Doyle, K. Glover, \emph{Robust and Optimal Control}, Prentice Hall, 1996.
+
+\bibitem[Nak86]{Nak86}
+Y. Nakamura, H. Hanafusa, \emph{Inverse kinematic solutions with singularity robustness for robot manipulator control},
+ASME J. Dynamic Systems, Measurement, and Control 108(3), 1986.
+
+\bibitem[Nak08]{Nak08}
+J. Nakanishi, R. Cory, M. Mistry, J. Peters, S. Schaal, \emph{Operational space control: A theoretical and empirical comparison},
+International Journal of Robotics Research 27(6), 2008.
+
+\bibitem[Ber93]{Ber93}
+H. Berghuis, H. Nijmeijer, \emph{A passivity approach to controller--observer design for robots},
+IEEE Trans. Robotics and Automation 9(6), 1993.
+
+\bibitem[Con25]{Con25}
+D. Condurache, \emph{An overview of higher-order kinematics of rigid body and multibody systems with nilpotent algebra},
+Mechanism and Machine Theory 209 (2025) 105959.
+
+\end{thebibliography}
+
+\end{document}

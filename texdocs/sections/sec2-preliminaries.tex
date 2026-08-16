@@ -1,0 +1,60 @@
+% ---------------------------------------------------------------------
+% 第 2 章 预备知识
+% ---------------------------------------------------------------------
+\section{预备知识}
+
+\textbf{记号约定}（全文统一）：同一条位姿曲线用同一核心字母（如 $x$），字母上方的装饰指明它所处的代数层：
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+记号 & 对象 & 说明 \\
+\midrule
+$\hat a$ & 四元数 & $\hat a\in\mathrm{Spin}(3)$，§2.1 \\
+$\hat{\underline a}$ & 对偶四元数 & $\hat{\underline a}\hat{\underline a}^*=1$，式 \eqref{eq:2.1} \\
+$\breve a$ & HDQ（超对偶四元数） & 两个 DQ 项；曲线的 HDQ 表示 $\breve x=\hat{\underline x}+\varepsilon^*\dot{\hat{\underline x}}$，§2.3 \\
+$\bar a$ & TODQ（三阶对偶四元数） & 三个 DQ 项；曲线的 TODQ 表示 $\bar x=\hat{\underline x}+\sigma\dot{\hat{\underline x}}+\tfrac12\sigma^2\ddot{\hat{\underline x}}$，§3.2 \\
+$\tilde{(\cdot)}$ & 误差量 & 只佩戴波浪号，不再叠加类型装饰；其类型由定义式指明（如 $\tilde x=\hat{\underline x}\hat{\underline x}_d^{\,*}$ 是单位 DQ，$\tilde r$ 是单位四元数） \\
+粗体 & 纯 DQ（twist 等）、向量与矩阵 & $\boldsymbol\xi,\boldsymbol q,J,K_d$ 等 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+（表 0：记号约定。标称模型矩阵 $\hat M,\hat C,\hat g$ 上的 hat 沿用控制文献“标称估计”的习惯用法，与四元数装饰无关；四元数虚单位 $\hat\imath,\hat\jmath,\hat k$ 为固定符号；对偶四元数代数统一记作 DQ（§2.1），其元素是一般（未必单位）对偶四元数；带下标的项记号 $\hat{\underline a}_k,\hat{\underline b}_k$（§2.3、定义 1）表示一般对偶四元数项，未必单位——如曲线表示的导数项 $\dot{\hat{\underline x}}$。）
+
+\subsection{四元数与对偶四元数}
+
+单位四元数 $\hat r=\cos\frac\phi2+n\sin\frac\phi2$ 表示绕单位轴 $n$ 转角 $\phi$ 的旋转。
+
+对偶四元数（DQ）代数为 $\mathbb H\oplus\varepsilon\mathbb H$，$\varepsilon^2=0$（$\varepsilon$ 与四元数单位交换）。\textbf{单位 DQ}
+\begin{equation}
+\hat{\underline x}=\hat r+\varepsilon\tfrac12\,p\,\hat r,\qquad \hat r\in\mathrm{Spin}(3),\ p\in\mathbb H_p\ (\text{纯四元数}\cong\mathbb R^3)
+\tag{2.1}\label{eq:2.1}
+\end{equation}
+表示位姿（旋转 $\hat r$ + 平移 $p$），满足 $\hat{\underline x}\hat{\underline x}^*=1$；单位 DQ 全体构成群 $\mathrm{Spin}(3)\ltimes\mathbb R^3$，双覆盖 $SE(3)$，乘法即位姿复合。DQ 共轭 $\hat{\underline x}^*=\hat r^*+\varepsilon\tfrac12\hat r^*p^*$ 逐分量遵循四元数共轭。\textbf{纯 DQ}（标量部与对偶标量部为零者）构成 6 维实空间，记 $\mathrm{vec}_6$ 为取其两个向量部的坐标同构，$\overline{\mathrm{vec}}_6$ 为逆。
+
+\subsection{twist 与运动学}
+
+沿光滑单位 DQ 曲线 $\hat{\underline x}(t)$，\textbf{空间 twist} 定义为
+\begin{equation}
+\boldsymbol\xi\triangleq 2\dot{\hat{\underline x}}\hat{\underline x}^{*}=\omega+\varepsilon v,\qquad v=\dot p+p\times\omega,
+\tag{2.2}\label{eq:2.2}
+\end{equation}
+其中 $\omega$ 为角速度。$\boldsymbol\xi$ 是纯 DQ，等价写法即左乘运动学 $\dot{\hat{\underline x}}=\tfrac12\boldsymbol\xi\hat{\underline x}$（\cite{P2} 式(1) 约定）。对 $n$ 关节串联机械臂，正运动学 $\hat{\underline x}(\boldsymbol q)=\prod_{i=1}^n\hat{\underline x}_i(q_i)$（各关节单位 DQ 之积），微分给出 $\mathrm{vec}_6\,\boldsymbol\xi=J(\boldsymbol q)\dot{\boldsymbol q}$，$J\in\mathbb R^{6\times n}$ 称几何雅可比。
+
+\textbf{伴随作用与李括号}：$\mathrm{Ad}_{\hat{\underline x}}\boldsymbol a\triangleq\hat{\underline x}\boldsymbol a\hat{\underline x}^*$（twist 的参考系搬运）、$\mathrm{ad}_{\boldsymbol a}\boldsymbol b\triangleq\tfrac12(\boldsymbol{ab}-\boldsymbol{ba})$（李括号的 DQ 形式），二者均保持纯 DQ 结构，详见 \cite{Lynch17}。
+
+\subsection{超对偶四元数（HDQ）}
+
+HDQ 元素形如 $\breve a=\hat{\underline a}_0+\varepsilon^*\hat{\underline a}_1$，两个项 $\hat{\underline a}_0,\hat{\underline a}_1$ 均为 DQ（§2.1）；$\varepsilon^*$ 与全部四元数单位交换且 $\varepsilon^{*2}=0$，乘法由分配律给出：
+\begin{equation}
+(\hat{\underline a}_0+\varepsilon^*\hat{\underline a}_1)(\hat{\underline b}_0+\varepsilon^*\hat{\underline b}_1)=\hat{\underline a}_0\hat{\underline b}_0+\varepsilon^*(\hat{\underline a}_0\hat{\underline b}_1+\hat{\underline a}_1\hat{\underline b}_0).
+\tag{2.3}\label{eq:2.3}
+\end{equation}
+
+\textbf{HDQ 共轭}（定理 1 中 $(\breve x_d)^*$ 的含义）定义为\textbf{逐项的 DQ 共轭}：
+\begin{equation}
+\breve a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\varepsilon^*\hat{\underline a}_1^{\,*}.
+\tag{2.4}\label{eq:2.4}
+\end{equation}
+\eqref{eq:2.4} 使共轭与求导可交换（$ (\breve x)^* $ 即曲线 $\hat{\underline x}^*(t)$ 的 HDQ 表示），且仍为反自同构：$ (\breve a\breve b)^*=\breve b^{\,*}\breve a^{\,*} $。

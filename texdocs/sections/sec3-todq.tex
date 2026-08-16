@@ -1,0 +1,41 @@
+% ---------------------------------------------------------------------
+% 第 3 章 TODQ：三阶对偶四元数与运动学重构
+% ---------------------------------------------------------------------
+\section{TODQ：三阶对偶四元数与运动学重构}
+
+\subsection{代数定义}
+
+\begin{definition}[TODQ \cite{Con25}]\label{def:todq}
+三阶对偶四元数（TODQ）的元素形如
+\begin{equation}
+\bar a=\hat{\underline a}_0+\sigma\hat{\underline a}_1+\tfrac12\sigma^2\hat{\underline a}_2,\qquad \hat{\underline a}_0,\hat{\underline a}_1,\hat{\underline a}_2\ \text{均为 DQ}.
+\tag{3.1}\label{eq:3.1}
+\end{equation}
+全部 TODQ 元素构成的代数记 $\mathcal A_2$。$\sigma$ 与全部四元数单位交换，$\sigma^3=0$。乘法由分配律与 $\sigma^3=0$ 唯一确定：
+\begin{equation}
+\bar a\,\bar b=\hat{\underline a}_0\hat{\underline b}_0+\sigma(\hat{\underline a}_0\hat{\underline b}_1+\hat{\underline a}_1\hat{\underline b}_0)+\tfrac12\sigma^2\bigl(\hat{\underline a}_0\hat{\underline b}_2+2\hat{\underline a}_1\hat{\underline b}_1+\hat{\underline a}_2\hat{\underline b}_0\bigr).
+\tag{3.2}\label{eq:3.2}
+\end{equation}
+\textbf{TODQ 共轭}定义为逐项 DQ 共轭（与 \eqref{eq:2.4} 同一约定）：$\bar a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\sigma\hat{\underline a}_1^{\,*}+\tfrac12\sigma^2\hat{\underline a}_2^{\,*}$，它是 $\mathcal A_2$ 上的反自同构 $(\bar a\bar b)^*=\bar b^{\,*}\bar a^{\,*}$。
+\end{definition}
+
+\subsection{TODQ 串联运动学表示}
+
+给定光滑单位 DQ 曲线 $\hat{\underline x}(t)$，其\textbf{TODQ 表示}定义为把 $\hat{\underline x}$ 与它的两阶导数按 $\sigma$ 的幂次装入三个项：
+\begin{equation}
+\bar x\triangleq\hat{\underline x}+\sigma\dot{\hat{\underline x}}+\tfrac12\sigma^2\ddot{\hat{\underline x}}\ \in\mathcal A_2 .
+\tag{3.3a}\label{eq:3.3a}
+\end{equation}
+
+对串联臂 $\hat{\underline x}(\boldsymbol q)=\prod_i\hat{\underline x}_i(q_i(t))$，先写出每个关节因子的 TODQ 表示 $\bar x_i$（由 $\partial\hat{\underline x}_i/\partial q_i=\tfrac12\boldsymbol s_i\hat{\underline x}_i$ 与链式法则给出闭式，只依赖 $q_i,\dot q_i,\ddot q_i$），再按 \eqref{eq:3.2} 逐个连乘：
+\begin{equation}
+\bar x=\bar x_1\,\bar x_2\cdots\bar x_n=\prod_{i=1}^{n}\bar x_i
+\tag{3.4}\label{eq:3.4}
+\end{equation}
+一次 $O(n)$ 链连乘同时输出 $\hat{\underline x},\dot{\hat{\underline x}},\ddot{\hat{\underline x}}$（$\bar x$ 的三个项）。导出量：
+\begin{equation}
+\boldsymbol\xi=2\dot{\hat{\underline x}}\hat{\underline x}^*,\qquad
+\dot{\boldsymbol\xi}=2\ddot{\hat{\underline x}}\hat{\underline x}^*-\tfrac12\boldsymbol\xi^2\ \text{（取纯部）},\qquad
+\mathrm{vec}_6\dot{\boldsymbol\xi}=\dot J\dot{\boldsymbol q}+J\ddot{\boldsymbol q}.
+\tag{3.5}\label{eq:3.5}
+\end{equation}

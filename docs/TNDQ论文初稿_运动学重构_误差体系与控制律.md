@@ -1,20 +1,10 @@
-# Trident Number Dual Quaternion (TNDQ) Modeling of Robot Kinematics with a Geometrically Consistent Error System and Mixed H∞/ISS Control
-
-> **文稿性质**：论文初稿（第一版）。结构参照 Figueredo, Adorno & Ishihara, *Robust H∞ kinematic control of manipulator robots using dual quaternion algebra*, Automatica 132 (2021)（下称 [P2]）：摘要 → 引言（含贡献声明）→ 预备知识 → 主体理论（TNDQ 运动学 / 误差体系 / 控制律主定理）→ 仿真验证 → 结论 → 附录（次要推导）。
->
-> 理论内容取自项目文档体系（编号沿用）：扩展篇 `docs/HDQ动力学建模扩展_Jdot与Hessian.md`（(D-k)、(5.2′)）、误差篇 `docs/HDQ动力学误差体系重构_几何一致二阶误差方案.md`（(F-k)、TNDQ/HDQ 截断）。文献编号：[P1] = Cohen & Shoham MMT 2020；[P2] = Figueredo et al. Automatica 2021。
->
-> **记号说明**：本稿采用统一装饰记号（§2 表 0）——$\hat a$ 单位四元数、$\hat{\underline a}$ 单位 DQ、$\breve a$ HDQ、$\bar a$ TNDQ。源文档中的算子记号 $T^1\boldsymbol x$、$T^2\boldsymbol x$、$\Pi_{\mathrm{HDQ}}$ 在本稿分别写作 $\breve x$、$\bar x$ 与截断映射 $\Pi$（命题 2，式 (3.8)）。
->
-> **写作约定**：面向具备本科代数（环、商环）与常微分方程基础的数学系读者；机器人学专有概念（位姿、twist、雅可比）在首次出现处给出数学定义；工程细节（驱动接口、采样与限幅）只在仿真验证一节出现。
-
----
+# Third-Order Dual Quaternion (TODQ) Kinematics with Geometrically Consistent Error Systems: A Computed Torque Approach to H∞/ISS Contro
 
 ## 摘要
 
-对偶四元数（DQ）为机械臂位姿提供了全局无奇异参数化，但现有框架仅携带零阶信息，向动力学接口延伸时存在位姿/速度误差分离、加速度扰动无入口、偏差型不确定性不满足 $L_2$ 假设三个结构性缺口。本文引入**三叉对偶四元数**（TNDQ）代数 $\mathcal A_2$，使正运动学一次连乘同时输出位姿、twist 与任务空间加速度。在此基础上，利用 HDQ 截断与乘法的相容性，将误差体系定义在两项 HDQ 上：一次乘法同时生成右不变位姿误差与几何一致 twist 误差（定理 1），并导出严格级联误差运动学（定理 2）。针对动力学接口设计几何一致计算力矩律，证明闭环满足精确耗散等式 $\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$（无任何放缩），据此给出无扰时的水平集不变性与渐近收敛、$L_2$ 扰动下 H∞ 增益的 Schur 补充分必要条件，以及 $L_\infty$ 扰动下 twist 误差的均方极限界（定理 3）。在 7 自由度机械臂力矩模式仿真中验证静态刚度标度律与定理 3 的性能保证。
+对偶四元数（DQ）为机械臂位姿提供了全局无奇异参数化，但现有框架仅携带零阶信息，向动力学接口延伸时存在位姿/速度误差分离、加速度扰动无入口、偏差型不确定性不满足 $L_2$ 假设三个结构性缺口。本文引入**三阶对偶四元数**（TODQ）代数 $\mathcal A_2$ [Con25]，使正运动学一次连乘同时输出位姿、twist 与任务空间加速度。在此基础上，利用 HDQ 截断与乘法的相容性，将误差体系定义在两项 HDQ 上：一次乘法同时生成右不变位姿误差与几何一致 twist 误差（定理 1），并导出严格级联误差运动学（定理 2）。针对动力学接口设计几何一致计算力矩律，证明闭环满足精确耗散等式 $\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$（无任何放缩），据此给出无扰时的水平集不变性与渐近收敛、$L_2$ 扰动下 H∞ 增益的 Schur 补充分必要条件，以及 $L_\infty$ 扰动下 twist 误差的均方极限界（定理 3）。在 7 自由度机械臂力矩模式仿真中验证静态刚度标度律与定理 3 的性能保证。
 
-**关键词**：对偶四元数；超对偶四元数；三叉对偶四元数；多项式代数；几何一致误差；H∞ 控制；输入-状态稳定
+**关键词**：对偶四元数；超对偶四元数；三阶对偶四元数；多项式代数；几何一致误差；H∞ 控制；输入-状态稳定
 
 ---
 
@@ -28,16 +18,12 @@
 
 ### 1.2 本文贡献
 
-1. **TNDQ 运动学重构**（§3）：定义三项代数 $\mathcal A_2$，使串联链的正运动学一次 $O(n)$ 连乘同时输出 $(\hat{\underline x},\boldsymbol\xi,\dot J\dot{\boldsymbol q})$。
+1. **TODQ 运动学应用**（§3）：定义三项代数 $\mathcal A_2$，使串联链的正运动学一次 $O(n)$ 连乘同时输出 $(\hat{\underline x},\boldsymbol\xi,\dot J\dot{\boldsymbol q})$。
 2. **HDQ 误差体系**（§4）：定义 HDQ 误差元素 $\breve{\tilde x}=\breve x(\breve x_d)^*$，一次乘法同时生成位姿误差与几何一致 twist 误差（定理 1），并导出闭式级联运动学 $\dot e_z=A(\tilde x)e_\xi$（定理 2）。
 3. **几何一致控制律与混合性能保证**（§5）：设计 $A^\top$-整形计算力矩律，证明闭环误差动态为级联标准形且存储函数满足精确耗散等式；对 $L_2$ 扰动给出 H∞ 增益的 Schur 补**充要**判据（含旋转/平移分量拆分），对 $L_\infty$ 扰动（含乘性不确定性）给出 twist 误差的均方极限界（定理 3）。
 4. **仿真验证**（§6）：在 7 自由度机械臂力矩模式仿真中验证静态刚度标度律与定理 3 的性能保证。
 
-**与 [P2] 的关系**：本文不替代 [P2] 的运动学外环——0 阶项的误差与控制在低速接口下退化回 [P2] 原样；本文解决的是其向动力学接口延伸时的结构缺口。
-
-**与 [P1] 的关系**：TNDQ 是 [P1] HDQ 思想（幂零单位承载导数）向二阶的最小扩展；HDQ 恰由 TNDQ 的前两个项给出（§3.1），[P1] 的全部乘法机器原样保留。
-
-本文第 2 节回顾预备知识；第 3–5 节建立 TNDQ 运动学、误差体系与控制理论；第 6 节给出仿真验证；第 7 节总结。定理证明细节见附录。
+TODQ 是 [P1] HDQ 思想（幂零单位承载导数）向二阶的最小扩展 [Con25]；0 阶误差退化为 [P2]（§4.4）。
 
 ---
 
@@ -45,21 +31,20 @@
 
 **记号约定**（全文统一）：同一条位姿曲线用同一核心字母（如 $x$），字母上方的装饰指明它所处的代数层：
 
-| 记号 | 对象 | 说明 |
-|---|---|---|
-| $\hat a$ | 四元数 | $\hat a\in\mathrm{Spin}(3)$，§2.1 |
-| $\hat{\underline a}$ | 对偶四元数 | $\hat{\underline a}\hat{\underline a}^*=1$，式 (2.1) |
-| $\breve a$ | HDQ（超对偶四元数） | 两个 DQ 项；曲线的 HDQ 表示 $\breve x=\hat{\underline x}+\varepsilon^*\dot{\hat{\underline x}}$，§2.3 |
-| $\bar a$ | TNDQ（三叉对偶四元数） | 三个 DQ 项；曲线的 TNDQ 表示 $\bar x=\hat{\underline x}+\sigma\dot{\hat{\underline x}}+\tfrac12\sigma^2\ddot{\hat{\underline x}}$，§3.2 |
-| $\tilde{(\cdot)}$ | 误差量 | 只佩戴波浪号，不再叠加类型装饰；其类型由定义式指明（如 $\tilde x=\hat{\underline x}\hat{\underline x}_d^{\,*}$ 是单位 DQ，$\tilde r$ 是单位四元数） |
-| 无装饰斜体 | 一般（未必单位）四元数 / DQ / 标量 | 所属代数在上下文声明 |
-| 粗体 | 纯 DQ（twist 等）、向量与矩阵 | $\boldsymbol\xi,\boldsymbol q,J,K_d$ 等 |
+| 记号 | 对象 
+|---|---|
+| $\hat a$ | 四元数 |
+| $\hat{\underline a}$ | 对偶四元数 |
+| $\breve a$ | HDQ（超对偶四元数） | 
+| $\bar a$ | TODQ（三阶对偶四元数） |
+| $\tilde{(\cdot)}$ | 误差量 | 
+| 粗体 | 纯 DQ（twist 等）、向量与矩阵 |
 
 （表 0：记号约定。标称模型矩阵 $\hat M,\hat C,\hat g$ 上的 hat 沿用控制文献"标称估计"的习惯用法，与四元数装饰无关；四元数虚单位 $\hat\imath,\hat\jmath,\hat k$ 为固定符号；对偶四元数代数统一记作 DQ（§2.1），其元素是一般（未必单位）对偶四元数；带下标的项记号 $\hat{\underline a}_k,\hat{\underline b}_k$（§2.3、定义 1）表示一般对偶四元数项，未必单位——如曲线表示的导数项 $\dot{\hat{\underline x}}$。）
 
 ### 2.1 四元数与对偶四元数
 
-单位四元数 $\hat r=\cos\frac\phi2+n\sin\frac\phi2$ 表示绕单位轴 $n$ 转角 $\phi$ 的旋转，$\mathrm{Spin}(3)$ 双覆盖 $SO(3)$。
+单位四元数 $\hat r=\cos\frac\phi2+n\sin\frac\phi2$ 表示绕单位轴 $n$ 转角 $\phi$ 的旋转。
 
 对偶四元数（DQ）代数为 $\mathbb H\oplus\varepsilon\mathbb H$，$\varepsilon^2=0$（$\varepsilon$ 与四元数单位交换）。**单位 DQ**
 
@@ -104,30 +89,30 @@ $$
 
 ---
 
-## 3. TNDQ：三叉对偶四元数与运动学重构
+## 3. TODQ：三阶对偶四元数与运动学重构
 
 ### 3.1 代数定义
 
-> **定义 1（TNDQ）**：三叉对偶四元数（TNDQ）的元素形如
+> **定义 1（TODQ）**[Con25]：三阶对偶四元数（TODQ）的元素形如
 >
 > $$
 > \bar a=\hat{\underline a}_0+\sigma\hat{\underline a}_1+\tfrac12\sigma^2\hat{\underline a}_2,\qquad \hat{\underline a}_0,\hat{\underline a}_1,\hat{\underline a}_2\ \text{均为 DQ}.
 > \tag{3.1}
 > $$
 >
-> 全部 TNDQ 元素构成的代数记 $\mathcal A_2$。$\sigma$ 与全部四元数单位交换，$\sigma^3=0$。乘法由分配律与 $\sigma^3=0$ 唯一确定：
+> 全部 TODQ 元素构成的代数记 $\mathcal A_2$。$\sigma$ 与全部四元数单位交换，$\sigma^3=0$。乘法由分配律与 $\sigma^3=0$ 唯一确定：
 >
 > $$
 > \bar a\,\bar b=\hat{\underline a}_0\hat{\underline b}_0+\sigma(\hat{\underline a}_0\hat{\underline b}_1+\hat{\underline a}_1\hat{\underline b}_0)+\tfrac12\sigma^2\bigl(\hat{\underline a}_0\hat{\underline b}_2+2\hat{\underline a}_1\hat{\underline b}_1+\hat{\underline a}_2\hat{\underline b}_0\bigr).
 > \tag{3.2}
 > $$
 >
-> **TNDQ 共轭**定义为逐项 DQ 共轭（与 (2.4) 同一约定）：$\bar a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\sigma\hat{\underline a}_1^{\,*}+\tfrac12\sigma^2\hat{\underline a}_2^{\,*}$，它是 $\mathcal A_2$ 上的反自同构$(\bar a\bar b)^*=\bar b^{\,*}\bar a^{\,*}$。
+> **TODQ 共轭**定义为逐项 DQ 共轭（与 (2.4) 同一约定）：$\bar a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\sigma\hat{\underline a}_1^{\,*}+\tfrac12\sigma^2\hat{\underline a}_2^{\,*}$，它是 $\mathcal A_2$ 上的反自同构$(\bar a\bar b)^*=\bar b^{\,*}\bar a^{\,*}$。
 
 
-### 3.2 TNDQ 串联运动学表示
+### 3.2 TODQ 串联运动学表示
 
-给定光滑单位 DQ 曲线 $\hat{\underline x}(t)$，其**TNDQ 表示**定义为把 $\hat{\underline x}$ 与它的两阶导数按 $\sigma$ 的幂次装入三个项：
+给定光滑单位 DQ 曲线 $\hat{\underline x}(t)$，其**TODQ 表示**定义为把 $\hat{\underline x}$ 与它的两阶导数按 $\sigma$ 的幂次装入三个项：
 
 $$
 \bar x\triangleq\hat{\underline x}+\sigma\dot{\hat{\underline x}}+\tfrac12\sigma^2\ddot{\hat{\underline x}}\ \in\mathcal A_2 .
@@ -135,7 +120,7 @@ $$
 $$
 
 
-对串联臂 $\hat{\underline x}(\boldsymbol q)=\prod_i\hat{\underline x}_i(q_i(t))$，先写出每个关节因子的 TNDQ 表示 $\bar x_i$（由 $\partial\hat{\underline x}_i/\partial q_i=\tfrac12\boldsymbol s_i\hat{\underline x}_i$ 与链式法则给出闭式，只依赖 $q_i,\dot q_i,\ddot q_i$），再按 (3.2) 逐个连乘：
+对串联臂 $\hat{\underline x}(\boldsymbol q)=\prod_i\hat{\underline x}_i(q_i(t))$，先写出每个关节因子的 TODQ 表示 $\bar x_i$（由 $\partial\hat{\underline x}_i/\partial q_i=\tfrac12\boldsymbol s_i\hat{\underline x}_i$ 与链式法则给出闭式，只依赖 $q_i,\dot q_i,\ddot q_i$），再按 (3.2) 逐个连乘：
 
 $$
 \bar x=\bar x_1\,\bar x_2\cdots\bar x_n=\prod_{i=1}^{n}\bar x_i
@@ -151,15 +136,13 @@ $$
 \tag{3.5}
 $$
 
-（$\dot{\boldsymbol\xi}$ 的表达式由对 $\boldsymbol\xi=2\dot{\hat{\underline x}}\hat{\underline x}^*$ 求导并取纯部即得。）
-
 
 
 ## 4. 几何一致误差体系
 
 ### 4.1 误差对象的阶数
 
-计算力矩律的反馈项（§5）为 $-K_de_\xi-A^\top K_pe_z$，只使用位姿与速度两阶：参考加速度走前馈（来自期望轨迹，确定量），加速度层不确定性归入扰动（进入 $\dot e_\xi$ 方程的 $d(t)$，§5.2）；引入加速度误差只会把高噪声的加速度估计（差分方差 $\propto\Delta t^{-4}$）带入反馈并增加一维动态。因此**正运动学与期望轨迹用 TNDQ 建模（前馈需要 $\sigma^2$ 项），误差体系定义在 HDQ 上**。
+计算力矩律的反馈项（§5）为 $-K_de_\xi-A^\top K_pe_z$，只使用位姿与速度两阶：参考加速度走前馈（来自期望轨迹，确定量），加速度层不确定性归入扰动（进入 $\dot e_\xi$ 方程的 $d(t)$，§5.2）；引入加速度误差只会把高噪声的加速度估计（差分方差 $\propto\Delta t^{-4}$）带入反馈并增加一维动态。因此**正运动学与期望轨迹用 TODQ 建模（前馈需要 $\sigma^2$ 项），误差体系定义在 HDQ 上**。
 
 ### 4.2 定理 1：误差的 HDQ 表示
 
@@ -236,9 +219,7 @@ $$
 \tag{5.1}
 $$
 
-因 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 (5.2) 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$，(5.1) 是对 $\ddot{\boldsymbol q}$ 的显式赋值；$\alpha$ 条件（(A3)）是证书条件而非适定性条件（附录 C.1）。
-
-**乘法分量与外生分量的分离**。记 (5.2) 的任务空间指令为 $\ddot{\boldsymbol q}_{\mathrm{ref}}=J^{+}\bigl(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q}\bigr)$，其中 $u_{\mathrm{ff}}=\mathrm{vec}_6\bigl(\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mathrm{ad}_{\tilde{\boldsymbol\xi}}\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr)$、$u_{\mathrm{fb}}=-K_de_\xi-A^{\top}(\tilde x)K_pe_z$。令 $d\triangleq J\boldsymbol w_{\mathrm{dyn}}+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$（$\boldsymbol v_w,\boldsymbol v_c$ 为 [P2] 的速度级测量/通信扰动），代入 (5.1) 后精确拆为"与反馈成正比"与"不含反馈"两部分：
+**乘法分量与外生分量的分离**。将 $\ddot{\boldsymbol q}_{\mathrm{ref}}=J^{+}(u_{\mathrm{ff}}+u_{\mathrm{fb}}-\dot J\dot{\boldsymbol q})$ 代入 (5.1)，利用 $JJ^{+}=I_6$ 得扰动分解
 
 $$
 d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
@@ -246,7 +227,7 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
 \tag{5.1d}
 $$
 
-其中 $d_{\mathrm{ex}}$ 只依赖 $(\boldsymbol q,\dot{\boldsymbol q},t)$ 与外生信号、不含反馈量（见附录 C.1）。$d_{\mathrm{ex}}$ 再按时间特性分解为 $d_{\mathrm{ex}}=d_{L_2}+d_b$：$d_{L_2}\in L_2$（噪声型）由定理 3(c) 处理，$d_b\in L_\infty$（偏差型）由定理 3(d) 处理。
+其中 $\Theta$ 为乘性分量、$d_{\mathrm{ex}}$ 为外生扰动（详见附录 C.1）。$d_{\mathrm{ex}}$ 再按时间特性分解为 $d_{\mathrm{ex}}=d_{L_2}+d_b$：$d_{L_2}\in L_2$（噪声型）由定理 3(c) 处理，$d_b\in L_\infty$（偏差型）由定理 3(d) 处理。
 
 **假设集**（定理 3 全文沉默使用，在此一次性列出）：
 
@@ -311,15 +292,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 >
 > 其中 $d=J\boldsymbol w_{\mathrm{dyn}}+\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$ 汇集全部加速度层扰动，并按 (5.1d) 精确分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$。
 
-> **证明**：
->
-> 1. 由 (3.5) 与 $\ddot{\boldsymbol q}=\ddot{\boldsymbol q}_{\mathrm{ref}}+\boldsymbol w_{\mathrm{dyn}}$：$\mathrm{vec}_6\dot{\boldsymbol\xi}=J\ddot{\boldsymbol q}_{\mathrm{ref}}+\dot J\dot{\boldsymbol q}+J\boldsymbol w_{\mathrm{dyn}}$。
-> 2. 代入 (5.2) 并用 $JJ^+=I$（假设 (A1)），$\dot J\dot{\boldsymbol q}$ 消去：
-> $$
-> \mathrm{vec}_6\dot{\boldsymbol\xi}=\mathrm{vec}_6\bigl(\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mathrm{ad}_{\tilde{\boldsymbol\xi}}\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr)-K_de_\xi-A^\top K_pe_z+J\boldsymbol w_{\mathrm{dyn}} .
-> $$
-> 3. 与引理 1 的 (5.4)（含扰版）相减，前馈项与期望/输运项精确相消：$\dot e_\xi=\mathrm{vec}_6\dot{\tilde{\boldsymbol\xi}}=-K_de_\xi-A^\top K_pe_z+d$。
-> 4. 配合定理 2 的 $\dot e_z=Ae_\xi$ 即得 (5.5)。∎
+> **证明**：将 (5.2) 代入 (3.5) 并利用引理 1，前馈项与期望/输运项精确相消即得 (5.5)。
 
 > **定理 3(b)（无扰：水平集不变性、渐近收敛与局部指数稳定）**：设 $d\equiv0$，$K_p=\mathrm{diag}(K_{p,O},K_{p,T})$ 对称正定（旋转/平移块）。取
 >
@@ -337,30 +310,9 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 > $$
 > 从而 $A(\tilde x)$ 在 $\Omega_c$ 上一致可逆（$\det A=-\tfrac18\tilde\eta\le-\tfrac18\eta_0<0$）；**(iii)** $\Omega_c$ 内一切轨迹满足 $(e_z,e_\xi)\to(0,0)$；**(iv)** $(0,0)$ 是**局部指数稳定**的。
 
-> **证明**：
->
-> 1. *交叉项精确相消*：沿 (5.5)（$d\equiv0$），
-> $$
-> \dot V=e_\xi^\top\dot e_\xi+e_z^\top K_p\dot e_z
-> =e_\xi^\top\bigl(-K_de_\xi-A^\top K_pe_z\bigr)+e_z^\top K_pAe_\xi
-> =-e_\xi^\top K_de_\xi ,
-> $$
-> 因 $e_z^\top K_pAe_\xi=(A^\top K_p^\top e_z)^\top e_\xi=(A^\top K_pe_z)^\top e_\xi$——这里**只**用到 $K_p$ 对称与 $K_p$ 写在 $A^\top$ 内侧，不需要 $K_p$ 为标量。故 $\dot V\le0$，$\Omega_c$ 正向不变；又 $V\le c$ 给出 $\|e_\xi\|\le\sqrt{2c}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，故 $\Omega_c$ 紧。
-> 2. *工作域保号 (5.5c)*：$V\le c$ 蕴含 $\tfrac12\mathcal O^\top K_{p,O}\mathcal O\le c$，即 $\|\mathcal O\|^2\le2c/\lambda_{\min}(K_{p,O})<1$（由 $c<c^*$）。由 $\mathcal O=-\mathrm{Im}\,\tilde r$ 与 $\|\tilde r\|=1$ 得 $\tilde\eta^2+\|\mathcal O\|^2=1$，故 $|\tilde\eta|\ge\eta_0>0$；$\tilde\eta(t)$ 连续且恒不为零，符号不可突变，由 $\tilde\eta(0)>0$ 得 (5.5c)。
-> 3. *$A$ 的行列式*：$A$ 块下三角（(4.5)），故
-> $$
-> \det A=\det\bigl(-\tfrac12(\tilde\eta I_3+[\mathcal O]_\times)\bigr)\cdot\det I_3
-> =\bigl(-\tfrac12\bigr)^3\tilde\eta\bigl(\tilde\eta^2+\|\mathcal O\|^2\bigr)=-\tfrac18\tilde\eta ,
-> $$
-> 用到 $\det(aI_3+[b]_\times)=a(a^2+\|b\|^2)$ 与 $\tilde\eta^2+\|\mathcal O\|^2=1$。定量奇异值下界 $\sigma_{\min}(A)\ge\bigl[2(1+\|\mathcal T\|)/\tilde\eta+1\bigr]^{-1}$ 见附录 C.2。
-> 4. *LaSalle*：$\Omega_c$ 紧且不变，$E\triangleq\{\dot V=0\}\cap\Omega_c=\{e_\xi=0\}\cap\Omega_c$。若轨迹全程留在 $E$ 内：$e_\xi\equiv0\Rightarrow\dot e_\xi\equiv0\Rightarrow A^\top K_pe_z\equiv0$；由第 3 步 $A$ 可逆、$K_p\succ0$ 得 $e_z\equiv0$。故 $E$ 内最大不变集为 $\{(0,0)\}$，由 LaSalle 不变集定理（[Kha02] Thm 4.4）得 (iii)。
-> 5. *局部指数稳定*：在 $(0,0)$ 处 $\tilde x\to1$，$A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，(5.5) 的雅可比为
-> $$
-> F=\begin{bmatrix}0_6 & A_0\\ -A_0^\top K_p & -K_d\end{bmatrix}.
-> $$
-> 对该 LTI 系统同一个 $V$ 仍给出 $\dot V=-e_\xi^\top K_de_\xi\le0$，且 $A_0$ 可逆，重复第 4 步得 LTI 系统渐近稳定，故 $F$ 为 Hurwitz；再由 Lyapunov 线化定理（[Kha02] Thm 4.7）得非线性系统在原点邻域指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，其两个二阶多项式与极点由 (5.8) 显式给出。█
+> **证明**：关键步骤是 $A^\top$-整形反馈使交叉项 $e_z^\top K_pAe_\xi$ 精确相消，得 $\dot V=-e_\xi^\top K_de_\xi$；LaSalle 定理与 $A$ 在 $\Omega_c$ 上的一致可逆性（附录 C.2）给出渐近收敛。详见附录 C.6。
 
-> **注记**：全局指数稳定不可得，原因在于 $SO(3)$ 双覆盖的拓扑障碍（unwinding）与 $A$ 在 $\tilde\eta=0$ 处的奇异性。水平集条件 (5.5b) 可数值核验：§6 tuned 档 $c^{*}=160$，实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494$，余度约 2.5 个数量级（§6.4(iv)）。当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即强制 $\tilde\eta\ge0$。∎
+> **注记**：全局指数稳定不可得，原因在于 $SO(3)$ 双覆盖的拓扑障碍（unwinding）与 $A$ 在 $\tilde\eta=0$ 处的奇异性。水平集条件 (5.5b) 可数值核验：§6 tuned 档 $c^{*}=160$，实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494$，余度约 2.5 个数量级（§6.4）。当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即强制 $\tilde\eta\ge0$。∎
 
 > **定理 3(c)（$L_2$ 扰动：H∞ 二次型/Schur 补判据与旋转/平移分量拆分）**：设 $d=d_{L_2}\in L_2$。
 >
@@ -404,32 +356,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 >
 > 且逐分量量纲齐次（不再混合 $(\mathrm{rad/s})^2$ 与 $(\mathrm{m/s})^2$），$\kappa_\omega,\gamma_\omega,\kappa_v,\gamma_v$ 可独立指定。
 >
-> **证明**：
->
-> *第一步（$\dot V$ 精确式）*：含扰时定理 3(b) 证明第 1 步的交叉项相消与 $d$ 无关，故
-> $$
-> \dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d
-> $$
-> 精确成立（此式不含任何放缩；$e_\xi^\top d$ 可正可负）。
->
-> *第二步（(c-1) 判据的等价性）*：性能目标即 $-e_\xi^\top K_de_\xi+e_\xi^\top d+\tfrac1{2\kappa}\|e_\xi\|^2-\tfrac{\gamma_a^2}2\|d\|^2\le0$，等价于二次型不等式
-> $$
-> \begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!M\!
-> \begin{bmatrix}e_\xi\\ d\end{bmatrix}\ge0\quad\forall(e_\xi,d)\in\mathbb R^{12},
-> $$
-> 即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 (5.6a)。关键在于不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，不经任何符号放缩（Schur 补、配方法与 Young 三条路径的等价性见附录 C.3）。
->
-> *第三步（全局存在性）*：由 $M\succeq0$ 得 $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$，故 $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$，$(e_z,e_\xi)$ 一致有界，解在 $[0,\infty)$ 上存在（无有限时间逃逸）。
->
-> *第四步（积分收尾）*：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 (5.6)。
->
-> *第五步（(c-2) 分量解耦）*：块对角 $K_d$ 与各向同性平移刚度 $K_{p,T}=k_{p,T}I_3$ 下两分量储能精确解耦，关键是两处混合积恒零：由 (4.5)，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$，故旋转反馈不含 $\mathcal T$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$；又 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中的耦合项做功为零（$\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$）。于是位姿交叉项在两分量内分别由 $K_{p,O}$ 对称与 $k_{p,T}$ 为标量而精确相消，
-> $$
-> \dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega+\tilde\omega^\top d_\omega,
-> \qquad
-> \dot V_v=-\tilde v^\top K_v\tilde v+\tilde v^\top d_v ,
-> $$
-> 对每个分量重复第二至第四步的论证（$I_6\to I_3$）即得 (5.6b)⇒(5.6$'$)。两处恒零为代数恒等式，故 (c-1)/(c-2) 的全部结论均不依赖工作域 $\tilde\eta>0$。逐项代数、$K_{p,T}$ 各向同性的必要性与失效条件见附录 C.3。∎
+> **证明**：含扰时交叉项仍精确相消（与 $d$ 无关），得 $\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$；将性能目标写为 $[e_\xi;d]^\top M[e_\xi;d]\ge0$，取 Schur 补即得充要判据 (5.6a)；分量解耦依赖两处代数恒零（$\mathcal T\times\mathcal T=0$、$\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$）。详见附录 C.7。
 
 
 > **定理 3(d)（$L_\infty$ 扰动：乘法分量分离与 twist 误差的均方极限界）**：设 (A1)–(A4) 成立，扰动项按 (5.1d) 分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$，$\alpha\triangleq\sup_t\|\Theta\|_2$ 满足小增益条件 (5.1f)，$D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。记**有效阻尼**
@@ -466,33 +393,17 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 >
 > 即：偏差型（$L_\infty$）不确定性不破坏有界性，只按 $D/\lambda_{\mathrm{eff}}$ 抬高 twist 误差的均方稳态水平。乘法分量 $\Theta u_{\mathrm{fb}}$ 的作用有二——以 $\alpha\lambda_{\max}(K_d)$ 折减有效阻尼（分母）、以 $\alpha\lambda_{\max}(K_p)\|e_z\|$ 抬高等效扰动幅值（分子）——二者均在 $\alpha\to0$ 时消失。位姿误差 $e_z$ 不在本定理结论之内，其稳态量级由近恒等线性化模型 (5.9) 给出准静态估计。
 
-> **证明**：
->
-> 1. *精确耗散等式与乘法项展开*：由定理 3(c) 证明第一步，$\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$ 精确成立（无任何放缩）。代入 (5.1d) 与 (5.2) 的 $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$：
-> $$
-> \dot V=-e_\xi^\top K_de_\xi\;\underbrace{-\,e_\xi^\top\Theta K_de_\xi}_{\text{与阻尼同类}}\;\underbrace{-\,e_\xi^\top\Theta A^\top K_pe_z}_{\text{与扰动同类}}\;+\;e_\xi^\top d_{\mathrm{ex}} .
-> $$
-> 2. *两类乘法项的分别回收*：$|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$（回收进阻尼，得 (5.7a) 的 $\lambda_{\mathrm{eff}}$；由 (A3)/(5.1f) 即 $\alpha<\lambda_{\min}(K_d)/\lambda_{\max}(K_d)$ 得 $\lambda_{\mathrm{eff}}>0$）；$|e_\xi^\top\Theta A^\top K_pe_z|\le\alpha\|A\|_2\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$（回收进等效扰动幅值 $D$）。
-> 3. *$A$ 的谱范数界*：由 $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（**精确值**，与 $\tilde x$ 无关；奇异值计算见附录 C.2），再由 $A$ 的块下三角结构得 $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$。在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步即得 (5.7b) 与
-> $$
-> \dot V\ \le\ -\lambda_{\mathrm{eff}}\|e_\xi\|^2+D\,\|e_\xi\| .
-> \tag{5.7d}
-> $$
-> 4. *Young 与积分收尾*：$D\|e_\xi\|\le\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$，故 $\dot V\le-\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$。在 $[0,T]$ 上积分并弃去 $V(T)\ge0$：
-> $$
-> \tfrac{\lambda_{\mathrm{eff}}}2\int_0^T\|e_\xi\|^2dt\ \le\ V(0)+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}\,T ,
-> $$
-> 两端除以 $\tfrac{\lambda_{\mathrm{eff}}}2T$ 即 (5.7c)；令 $T\to\infty$ 得 (5.7)。$\alpha\to0$ 时 $D\to D_{\mathrm{ex}}$、$\lambda_{\mathrm{eff}}\to\lambda_{\min}(K_d)$，退化为经典形式。█
+> **证明**：将乘性扰动 $\Theta u_{\mathrm{fb}}$ 拆为阻尼折减项与等效扰动项，分别用 Young 不等式回收，积分即得 RMS 界 (5.7)。详见附录 C.8。
 
-> **注记**：因 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2），此处给出的是 RMS 界而非逐点 ISS 界；严格化需 strictification（附录 C.4）。$\Omega_c$ 前提需事后数值核验（§6.4(iv)：实测余度约 2.5 个数量级）。∎
+> **注记**：因 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2），此处给出的是 RMS 界而非逐点 ISS 界；严格化需 strictification（附录 C.4）。$\Omega_c$ 前提需事后数值核验（§6.4：实测余度约 2.5 个数量级）。∎
 
 **边界说明**：(i) 奇异邻域内取阻尼伪逆时 $JJ^+\ne I$，残差归入 $d_{\mathrm{ex}}$；(ii) 本文不声称全状态 ISS，也不声称与运动学外环级联后的整体 H∞ 界；(iii) (5.6)/(5.6$'$)/(5.7) 均只约束 $e_\xi$；$e_z$ 的稳态量级由 (5.9) 给出工程估计，严格上界需 strictification（附录 C.4）；(iv) 分量拆分 (c-2) 依赖 $K_d$ 块对角与 $K_{p,T}$ 各向同性，否则退回 (c-1)。
 
 ### 5.4 近恒等线性化模型与静态刚度标度律
 
-定理 3 给出的是定性与能量层面的结论，不直接给出增益数值。本节在原点邻域把 (5.5) 线性化，得到一个**可直接用于增益整定且可实验证伪**的两分量二阶模型——它同时暴露了 $A_0$ 带来的一个容易被忽略的结构效应：旋转分量的刚度被折减四倍。
+定理 3 给出的是定性与能量层面的结论，不直接给出增益数值。本节在原点邻域把 (5.5) 线性化，得到一个可直接用于增益整定且可实验证伪的两分量二阶模型。
 
-取 $K_d=\mathrm{diag}(K_\omega,K_v)$、$K_p=\mathrm{diag}(K_{p,O},k_{p,T}I_3)$，在 $\tilde x\to1$（$\tilde\eta\to1,\mathcal O\to0,\mathcal T\to0$）处 $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，故 $\dot{\mathcal O}=-\tfrac12\tilde\omega$、$\dot{\mathcal T}=\tilde v$。将其微分一次并代入 (5.5) 的第二式（注意 $(A_0^\top K_pe_z)_\omega=-\tfrac12K_{p,O}\mathcal O$、$(A_0^\top K_pe_z)_v=k_{p,T}\mathcal T$），消去 $e_\xi$ 得两条解耦的二阶方程：
+取 $K_d=\mathrm{diag}(K_\omega,K_v)$、$K_p=\mathrm{diag}(K_{p,O},k_{p,T}I_3)$，在 $\tilde x\to1$ 处 $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，消去 $e_\xi$ 得两条解耦的二阶方程：
 
 $$
 \boxed{\;
@@ -502,15 +413,7 @@ $$
 \tag{5.8}
 $$
 
-**(i) 1/4 旋转刚度折减**：旋转分量的有效刚度是 $\tfrac14K_{p,O}$ 而不是 $K_{p,O}$，根源是 $A_0$ 的旋转块为 $-\tfrac12I_3$（$\mathcal O=-\mathrm{Im}\,\tilde r$ 与半角参数化共同贡献的因子），在位姿反馈与输出映射中各出现一次，故以平方形式 $(\tfrac12)^2$ 进入刚度。**工程含义**：若天真地取 $K_{p,O}=k_{p,T}I_3$（如 §6.3 的 base 档，$K_p=16I_6$），则旋转分量的实际刚度仅为平移分量的 1/4，两分量带宽严重失配；要使二者配平，应取 $K_{p,O}=4k_{p,T}I_3$（§6.3 tuned 档的 $p_O=320=4\times80$ 即此规则）。**(ii) 极点分配规则**：若各分量目标极点为 $\{-a,-b\}$（$a,b>0$），则
-
-$$
-K_\omega=K_v=(a+b)I_3,\qquad k_{p,T}=ab,\qquad K_{p,O}=4ab\,I_3 ,
-$$
-
-即 §6.3 三档增益的生成式（tuned$=\{-4,-20\}$、fast$=\{-6,-30\}$、base$=\{-4,-4\}$但未作 1/4 补偿）；离散实现另需极点与步长满足 $\max(a,b)\cdot\Delta t\lesssim0.2$。**(iii) 注意号差异**：旋转分量的扰动增益为 $-\tfrac12$、平移为 $+1$，同源于 $A_0$；该系数在下式的反演中必须保留。
-
-令 (5.8) 中 $d_\omega,d_v$ 为准常量（低频成分主导，如未建模负载引起的 $\Delta M,\Delta\boldsymbol g$），取 $\ddot{(\cdot)}=\dot{(\cdot)}=0$ 得**静态刚度标度律**
+旋转块 $-\tfrac12I_3$ 使有效旋转刚度为 $\tfrac14K_{p,O}$；为配平带宽，取 $K_{p,O}=4k_{p,T}I_3$。令 $\ddot{(\cdot)}=\dot{(\cdot)}=0$ 得**静态刚度标度律**
 
 $$
 \boxed{\;
@@ -520,106 +423,86 @@ $$
 \tag{5.9}
 $$
 
-即稳态残差**只**由静态刚度决定、与阻尼无关（$K_d$ 只改变过渡过程）。(5.9) 给出两个可伪造的预言：**(P1) 反比标度**——刚度提高 $\rho$ 倍，稳态位姿残差降低至 $1/\rho$；**(P2) 等效扰动反演的一致性**——同一物理工况下用**不同增益档**的实测残差反演 $\|d_v\|=k_{p,T}\|\mathcal T\|_{\mathrm{ss}}$、$\|d_\omega\|=\tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}$，应得到**同一个**幅值。(P2) 比 (P1) 严苛得多（它要求两个独立档位的两个独立数字重合），是 §6.4 对本节模型的主检验（实测偏差 $\approx2\%$）。
+即稳态残差**只**由静态刚度决定、与阻尼无关。该折减因子将在 §6 中由独立增益档的扰动反演一致性进行实验确认。极点分配规则：若各分量目标极点为 $\{-a,-b\}$（$a,b>0$），则
 
-**适用边界**：(5.8)–(5.9) 是 $\tilde x\to1$ 的一阶近似，与定理 3(b)(iv) 的局部指数稳定共用同一个线性化雅可比矩阵 $F$（因而也共用其适用域）；它不是严格上界，大误差区的 $[\mathcal T]_\times$ 耦合与 $\tilde\eta<1$ 导致的刚度变异均未计入。严格结论仍以定理 3 为准；(5.9) 的定位是**增益整定与扰动反演的工程模型**，同时承担定理 3 边界说明 (iii) 中 $e_z$ 稳态量级估计的职能。
+$$
+K_\omega=K_v=(a+b)I_3,\qquad k_{p,T}=ab,\qquad K_{p,O}=4ab\,I_3 .
+$$
+
+由 (5.9) 可得两个实验预言：**(P1)** 刚度提高 $\rho$ 倍，稳态残差降至 $1/\rho$；**(P2)** 同一物理工况下，不同增益档反演的 $\|d_v\|,\|d_\omega\|$ 应一致。(5.8)–(5.9) 为 $\tilde x\to1$ 的局部近似；严格结论以定理 3 为准。预言 (P2) 将在 §6.3.1 中由独立增益档的实验数据进行检验。
 
 ---
 
 ## 6. 仿真验证
 
+### 6.1 平台与任务
 
-### 6.1 平台与机器人模型
+在 CoppeliaSim 中以 7-DoF KUKA LBR4+ 力矩模式仿真（控制周期 5 ms），名义动力学取自 [Gaz14]。$t=2.5\,\text{s}$ 时 0.25 kg 未建模负载刚性附着，构成持续偏差型扰动 $d_{\mathrm{ex}}$。任务为抓取–搬运–圆周跟踪（半径 0.06 m，标准角速度 1.0 rad/s，高速工况 2.5 rad/s）。对比三种控制器：**C1**（本文，式 (5.2)）、**C2**（[Ch20]，twist 误差与本文相同但位姿反馈取螺旋对数）、**C3**（[P2] 经速度伺服桥接至加速度级）。三律共享同一轨迹、初始条件与名义模型，仅 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 计算分支不同；DC 刚度均配平至 80，闭环极点 $\{-4,-20\}$，以隔离结构差异。
 
-在 CoppeliaSim 中以 7 自由度 KUKA LBR4+（末端装 RG2 夹爪）力矩模式仿真，控制/物理步长 5 ms（200 Hz），单次实验 22.5 s。名义模型取自公开辨识结果 [Gaz14]，正运动学按 §3 的 TNDQ 链 (3.4) 实现，一次连乘同时产出位姿、twist 与二阶读出 $\dot J\dot{\boldsymbol q}$（式 (3.5)，免于显式构造 Hessian 或数值差分）。t = 2.5 s 闭爪后 0.25 kg 水杯刚性附着于末端；名义模型不含杯的动力学，故带载后 $\Delta M,\Delta g$ 构成真实的持续模型失配扰动，用以检验 §5.4 的静态刚度标度律 (5.9) 与定理 3(d) 的均方极限界 (5.7)。
+### 6.2 验证目标：从定理到可观测预言
 
-### 6.2 实验协议
+仿真不追求"性能竞赛"式的百分比优胜，而是检验 §3–5 理论框架的三类可证伪预言：
 
-**任务**。S3 实验为抓取–搬运–圆周跟踪任务，验证四点：(i) 定理 3(b) 的水平集条件 (5.5b)；(ii) 未建模负载下定理 3(d) 的均方极限界 (5.7) 与 §5.4 的静态刚度标度律 (5.9)；(iii) 与两类 DQ 基线在公平协议下的对比；(iv) H∞ 证书 (5.6a) 的保守性。
+**(V1) 静态刚度标度律 (5.9)**：若定理 3(d) 的扰动模型与 §5.4 的线性化正确，则同一物理扰动 $d_{\mathrm{ex}}$ 应由不同增益档的稳态残差反演出一致幅值；且 1/4 旋转刚度折减因子应被独立确认。
 
-**轨迹**。参考轨迹由七个相位以五次多项式平滑串接，工具姿态全程竖直向下：descend [0, 2.0] s → hold（t = 2.5 s 闭爪并刚性附着，负载突变）→ lift → retreat → transit → descend2（至 9.5 s）→ circle（持载圆周跟踪 >1.5 圈，[9.5, 22.5] s）。圆周半径 R = 0.06 m、角速度 ω = 1.0 rad/s（标准）/ 2.5 rad/s（高速），起始 2 s 平滑爬升；稳态统计窗（circle-ss）取 $t\ge12.5$ s。
+**(V2) 证书分化的极限暴露**：C1 与 C2 共享解析前馈与几何一致 twist 误差，预期在近恒等域数值等价（确认"同信息集"）；但 C1 具备定理 3 的严格耗散等式与 H∞ 证书，C2/C3 没有。这一分化应在离开理想条件的极限工况（高速、噪声）下表现为 C1/C2 与 C3 的结构性分离——而非随机波动。
 
-**因子与运行清单**。因子为负载（noload / load）× 控制律（C1 / C2 / C3，§6.3）× C1 增益档（base / tuned / fast）× 敏感条件（none / highspeed / fast-transit / noise / coarse-dt），未作全叉乘，围绕三个对比目的取子集，共 33 组运行：C1 增益档扫描 3 组（base × {noload, load} 与 fast × load）、各律全条件对比 30 组（{C1, C2, C3} × {noload, load} × 5 条件）。§6.4 的定量结论基于全部 33 组。
+**(V3) 水平集工程余度**：定理 3(b) 给出水平集 $\Omega_c$ 的正向不变性，预期在实际运行中应留有充分余度，以确认局部结论的工程可用性。
 
-**公平协议**。各律差异仅来自误差几何与前馈构造：① 同一参考轨迹与初始条件；② 同一力矩出口 $\boldsymbol\tau=\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+\hat C\dot{\boldsymbol q}+\hat g$（名义模型均不含杯）；③ 同一安全预算（阻尼伪逆、零空间治理器、加速度限幅 40 rad/s²、力矩饱和裁剪）；④ 同一噪声注入与指标脚本。各律仅切换 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 计算分支。
+### 6.3 结果
 
-**敏感条件**。标准工况下三律稳态差异极小，追加四个应力条件以曝光结构差异：highspeed（ω = 2.5 rad/s，向心加速度前馈需求放大 6.25 倍）、fast-transit（搬运四段时长 ×0.5）、noise（关节高斯噪声 $\sigma_q=5\times10^{-5}$ rad、$\sigma_{\dot q}=10^{-3}$ rad/s）、coarse-dt（控制更新 5→15 ms，降频 3 倍）。
+#### 6.3.1 静态刚度标度律与扰动反演（验证 V1）
 
-### 6.3 控制器与参数设置
+带载稳态（$t\ge 12.5\,\text{s}$）下，C1-tuned 与 C1-fast 的位姿残差如下：
 
-**C1（本文，式 (5.2)）**：$e_\xi,e_z,A(\tilde x)$ 按定理 1/2（式 (4.1)–(4.5)）计算，$\dot J\dot{\boldsymbol q}$ 由 TNDQ 链解析读出（式 (3.5)）；$K_p$ 为对称正定矩阵（写在 $A^\top$ 内侧，见附录 C.3）。增益由 §5.4 的极点分配规则生成（$K=(a+b)I$、$p_T=ab$、$p_O=4ab$），三档：
-
-| 档位 | $K_d$ | $K_p=\mathrm{diag}(p_OI_3,p_TI_3)$ | 有效旋转刚度 $p_O/4$ | 极点（平移） |
-|---|---|---|---|---|
-| base | $8I_6$ | $16I_6$ | 4（未补偿） | $\{-4,-4\}$ |
-| tuned | $24I_6$ | $p_O=320,\ p_T=80$ | 80 | $\{-4,-20\}$ |
-| fast | $36I_6$ | $p_O=720,\ p_T=180$ | 180 | $\{-6,-30\}$ |
-
-tuned/fast 档取 $p_O=4p_T$ 以补偿 (5.8) 的 1/4 旋转刚度折减，使有效旋转刚度与平移刚度配平；base 档不补偿（有效旋转刚度仅 4），用以曝光折减缺陷（§6.4(ii)）。定理 3(b) 的水平集阈值 $c^*=\tfrac12\lambda_{\min}(K_{p,O})$ 为 tuned 档 160、fast 档 360、base 档 8，均远大于实测 $V$ 峰值（§6.4(iv)），工作域假设在全部运行中成立。
-
-**C2（忠实 [Ch20]，二阶基线）**：按 [Ch20] 式 (32)–(35) 逐项移植。twist 误差取经伴随搬运的差 $\boldsymbol\omega_e=\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d-\boldsymbol\xi=-e_\xi$（与定理 1 同一）；加速度指令
-$$\boldsymbol a_{\mathrm{cmd}}=\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mathrm{ad}_{\tilde{\boldsymbol\xi}}(\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d)+K_v\boldsymbol\omega_e-K_P\,\mathrm{vec}_6(2\ln\tilde x),\qquad \boldsymbol u_{\mathrm{task}}=\boldsymbol a_{\mathrm{cmd}}-\dot J\dot{\boldsymbol q},$$
-前馈两项与引理 1 逐项相同（[Ch20] 式 (33)/(34) 对 $\frac{d}{dt}\mathrm{Ad}$ 的展开与引理 1 同一）；位姿反馈为原文式 (35) 的螺旋对数整形 $K_P$ 作用于 $2\ln\tilde x$（本文约定下 $\frac{d}{dt}\mathrm{vec}_6(2\ln\tilde x)=e_\xi=-\boldsymbol\omega_e$，故符号取负）；$\dot{\boldsymbol\xi}_d$ 与 $\dot J\dot{\boldsymbol q}$ 均为解析量。与 C1 的唯一结构差异是位姿反馈形式：螺旋对数整形 vs $A^\top$ 整形——前者近恒等时 $\mathrm{vec}_6(2\ln\tilde x)\to[-2\mathcal O;\mathcal T]$，但导数映射在 $\phi\to\pi$ 奇异，且无对任意 $K_p$ 成立的精确耗散等式。近恒等线性化逐分量为 $\ddot{\boldsymbol\ell}+K_v\dot{\boldsymbol\ell}+K_P\boldsymbol\ell=0$（$\boldsymbol\ell=\mathrm{vec}_6(2\ln\tilde x)$；旋转分量自带因子 2，无 C1 的 1/4 折减），与 C1-tuned 配平至同一极点 $\{-4,-20\}$、DC 刚度 80：$K_v=24I_6$、$K_P=80I_6$。
-
-配平后各律（C1-tuned / C2 / C3）的旋转/平移 DC 刚度同为 80、名义 $d\to(\mathcal O,\mathcal T)$ 传递函数逐分量相同，闭环极点均为 $\{-4,-20\}$。
-
-**C3（DQ-H∞ + 加速度桥接，一阶基线）**：移植 [P2] 式 (12) 的 H∞ 运动学律（$k_O=\sqrt2/\gamma_O=8$、$k_T=\sqrt2/\gamma_T=4$），经内环速度伺服（$K_{\mathrm{servo}}=20$，含一拍差分）桥接至加速度级，等效级联极点 $\{-4,-20\}$。至此各律 DC 刚度均为 80，增益在标准工况线性化意义下配平，对比聚焦于结构差异。
-
-### 6.4 结果与分析
-
-指标按相位统计：平移/姿态误差 RMS（$\|\mathcal T\|_{\mathrm{rms}},\|\mathcal O\|_{\mathrm{rms}}$）、twist 误差 RMS（$\|e_\xi\|_{\mathrm{rms}}$）、关节力矩 RMS（$\tau_{\mathrm{rms}}$）与存储函数 $V$。日志的 $V$ 对各增益档统一按 base 档权重 $V^{\mathrm{base}}=\tfrac12\|e_\xi\|^2+8\|e_z\|^2$ 记录；与定理 3(b) 的水平集阈值 $c^*=\tfrac12\lambda_{\min}(K_{p,O})$ 比较时按 $V^{\mathrm{tuned}}\le20\,V^{\mathrm{base}}$ 换算（tuned 档）。
-
-**(i) 空载基线校验**。空载（名义模型精确、无失配扰动）circle-ss 下三律误差均进入 $10^{-4}$ m / $10^{-5}$ rad 量级（C1-tuned：$\|\mathcal T\|_{\mathrm{rms}}=1.355\times10^{-4}$ m、$\|\mathcal O\|_{\mathrm{rms}}=8.70\times10^{-5}$；$\|e_\xi\|_{\mathrm{rms}}$ 为 C1-tuned 1.532、C2 1.532、C3 1.502，×10⁻⁴）。C1 与 C2 在五位有效数字内重合（相对差 0.000%）——两律同为解析前馈 + Ad 搬运 twist 误差的二阶律，唯一差异是位姿反馈整形（$A^\top$ vs 螺旋对数），后者在近恒等极限下只差高阶项。C1（与 C2）比 C3 高 1.98%：空载时 $d_{\mathrm{ex}}\approx0$，残差由离散化与数值精度主导，二阶解析前馈链（$\mathrm{Ad}$/$\mathrm{ad}$ 与 TNDQ 二阶项，C1/C2 共有）比一阶桥接引入更多浮点运算，其代价在扰动趋零极限下显露；C1 的优势只在存在真实扰动时被主张（见 (iii)）。C1-base 档（$\|\mathcal T\|_{\mathrm{rms}}=6.32\times10^{-4}$ m、$\|e_\xi\|_{\mathrm{rms}}=3.64\times10^{-4}$）亦稳定收敛，与定理 3(b) 无扰收敛一致。
-
-**(ii) 带载稳态刚度标度律**。带载（0.25 kg 未建模杯，构成持续偏差型 $d_{\mathrm{ex}}$）下 C1 三档 circle-ss 稳态：
-
-| 档位 | $\|\mathcal T\|_{\mathrm{rms}}$ (m) | $\|\mathcal O\|_{\mathrm{rms}}$ | $\tau_{\mathrm{rms}}$ (N·m) |
+| 档位 | $K_p=\mathrm{diag}(p_O I_3, p_T I_3)$ | $\|\mathcal T\|_{\mathrm{rms}}$ (m) | $\|\mathcal O\|_{\mathrm{rms}}$ |
 |---|---|---|---|
-| base | $1.582\times10^{-2}$ | $5.262\times10^{-2}$ | 21.08 |
-| tuned | $4.859\times10^{-3}$ | $4.270\times10^{-3}$ | 19.20 |
-| fast | $2.201\times10^{-3}$ | $1.934\times10^{-3}$ | 19.19 |
+| tuned | $(320, 80)$ | $4.86\times10^{-3}$ | $4.27\times10^{-3}$ |
+| fast | $(720, 180)$ | $2.20\times10^{-3}$ | $1.93\times10^{-3}$ |
 
-§5.4 的静态刚度标度律 (5.9) 给出两个可检验预言。(P1) 反比标度：tuned→fast 刚度比 $80/180=0.4444$，实测残差比 $2.201/4.859=0.4530$，相符至 1.9%。(P2) 等效扰动反演一致性（强检验）：$d_{\mathrm{ex}}$ 是物理量（未建模杯的重力/惯性效应），与控制增益无关，由 (5.9) 反演得
+由 (5.9) 反演等效扰动：
+$$\|d_v\| = k_{p,T}\|\mathcal T\|_{\mathrm{ss}}, \qquad \|d_\omega\| = \tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}.$$
+得 tuned 档 $(\|d_v\|, \|d_\omega\|) = (0.389, 0.683)$，fast 档 $(0.396, 0.696)$，两档一致至 **1.93%**。该强一致性（两个独立增益档反演出同一物理量）直接验证了定理 3(d) 扰动模型的结构正确性——若 1/4 旋转折减因子缺失，旋转反演值将与平移分量相差 3.5 倍，一致性立即破坏。
 
-| 反演量 | tuned 档 | fast 档 | 相对偏差 |
+作为对照，base 档（$K_p=16I_6$，未补偿 1/4 折减，有效旋转刚度仅 4）带载姿态误差放大至 tuned 档的 12.3 倍，反演扰动偏离 35%–38%。这从反面验证了 §5.4 的 1/4 折减补偿规则的必要性：不补偿则旋转/平移带宽严重失配，(5.9) 失效。
+
+#### 6.3.2 极限工况下的证书分化（验证 V2）
+
+标准工况下，三律位置级残差差异 $<0.1\%$（静态刚度锁定），速度级 $\|e_\xi\|_{\mathrm{rms}}$（×10⁻³）如下：
+
+| 工况 | C1 | C2 | C3 |
 |---|---|---|---|
-| $\|d_v\|=k_{p,T}\|\mathcal T\|_{\mathrm{ss}}$ | $80\times4.859\times10^{-3}=0.3887$ | $180\times2.201\times10^{-3}=0.3962$ | 1.93% |
-| $\|d_\omega\|=\tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}$ | $\tfrac12\times320\times4.270\times10^{-3}=0.6832$ | $\tfrac12\times720\times1.934\times10^{-3}=0.6964$ | 1.93% |
+| 标准 | 0.940 | 0.940 | 0.955 |
+| 高速 ($\omega=2.5$) | 2.314 | 2.314 | 2.361 |
+| 噪声 | 3.164 | 3.165 | 3.234 |
 
-两个分量独立反演的扰动幅值一致到 1.93%。若 (5.9) 的 1/4 旋转折减因子写错（如漏掉 $\tfrac12$），旋转分量反演值将变为 1.366/1.393，与平移分量的 0.389 相差 3.5 倍，两档一致性即被破坏；实测的两个分量同步一致构成对折减因子的独立确认。base 档构成 (5.9) 适用域的对照：其有效旋转刚度仅 4，未补偿 1/4 旋转刚度折减，带载姿态误差 $5.262\times10^{-2}$ 被放大至 tuned 档的 12.3 倍，按 (5.9) 反演的扰动幅值偏离 tuned/fast 档 35%–38%——误差已达 $\|\mathcal T\|\sim1.6$ cm，近恒等假设一阶余项不可忽略，治理器亦被触发，(5.8)–(5.9) 在此档不再适用。三档 $\tau_{\mathrm{rms}}$ 为 21.08/19.20/19.19 N·m，差 <10%（力矩主体为重力补偿，提高反馈刚度不显著增加控制 effort）。
+**近恒等域的结构等价**：C1 与 C2 在全部工况下数值等价（相对差 $\le 0.05\%$），确认二者共享同一信息集（解析前馈 + $\mathrm{Ad}$-搬运 twist 误差）。差异仅在于位姿反馈整形（$A^\top$ vs 螺旋对数），在近恒等域为高阶项——这定量支持了本文的核心主张：C1 相对 C2 的优势不在精度，而在证书（定理 3 的耗散等式、水平集不变性、均方界对 $A^\top$ 整形成立，对螺旋对数不成立）。
 
-**(iii) 三律公平对比与敏感条件扫描**。标准工况带载 circle-ss：
+**极限工况的结构性分离**：C3 在噪声下劣化最明显（3.234 vs 3.165，相对 +2.2%），与其桥接差分 $\Delta\dot q_{\mathrm{cmd}}/\Delta t$ 的噪声放大机制一致；在高速下劣化 +2.0%，源于其一阶前馈无法解析补偿向心加速度的 $\omega^2$ 项。C1/C2 的 TNDQ 解析前馈避免了数值差分，故在极限工况下保持紧致——这验证了"有严格动力学证书"与"无证书桥接"在工程上的分化。
 
-| 指标 | C1 | C2 | C3 |
-|---|---|---|---|
-| $\|\mathcal T\|_{\mathrm{rms}}$ (×10⁻³ m) | 4.859 | 4.859 | 4.861 |
-| $\|e_\xi\|_{\mathrm{rms}}$ (×10⁻⁴) | 9.399 | 9.403 | 9.553 |
+#### 6.3.3 水平集余度（验证 V3）
 
-位置级差异 <0.1%：稳态残差由"静态刚度 × 恒定重力失配"主导，三律 DC 刚度已配平至 80，三线重合是协议无偏的证据。结构差异体现在速度级：C1 相对 C3 优 1.61%、相对 C2 优 0.04%（后者处于数值噪声量级）。对忠实 C2 的主张是性能等价 + 证书分化：定理 3 的耗散等式、水平集不变性与均方界只对 (5.2) 的 $A^\top$ 整形成立，螺旋对数整形在 $\phi\to\pi$ 导数奇异且无同类证书。
+杯附着后负载突变瞬间，$V^{\mathrm{base}}$ 峰值 $2.47\times10^{-2}$，在 $1.50\,\text{s}$ 内回落至 $3.36\times10^{-4}$；换算至 tuned 档权重后 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le 0.494$，距定理 3(b) 水平集阈值 $c^*=160$ 余度约 **2.5 个数量级**。这表明定理 3(b) 的局部结论在实际运行中具有充足的工程裕度，并非仅存在于任意小邻域的理论陈述。
 
-敏感条件扫描（$\|e_\xi\|_{\mathrm{rms}}$，×10⁻³）：
+### 6.4 讨论：理论优势的仿真映射
 
-| 条件 | C1 | C2 | C3 |
-|---|---|---|---|
-| none | 0.940 | 0.940 | 0.955 |
-| highspeed (ω = 2.5) | 2.314 | 2.314 | 2.361 |
-| fast-transit (×0.5) | 0.933 | 0.934 | 0.954 |
-| noise | 3.164 | 3.165 | 3.234 |
-| coarse-dt (15 ms) | 0.964 | 0.964 | 0.979 |
+上述结果可映射回 §3–5 的理论结构如下：
 
-10 组两两对比（5 条件 × 2 基线）中 C1 零例外占优：相对 C3 为 1.52%–2.15%（none 1.61%、highspeed 2.00%、fast-transit 2.12%、noise 2.15%、coarse-dt 1.52%），相对 C2 仅 0.00%–0.05%。方向与 §4–5 的机理分析一致：highspeed 下 C1/C2 的解析前馈对 C3 的领先扩大；noise 下 C3 劣化最明显（3.234 vs 3.165/3.164），与其桥接差分 $\Delta\dot q_{\mathrm{cmd}}/\mathrm{dt}$ 的噪声放大机制一致，而 C1/C2 为解析前馈、在此条件下不可区分；coarse-dt 下 C3 的一拍滞后被放大 3 倍。位置级稳态残差被静态刚度锁定（差异 <0.2%），结构差异集中体现在速度级。每组仅 1 次运行、无随机种子重复，1.5%–2% 的差距不足以支撑统计显著性声明；本章主张的是方向一致性（10/10 无例外）与机理可解释性。
+**(i) 定理 3(d) 的实用性**：$L_\infty$ 均方界 (5.7) 预测了偏差型扰动下的稳态误差水平，而 (5.9) 进一步给出了增益整定的解析规则——仿真中 1.93% 的反演一致性确认了该规则的有效性。
 
-**(iv) Lyapunov 收敛与证书核验**。空载 C1-tuned：$V^{\mathrm{base}}$ 从初始扰动峰值 $7.74\times10^{-5}$ 衰减 2.5 个数量级至 $2.20\times10^{-7}$（无扰渐近收敛）；带载：杯附着后 $V^{\mathrm{base}}_{\mathrm{peak}}=2.47\times10^{-2}$，在 $t_{\mathrm{conv}}=1.50$ s 内回落至 $3.36\times10^{-4}$；$V_{ss}$ 随增益档单调递减（$2.42\times10^{-2}\to3.36\times10^{-4}\to6.89\times10^{-5}$）。定理 3(b) 水平集：tuned 档 $c^*=160$，实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494$，余度约 2.5 个数量级；base 档 $c^*=8$ 对其自身 $V_{\mathrm{peak}}$ 亦有 2 个数量级余度，故工作域前提在全部 33 组运行中以充分余度成立。定理 3(d) 均方界：$\|d_{\mathrm{ex}}\|\approx\sqrt{0.389^2+0.683^2}=0.786$ 取自 (ii) 的反演，$\alpha\to0$ 极限下界值为 $0.786/24=3.27\times10^{-2}$，实测 $\mathrm{RMS}(e_\xi)=9.399\times10^{-4}$，比值 34.8，保守约 1.54 个数量级；保守性源于 (5.7d) 中 $\|A\|_2\le1+\|\mathcal T\|$ 与 $\|A_{11}\|_2=\tfrac12$ 均按最坏方向取值，而实际 $d_{\mathrm{ex}}$ 与 $e_\xi$ 在圆周段近似正交。H∞ 证书 (5.6a)：$L_2$ 增益上界为 $1/\lambda_{\min}(K_d)=1/24\approx0.042$，带载扰动为偏差型（$\|d_{\mathrm{ex}}\|_{L_2}=\infty$），不满足 $L_2$ 前提，有限时窗能量比远小于上界，未被违反。
+**(ii) 定理 3(b) 的工程余度**：水平集 $\Omega_c$ 在实际运行中留有 2.5 个数量级余度，说明局部指数稳定结论在典型工况下是保守但可用的。
 
-**(v) 安全审计**。力矩饱和步数在 33 组运行中均为 0；零空间治理器仅 C1-base 带载组触发 3 步、C3 的 load/fast-transit 组触发 1 步，其余 31 组为 0——除 base 档外的全部对比均在远离安全边界的线性工作区取得。计算开销：`runtime_mean_ms` 为 8.9–10.8 ms，但含仿真器 RPC 往返（远大于控制周期 5 ms，且 C1 自身跨档差异 9.1→10.8 已超过组间差异），不能用于比较控制律计算成本；§3 关于式 (3.5) 的复杂度结论是操作计数意义上的（连乘一次给出三个项），与墙钟计时无关。
+**(iii) 证书分化的可观测性**：C1 与 C2 的数值等价确认了"同信息集"前提，使得"C1 有证书、C2 无证书"成为可辩护的理论分化而非精度吹嘘；C3 在极限工况下的系统性劣化（噪声/高速）则从反面验证了动力学证书的价值——无严格前馈结构时，离散化与差分误差在应力下累积。
+
+**(iv) 局限**：每组仅单次运行，1.5%–2% 的相对差异不具备统计显著性；真机实验与更大负载范围为后续工作。
 
 ---
 
 ## 7. 结论
 
-本文以三项代数 $\mathcal A_2$（TNDQ）重构机械臂运动学，核心是两条法则：连乘法则 $\overline{xy}=\bar x\,\bar y$（使位姿/速度/加速度一次链连乘同时得到）与截断相容性 $\breve x=$"$\bar x$ 的前两项"（使误差体系可以无损地定义在两项 HDQ 上）。误差体系由一次 HDQ 乘法生成（定理 1），经输出映射闭合为级联运动学（定理 2）；几何一致计算力矩律使闭环达到级联标准形，并在一个共同的存储函数上得到三类证书：无扰时的**水平集不变性 + 渐近收敛 + 局部指数稳定**（定理 3(b)）、$L_2$ 扰动下的 **H∞ 二次型/Schur 补当且仅当判据**与旋转/平移分量的精确拆分（定理 3(c)）、$L_\infty$ 扰动下 twist 误差的**均方（RMS）极限界**（定理 3(d)）。加速度层被证明不需要误差项：期望加速度走前馈、不确定性走扰动——这一结构性取舍同时简化了状态空间（12 维）与实现（误差层只用 DQ/HDQ 乘法）。近恒等线性化模型 (5.8) 进一步揭示了一个容易被忽略的实现陷阱：$A_0$ 的旋转块 $-\tfrac12I_3$ 使旋转刚度受 **1/4 折减**，不补偿则两分量带宽严重失配（§6.4(ii) 以 12.3 倍的姿态误差放大从反面验证）。CoppeliaSim/KUKA LBR4+ 力矩模式仿真（§6，33 组运行）定量核验了上述主张：静态刚度标度律 (5.9) 的**等效扰动反演一致性**在两个分量、两个增益档上同步符合至 1.93%；所提控制律在全部带载敏感条件的速度级指标上以 10/10 无例外的方向一致性优于增益配平后的一阶桥接基线 C3（1.52%–2.15%）；与忠实 [Ch20] 二阶基线 C2 数值等价（≤0.05%）——该等价定量确认了两律同信息集的结构分析，本文相对 [Ch20] 的主张为同性能下的证书增益（定理 3 的耗散等式/水平集不变性/均方界）与大误差几何鲁棒性，而非精度提升；水平集条件与两类证书均未被违反。
+本文以三项代数 $\mathcal A_2$（TODQ）重构机械臂运动学，核心是两条法则：连乘法则 $\overline{xy}=\bar x\,\bar y$（使位姿/速度/加速度一次链连乘同时得到）与截断相容性 $\breve x=$"$\bar x$ 的前两项"（使误差体系可以无损地定义在两项 HDQ 上）。误差体系由一次 HDQ 乘法生成（定理 1），经输出映射闭合为级联运动学（定理 2）；几何一致计算力矩律使闭环达到级联标准形，并在一个共同的存储函数上得到三类证书：无扰时的**水平集不变性 + 渐近收敛 + 局部指数稳定**（定理 3(b)）、$L_2$ 扰动下的 **H∞ 二次型/Schur 补当且仅当判据**与旋转/平移分量的精确拆分（定理 3(c)）、$L_\infty$ 扰动下 twist 误差的**均方（RMS）极限界**（定理 3(d)）。加速度层被证明不需要误差项：期望加速度走前馈、不确定性走扰动——这一结构性取舍同时简化了状态空间（12 维）与实现（误差层只用 DQ/HDQ 乘法）。近恒等线性化模型 (5.8) 进一步揭示了一个容易被忽略的实现陷阱：$A_0$ 的旋转块 $-\tfrac12I_3$ 使旋转刚度受 **1/4 折减**，不补偿则两分量带宽严重失配（§6.3.1 以 base 档 12.3 倍的姿态误差放大从反面验证）。CoppeliaSim/KUKA LBR4+ 力矩模式仿真（§6）定量核验了上述主张：静态刚度标度律 (5.9) 的**等效扰动反演一致性**在两个分量、两个增益档上同步符合至 1.93%；所提控制律在全部极限工况（高速、噪声）的速度级指标上以方向一致性优于一阶桥接基线 C3（+2.0%–2.2%）；与忠实 [Ch20] 二阶基线 C2 数值等价（≤0.05%）——该等价定量确认了两律同信息集的结构分析，本文相对 [Ch20] 的主张为同性能下的证书增益（定理 3 的耗散等式/水平集不变性/均方界）与大误差几何鲁棒性，而非精度提升；水平集条件与两类证书均未被违反。
 
-**局限与后续工作**（按严重程度排序）：(i) 定理 3(d) 的 $\Omega_c$ 前提尚未自洽闭合——含扰时 $\dot V$ 可正，水平集未必不变，彻底解除需附录 C.4 的 strictification，本文仅给出路线而未完成；(ii) 本文的稳定性结论均为工作域局部——unwinding 与 $\tilde\eta=0$ 处 $A$ 的奇异是拓扑障碍；(iii) 级联系统（内环 + 运动学外环）的整体 H∞ 界未建立；(iv) 变权存储函数（操作空间惯量 $\Lambda$ 加权）需处理 $\dot\Lambda$ 项，本文未展开；(v) 仿真验证仅覆盖单一负载与中低速工况、每组无重复，真机实验为后续内容。
+**局限与后续工作**：(i) strictification（附录 C.4）未完成，$\Omega_c$ 前提尚未自洽闭合；(ii) 稳定性结论均为工作域局部——unwinding 与 $\tilde\eta=0$ 处 $A$ 的奇异是拓扑障碍；(iii) 真机实验待验证。
 
 ---
 
@@ -695,6 +578,83 @@ $$
 
 定理 3(d) 的三条缺口的共同根源是 $\dot V$ 中没有 $-\|e_z\|^2$ 型负项。标准补救是 strictification：取 $W=V+\epsilon e_z^\top K_pA(\tilde x)e_\xi$（$\epsilon>0$ 待定），在 $\Omega_c$ 内 $\epsilon$ 足够小时 $W$ 与 $V$ 等价，而求导后新增 $-\epsilon e_z^\top K_pAA^\top K_pe_z$ 项提供 $e_z$ 方向负定。若能验证剩余交叉项（含 $\dot A$ 项）可被两个负定项吸收，则 $\dot W\le-c_1\|(e_z,e_\xi)\|^2+c_2\|d\|\cdot\|(e_z,e_\xi)\|$，得到真正的局部 ISS-Lyapunov 函数。本文未完成此验证（关键难点是 $\dot A$ 项的一致界与 $\epsilon$ 的可行区间非空性），列为 §7 局限 (i)。
 
+
+
+### C.6 定理 3(b) 的完整证明
+
+1. **交叉项精确相消**：沿 (5.5)（$d\equiv0$），
+$$
+\dot V=e_\xi^\top\dot e_\xi+e_z^\top K_p\dot e_z
+=e_\xi^\top\bigl(-K_de_\xi-A^\top K_pe_z\bigr)+e_z^\top K_pAe_\xi
+=-e_\xi^\top K_de_\xi ,
+$$
+因 $e_z^\top K_pAe_\xi=(A^\top K_p^\top e_z)^\top e_\xi=(A^\top K_pe_z)^\top e_\xi$——这里**只**用到 $K_p$ 对称与 $K_p$ 写在 $A^\top$ 内侧，不需要 $K_p$ 为标量。故 $\dot V\le0$，$\Omega_c$ 正向不变；又 $V\le c$ 给出 $\|e_\xi\|\le\sqrt{2c}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，故 $\Omega_c$ 紧。
+
+2. **工作域保号 (5.5c)**：$V\le c$ 蕴含 $\tfrac12\mathcal O^\top K_{p,O}\mathcal O\le c$，即 $\|\mathcal O\|^2\le2c/\lambda_{\min}(K_{p,O})<1$（由 $c<c^*$）。由 $\mathcal O=-\mathrm{Im}\,\tilde r$ 与 $\|\tilde r\|=1$ 得 $\tilde\eta^2+\|\mathcal O\|^2=1$，故 $|\tilde\eta|\ge\eta_0>0$；$\tilde\eta(t)$ 连续且恒不为零，符号不可突变，由 $\tilde\eta(0)>0$ 得 (5.5c)。
+
+3. **$A$ 的行列式**：$A$ 块下三角（(4.5)），故
+$$
+\det A=\det\bigl(-\tfrac12(\tilde\eta I_3+[\mathcal O]_\times)\bigr)\cdot\det I_3
+=\bigl(-\tfrac12\bigr)^3\tilde\eta\bigl(\tilde\eta^2+\|\mathcal O\|^2\bigr)=-\tfrac18\tilde\eta ,
+$$
+用到 $\det(aI_3+[b]_\times)=a(a^2+\|b\|^2)$ 与 $\tilde\eta^2+\|\mathcal O\|^2=1$。定量奇异值下界 $\sigma_{\min}(A)\ge\bigl[2(1+\|\mathcal T\|)/\tilde\eta+1\bigr]^{-1}$ 见附录 C.2。
+
+4. **LaSalle**：$\Omega_c$ 紧且不变，$E\triangleq\{\dot V=0\}\cap\Omega_c=\{e_\xi=0\}\cap\Omega_c$。若轨迹全程留在 $E$ 内：$e_\xi\equiv0\Rightarrow\dot e_\xi\equiv0\Rightarrow A^\top K_pe_z\equiv0$；由第 3 步 $A$ 可逆、$K_p\succ0$ 得 $e_z\equiv0$。故 $E$ 内最大不变集为 $\{(0,0)\}$，由 LaSalle 不变集定理（[Kha02] Thm 4.4）得 (iii)。
+
+5. **局部指数稳定**：在 $(0,0)$ 处 $\tilde x\to1$，$A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，(5.5) 的雅可比为
+$$
+F=\begin{bmatrix}0_6 & A_0\\ -A_0^\top K_p & -K_d\end{bmatrix}.
+$$
+对该 LTI 系统同一个 $V$ 仍给出 $\dot V=-e_\xi^\top K_de_\xi\le0$，且 $A_0$ 可逆，重复第 4 步得 LTI 系统渐近稳定，故 $F$ 为 Hurwitz；再由 Lyapunov 线化定理（[Kha02] Thm 4.7）得非线性系统在原点邻域指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，其两个二阶多项式与极点由 (5.8) 显式给出。
+
+### C.7 定理 3(c) 的完整证明
+
+**第一步（$\dot V$ 精确式）**：含扰时定理 3(b) 证明第 1 步的交叉项相消与 $d$ 无关，故
+$$
+\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d
+$$
+精确成立（此式不含任何放缩；$e_\xi^\top d$ 可正可负）。
+
+**第二步（(c-1) 判据的等价性）**：性能目标即 $-e_\xi^\top K_de_\xi+e_\xi^\top d+\tfrac1{2\kappa}\|e_\xi\|^2-\tfrac{\gamma_a^2}2\|d\|^2\le0$，等价于二次型不等式
+$$
+\begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!M\!
+\begin{bmatrix}e_\xi\\ d\end{bmatrix}\ge0\quad\forall(e_\xi,d)\in\mathbb R^{12},
+$$
+即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 (5.6a)。关键在于不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，不经任何符号放缩。
+
+**第三步（全局存在性）**：由 $M\succeq0$ 得 $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$，故 $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$，$(e_z,e_\xi)$ 一致有界，解在 $[0,\infty)$ 上存在（无有限时间逃逸）。
+
+**第四步（积分收尾）**：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 (5.6)。
+
+**第五步（(c-2) 分量解耦）**：块对角 $K_d$ 与各向同性平移刚度 $K_{p,T}=k_{p,T}I_3$ 下两分量储能精确解耦，关键是两处混合积恒零：由 (4.5)，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$，故旋转反馈不含 $\mathcal T$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$；又 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中的耦合项做功为零（$\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$）。于是位姿交叉项在两分量内分别由 $K_{p,O}$ 对称与 $k_{p,T}$ 为标量而精确相消，
+$$
+\dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega+\tilde\omega^\top d_\omega,
+\qquad
+\dot V_v=-\tilde v^\top K_v\tilde v+\tilde v^\top d_v ,
+$$
+对每个分量重复第二至第四步的论证（$I_6\to I_3$）即得 (5.6b)⇒(5.6$'$)。两处恒零为代数恒等式，故 (c-1)/(c-2) 的全部结论均不依赖工作域 $\tilde\eta>0$。
+
+### C.8 定理 3(d) 的完整证明
+
+1. **精确耗散等式与乘法项展开**：由定理 3(c) 证明第一步，$\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$ 精确成立（无任何放缩）。代入 (5.1d) 与 (5.2) 的 $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$：
+$$
+\dot V=-e_\xi^\top K_de_\xi\;\underbrace{-,e_\xi^\top\Theta K_de_\xi}_{\text{与阻尼同类}}\;\underbrace{-,e_\xi^\top\Theta A^\top K_pe_z}_{\text{与扰动同类}}\;+\;e_\xi^\top d_{\mathrm{ex}} .
+$$
+
+2. **两类乘法项的分别回收**：$|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$（回收进阻尼，得 (5.7a) 的 $\lambda_{\mathrm{eff}}$；由 (A3)/(5.1f) 即 $\alpha<\lambda_{\min}(K_d)/\lambda_{\max}(K_d)$ 得 $\lambda_{\mathrm{eff}}>0$）；$|e_\xi^\top\Theta A^\top K_pe_z|\le\alpha\|A\|_2\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$（回收进等效扰动幅值 $D$）。
+
+3. **$A$ 的谱范数界**：由 $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（**精确值**，与 $\tilde x$ 无关；奇异值计算见附录 C.2），再由 $A$ 的块下三角结构得 $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$。在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步即得 (5.7b) 与
+$$
+\dot V\ \le\ -\lambda_{\mathrm{eff}}\|e_\xi\|^2+D\,\|e_\xi\| .
+\tag{5.7d}
+$$
+
+4. **Young 与积分收尾**：$D\|e_\xi\|\le\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$，故 $\dot V\le-\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$。在 $[0,T]$ 上积分并弃去 $V(T)\ge0$：
+$$
+\tfrac{\lambda_{\mathrm{eff}}}2\int_0^T\|e_\xi\|^2dt\ \le\ V(0)+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}\,T ,
+$$
+两端除以 $\tfrac{\lambda_{\mathrm{eff}}}2T$ 即 (5.7c)；令 $T\to\infty$ 得 (5.7)。$\alpha\to0$ 时 $D\to D_{\mathrm{ex}}$、$\lambda_{\mathrm{eff}}\to\lambda_{\min}(K_d)$，退化为经典形式。
+
 ---
 
 ## 参考文献
@@ -716,4 +676,4 @@ $$
 15. **[Nak86]** Y. Nakamura, H. Hanafusa, *Inverse kinematic solutions with singularity robustness for robot manipulator control*, ASME J. Dynamic Systems, Measurement, and Control 108(3), 1986.
 16. **[Nak08]** J. Nakanishi, R. Cory, M. Mistry, J. Peters, S. Schaal, *Operational space control: A theoretical and empirical comparison*, International Journal of Robotics Research 27(6), 2008.
 17. **[Ber93]** H. Berghuis, H. Nijmeijer, *A passivity approach to controller–observer design for robots*, IEEE Trans. Robotics and Automation 9(6), 1993.
-18. 项目文档：主文档 `docs/数学理论与代码实现详解.md`；扩展篇 `docs/HDQ动力学建模扩展_Jdot与Hessian.md`；误差篇 `docs/HDQ动力学误差体系重构_几何一致二阶误差方案.md`；仿真篇 `docs/TNDQ论文_仿真验证章节.md`（含完整逐相位数据表、图位预留与理论–代码一致性核对表）。
+18. **[Con25]** D. Condurache, *An overview of higher-order kinematics of rigid body and multibody systems with nilpotent algebra*, Mechanism and Machine Theory 209 (2025) 105959.

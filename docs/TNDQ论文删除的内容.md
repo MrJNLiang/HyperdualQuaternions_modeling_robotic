@@ -272,3 +272,41 @@ $$\boldsymbol a_{\mathrm{cmd}}=\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mat
 ### 6.7 γ 扫描协议（后续实验设计）
 
 针对 §5.3 注记的 $\gamma_a$ 双分量推论，设计三组扫描（同对象/轨迹/扰动，每个 γ 点记录证书可行性、认证/实测 $L_2$ 增益与稳态误差 RMS）；**扫描必须注入 $L_2$ 型扰动**（如有限时长的脉冲/衰减扰力）而非 §6 的持续偏差型负载，否则不落在定理 3(c) 前提内（§6.5(6) 第三条）：**A 组**（证书扫描）固定增益扫 $\gamma_a$，预期测得列逐位不变——$\gamma_a$ 是分析参数，只移动证书可行域边界 $\gamma_a\ge[2\lambda_{\min}(K_d)-\kappa^{-1}]^{-1/2}$（注记 (i)）；**B 组**（综合模式）按 $\kappa=\gamma_a^2$、$K_d=\gamma_a^{-2}I$ 回写增益，预期误差随 $\gamma_a$ 单调下降、完整不等式 (5.6)（含 $2V(0)$ 项）逐点核验通过、认证增益 $=\gamma_a^2$（注记 (ii)）；**C 组**（对照）复刻 [P2] 的 $\gamma_O=\gamma_T=\gamma$ 综合参数扫描，预期与 B 组趋势同构但力矩接口下无证书可对照（"可调不可证"）。另建议补两项本章数据无法回答的对照：**D 组**（重复性）对 §6.5(5) 的 10 组两两对比取 ≥10 个噪声种子重复，以建立统计显著性；**E 组**（开销）用只包裹控制律调用的专项计时重测三律单步计算成本。
+
+### 5.4 近恒等线性化模型与静态刚度标度律
+
+定理 3 给出的是定性与能量层面的结论，不直接给出增益数值。本节在原点邻域把 (5.5) 线性化，得到一个**可直接用于增益整定且可实验证伪**的两分量二阶模型——它同时暴露了 $A_0$ 带来的一个容易被忽略的结构效应：旋转分量的刚度被折减四倍。
+
+取 $K_d=\mathrm{diag}(K_\omega,K_v)$、$K_p=\mathrm{diag}(K_{p,O},k_{p,T}I_3)$，在 $\tilde x\to1$（$\tilde\eta\to1,\mathcal O\to0,\mathcal T\to0$）处 $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，故 $\dot{\mathcal O}=-\tfrac12\tilde\omega$、$\dot{\mathcal T}=\tilde v$。将其微分一次并代入 (5.5) 的第二式（注意 $(A_0^\top K_pe_z)_\omega=-\tfrac12K_{p,O}\mathcal O$、$(A_0^\top K_pe_z)_v=k_{p,T}\mathcal T$），消去 $e_\xi$ 得两条解耦的二阶方程：
+
+$$
+\boxed{\;
+\ddot{\mathcal O}+K_\omega\dot{\mathcal O}+\tfrac14K_{p,O}\,\mathcal O=-\tfrac12\,d_\omega ,
+\qquad
+\ddot{\mathcal T}+K_v\dot{\mathcal T}+k_{p,T}\,\mathcal T=+\,d_v .\;}
+\tag{5.8}
+$$
+
+**(i) 1/4 旋转刚度折减**：旋转分量的有效刚度是 $\tfrac14K_{p,O}$ 而不是 $K_{p,O}$，根源是 $A_0$ 的旋转块为 $-\tfrac12I_3$（$\mathcal O=-\mathrm{Im}\,\tilde r$ 与半角参数化共同贡献的因子），在位姿反馈与输出映射中各出现一次，故以平方形式 $(\tfrac12)^2$ 进入刚度。**工程含义**：若天真地取 $K_{p,O}=k_{p,T}I_3$（如 §6.3 的 base 档，$K_p=16I_6$），则旋转分量的实际刚度仅为平移分量的 1/4，两分量带宽严重失配；要使二者配平，应取 $K_{p,O}=4k_{p,T}I_3$（§6.3 tuned 档的 $p_O=320=4\times80$ 即此规则）。**(ii) 极点分配规则**：若各分量目标极点为 $\{-a,-b\}$（$a,b>0$），则
+
+$$
+K_\omega=K_v=(a+b)I_3,\qquad k_{p,T}=ab,\qquad K_{p,O}=4ab\,I_3 ,
+$$
+
+即 §6.3 三档增益的生成式（tuned $=\{-4,-20\}$、fast $=\{-6,-30\}$、base $=\{-4,-4\}$但未作 1/4 补偿）；离散实现另需极点与步长满足 $\max(a,b)\cdot\Delta t\lesssim0.2$。**(iii) 注意号差异**：旋转分量的扰动增益为 $-\tfrac12$、平移为 $+1$，同源于 $A_0$；该系数在下式的反演中必须保留。
+
+令 (5.8) 中 $d_\omega,d_v$ 为准常量（低频成分主导，如未建模负载引起的 $\Delta M,\Delta\boldsymbol g$），取 $\ddot{(\cdot)}=\dot{(\cdot)}=0$ 得**静态刚度标度律**
+
+$$
+\boxed{\;
+\|\mathcal T\|_{\mathrm{ss}}=\frac{\|d_v\|}{k_{p,T}} ,
+\qquad
+\|\mathcal O\|_{\mathrm{ss}}=\frac{2\,\|d_\omega\|}{\lambda(K_{p,O})} ,\;}
+\tag{5.9}
+$$
+
+即稳态残差**只**由静态刚度决定、与阻尼无关（$K_d$ 只改变过渡过程）。(5.9) 给出两个可伪造的预言：**(P1) 反比标度**——刚度提高 $\rho$ 倍，稳态位姿残差降低至 $1/\rho$；**(P2) 等效扰动反演的一致性**——同一物理工况下用**不同增益档**的实测残差反演 $\|d_v\|=k_{p,T}\|\mathcal T\|_{\mathrm{ss}}$、$\|d_\omega\|=\tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}$，应得到**同一个**幅值。(P2) 比 (P1) 严苛得多（它要求两个独立档位的两个独立数字重合），是 §6.4 对本节模型的主检验（实测偏差 $\approx2\%$）。
+
+(5.8)–(5.9) 为 $\tilde x\to1$ 的局部近似，大误差区耦合未计入；严格结论以定理 3 为准。
+
+---

@@ -1,0 +1,105 @@
+% !TeX root = main.tex
+% ------------------------------------------------------------------------
+% tndq-style.sty
+% 宏包与定理样式：TODQ 论文（参考 Automatica / IEEE TRO 的排版风格）
+% 编译引擎：XeLaTeX（中文经由 ctex / xeCJK 处理）
+% ------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tndq-style}[2026/08/16 v1.0 Style file for the TODQ paper]
+
+% ---------------- 页面与基础宏包 ----------------
+\RequirePackage[a4paper,margin=2.6cm]{geometry}
+\RequirePackage{amsmath,amssymb,amsthm,mathtools}
+\RequirePackage{bm}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{tabularx}
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+\RequirePackage{xcolor}
+
+% ---------------- 中文支持（XeLaTeX + ctex/xeCJK）----------------
+% fontset=fandol 使用 TeX Live 自带的 Fandol 字体；
+% 若系统装有 Noto CJK 字体，可将 fontset 改为 none 并手动 \setCJKmainfont。
+% heading=true 启用 ctex 的章节标题接口（\ctexset 的 section 键方可生效）。
+\RequirePackage[UTF8,fontset=fandol,heading=true]{ctex}
+
+% ---------------- 章节标题中文化格式 ----------------
+% 与原文一致：一级标题形如 "1. 引言"，二级标题形如 "1.1 背景与动机"
+\ctexset{
+  section = {
+    name     = {,.},
+    number   = \arabic{section},
+    aftername= {\enspace},
+    beforeskip = 1.2ex plus 0.3ex minus 0.1ex,
+    afterskip  = 1.0ex plus 0.2ex,
+    format   = \Large\bfseries,
+  },
+  subsection = {
+    name     = {,},
+    number   = {\arabic{section}.\arabic{subsection}},
+    aftername= {\enspace},
+    beforeskip = 1.0ex plus 0.3ex minus 0.1ex,
+    afterskip  = 0.6ex plus 0.2ex,
+    format   = \large\bfseries,
+  },
+}
+
+% ---------------- 常用名称中文化 ----------------
+% （heading=true 时 ctex 已自动翻译摘要/参考文献等名称，此处不再重复定义）
+
+% ---------------- 定理环境（正文直立、标题加粗，中文习惯）----------------
+\newtheoremstyle{tndqplain}
+  {6pt}{6pt}
+  {\normalfont}
+  {}
+  {\bfseries}
+  {}
+  {5pt plus 1pt minus 1pt}
+  {}
+\newtheoremstyle{tndqremark}
+  {6pt}{6pt}
+  {\normalfont}
+  {}
+  {\bfseries}
+  {}
+  {5pt plus 1pt minus 1pt}
+  {}
+
+\theoremstyle{tndqplain}
+\newtheorem{theorem}{定理}
+\newtheorem{lemma}{引理}
+\newtheorem{definition}{定义}
+
+\theoremstyle{tndqremark}
+\newtheorem{remark}{注记}
+
+% 证明环境：以 ∎ 结束（与原文一致）
+\renewcommand{\qedsymbol}{$\blacksquare$}
+\renewcommand{\proofname}{证明}
+
+% ---------------- 数学宏 ----------------
+\newcommand{\Ad}{\mathrm{Ad}}   % 伴随作用
+\newcommand{\ad}{\mathrm{ad}}   % 李括号（DQ 形式）
+\newcommand{\R}{\mathbb{R}}
+
+% 长公式允许跨页
+\allowdisplaybreaks[1]
+
+% 中文与行内公式交界处的紧凑断行（避免不可断的长公式段溢出）
+\setlength{\emergencystretch}{3em}
+
+% ---------------- 页眉页脚 ----------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape Third-Order Dual Quaternion Kinematics with Geometrically Consistent Error Systems}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------------- 超链接（最后加载）----------------
+\RequirePackage[colorlinks=true,
+                linkcolor=blue!55!black,
+                citecolor=blue!55!black,
+                urlcolor=blue!55!black]{hyperref}
+
+\endinput
