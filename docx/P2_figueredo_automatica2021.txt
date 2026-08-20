@@ -1,0 +1,1572 @@
+Automatica 132 (2021) 109817
+
+Contents lists available at ScienceDirect
+
+Automatica
+journal homepage: www.elsevier.com/locate/automatica
+
+Brief paper
+
+Robust H∞ kinematic control of manipulator robots using dual
+quaternion algebra✩
+∗
+
+Luis Felipe da Cruz Figueredo a ,1 , Bruno Vilhena Adorno b , ,1 , João Yoshiyuki Ishihara c
+a
+
+Munich School of Robotics and Machine Intelligence, Technische Universität München (TUM), 80797 Munich, Germany
+Department of Electrical and Electronic Engineering, School of Engineering, The University of Manchester, Sackville Street Manchester, M13
+9PL, United Kingdom
+c
+Department of Electrical Engineering, University of Brasília (UnB) – 70910-900, Brasília, DF, Brazil
+b
+
+article
+
+info
+
+Article history:
+Received 13 February 2019
+Received in revised form 31 May 2021
+Accepted 18 June 2021
+Available online 24 July 2021
+Keywords:
+H∞ control
+Kinematic control
+Unit dual quaternions
+Robust control
+
+a b s t r a c t
+This paper proposes a robust dual-quaternion based H∞ task-space kinematic controller for robot
+manipulators. To address the manipulator liability to modeling errors, uncertainties, exogenous disturbances, and their influence upon the kinematics of the end-effector pose, we adapt H∞ techniques
+– suitable only for additive noises – to unit dual quaternions. The noise to error attenuation within
+the H∞ framework has the additional advantage of casting aside requirements concerning noise distributions, which are significantly hard to characterize within the group of rigid body transformations.
+Using dual quaternion algebra, we provide a connection between performance effects over the endeffector trajectory and different sources of uncertainties and disturbances while satisfying attenuation
+requirements with minimum instantaneous control effort. The result is an easy-to-implement closed
+form H∞ control design criterion. The performance of the proposed strategy is evaluated within
+different realistic simulated scenarios and validated through real experiments.
+© 2021 Elsevier Ltd. All rights reserved.
+
+1. Introduction
+To ensure adequate performance, robot task-space kinematic
+controllers must ensure robustness against modeling errors, uncertainties, and exogenous disturbances that affect the
+end-effector pose. To cope with the challenges that arise from
+the pose description and possible representation singularities,
+the coupled translation and rotation kinematics can be modeled using non-minimal representations such as homogeneous
+transformation matrices (HTM) and unit dual quaternions. The
+unit dual quaternion is a non-singular representation for rigid
+transformations that is more compact, efficient and less computationally demanding than HTM (Aspragathos & Dimitros, 1998).
+In addition, dual quaternion algebra can represent rigid motions,
+twists, wrenches and several geometrical primitives in a straightforward way, which is useful when describing geometrical tasks
+✩ The material in this paper was partially presented at the IEEE Robotics and
+Automation Society Conference (ICRA), August 17–21, 2013, Madison, WI, USA.
+This paper was recommended for publication in revised form by Associate Editor
+Ciro Natale under the direction of Editor Thomas Parisini.
+∗ Corresponding author.
+E-mail addresses: luis.figueredo@tum.de (L.F.C. Figueredo),
+bruno.adorno@manchester.ac.uk (B.V. Adorno), ishihara@ene.unb.br
+(J.Y. Ishihara).
+1 The first two authors contributed equally to this work.
+https://doi.org/10.1016/j.automatica.2021.109817
+0005-1098/© 2021 Elsevier Ltd. All rights reserved.
+
+directly in the task-space (Marinho et al., 2019). Moreover, control laws are defined directly over a vector field, eliminating the
+need to extract additional parameters or to design matrix-based
+controllers.
+Thanks to those advantages, there has been an increasing
+interest in the study of kinematic representation and control
+in dual quaternion space. Those works comprise rigid motion
+stabilization, tracking, and multiple body coordination (Han et al.,
+2008; Mas & Kitts, 2017; Wang & Yu, 2013; Wang et al., 2012),
+and kinematic control of manipulators with single and multiple
+arms and human–robot interaction (Adorno et al., 2015, 2010;
+Figueredo et al., 2013).
+Despite the developments on robot control using dual
+quaternion algebra, there is still a gap in existing literature
+concerning the influence of control parameters, uncertainties, and
+disturbances over tracking robustness and performance when the
+trajectory is represented by unit dual quaternions.
+1.1. Statement of contributions
+We propose a robust dual-quaternion based H∞ task-space
+kinematic controller for manipulators. The new method directly
+connects different sources of uncertainties and disturbances to
+their corresponding performance effects over the end-effector
+trajectory in dual quaternion space. The controller explicitly addresses the influence of such disturbances over the end-effector
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+2.1. Forward kinematics of serial manipulators
+
+pose, in the H∞ sense, which does not require detailed knowledge about the statistical distribution of disturbances. This is
+paramount as those distributions are significantly hard to characterize within the group Spin(3) ⋉ R3 of unit dual quaternions
+(or even SE(3)). Using dual quaternion algebra, we derive easyto-implement closed form H∞ control and tracking strategies at
+the end-effector level that incorporate robustness requirements,
+disturbance attenuation and performance properties over the
+pose kinematics, while minimizing the required control effort. In
+summary, the contributions to the state of the art are:
+
+The rigid transformation from the robot’s fixed base to its endeffector pose–i.e., its forward kinematics–is described by xN (q) =
+[
+]T
+x01 x12 . . . xnn−1 , with q= q1 · · · qn , where xii+1 ≜ xii+1 (qi+1 ) ∈
+Spin (3) ⋉ R3 represents the rigid transformation between the extremities of links i and i + 1 and is a function of joint configuration
+qi+1 ∈ R.
+The differential forward kinematics, which describes the mapping between the joints velocities and the end-effector (generalized) velocity is given by (Adorno, 2011)
+
+1. Introduction of novel geometrical description of disturbances within the space of unit dual quaternions;
+2. Development of an easy-to-implement, closed form
+H∞ controller for end-effector trajectory tracking.
+
+ẋN =
+
+i
+
+The algebra of quaternions is generated by the basis elements
+1, ı̂, ȷ̂, and k̂ and a distributive multiplication operation satisfying
+ı̂2 =ȷ̂2 =k̂2 =ı̂ȷ̂k̂= − 1, yielding the set
+An element h = η + µ1 ı̂ + µ2 ȷ̂ + µ3 k̂ ∈ H may be decomposed
+into real and imaginary components Re (h) ≜ η and Im (h) ≜
+µ1 ı̂ + µ2 ȷ̂ + µ3 k̂, such that h = Re (h) + Im (h).
+Quaternion elements with real part equal to zero belong to
+the set of pure quaternions Hp ≜ {h ∈ H : Re (h) = 0}, and are
+equivalent to vectors in R3 under the addition operation and the
+bijective operator vec3 : Hp →R3 , such that µ=µ1 ı̂ + µ2 ȷ̂ + µ3 k̂
+
+]T
+
+yields vec3 µ= µ1 µ2 µ3 . The inverse mapping is given by
+the operator vec3 .
+3
+The set of unit quaternions
+√is ∗defined as S ≜ {h ∈ H : ∥h∥ =
+√ ∗
+hh =
+h h is the quaternion norm and
+1}, where ∥h∥ ≜
+h∗ ≜ Re (h) − Im (h) is the conjugate of h. The set S3 , together
+with the multiplication operation, forms the Lie group of unit
+quaternions, Spin (3), whose identity element is 1 and the inverse
+of any element h ∈ Spin (3) is h∗ . An arbitrary rotation angle φ ∈
+R around the rotation axis n ∈ Hp ∩ S3 , with n = nx ı̂ + ny ȷ̂ + nz k̂, is
+represented by r = cos(φ/2) + sin(φ/2)n ∈ Spin (3) (Selig, 2005).
+The complete rigid body displacement, in which translation
+and rotation are coupled, is similarly described using dual quaternion algebra (Selig, 2005). The dual quaternion set is given by the
+set
+
+(2)
+
+dxii−1 ( i−1 )∗ i−1
+x0 .
+xi
+dqi
+
+(3)
+
+i
+
+i=1
+
+n
+
+ẋN =
+
+1∑
+2
+
+ȷ q̇i xN +
+i
+
+i=1
+
+1
+v x .
+2 w N
+
+(4)
+
+Pose uncertainties, which are related to the end-effector pose,
+may also arise from unforeseen inaccuracies within model geometric parameters and time-varying uncertainties, but also comprise inaccuracies in the location of the reference frame. They can
+also appear due to the unmodeled parameters of the dynamic
+model, e.g., the gravity effect on the robot. Because they affect the
+forward kinematics, pose uncertainties can be mapped to (2)–(4)
+as
+
+H ≜ {h + ε h′ : h, h′ ∈ H, ε 2 = 0, ε ̸ = 0},
+′
+where ε is the
+Given
+√ unit.
+√ ∗ h = h + εh ∈ H∗, its ∗norm is
+ dual
+∗
+
+
+defined as h ≜ hh = h h and the element h ≜ h + ε h′∗
+is the conjugate of h. Under multiplication,
+the subset of unit dual
+ 
+quaternions S ≜ {h ∈ H : h = 1} forms the Lie group
+Spin(3) ⋉R3 , whose identity element is 1 and the group inverse of
+x ∈ Spin(3)⋉R3 is x∗ (Selig, 2005). An arbitrary rigid displacement
+defined by a translation p ∈ Hp followed by a rotation r ∈ S3 is
+represented in Spin(3) ⋉ R3 by the element x = r + (1/2)ε pr.
+The first order kinematic equation of a rigid body motion is
+described by
+1
+ẋ = ξ x,
+(1)
+2
+where ξ = ω + ε (ṗ + p × ω) is the twist in the inertial frame
+and ω, ṗ ∈ Hp are the angular and linear velocities, respectively.
+The twist ξ belongs to the set of pure dual quaternions, defined as
+(
+)
+( )
+Hp ≜ { h + ε h′ ∈ H : Re (h) =Re h′ =0}, which is equivalent
+to vectors in R6 under the addition operation and the bijective
+operator vec6 : Hp → R6 , such that ξ = (ξ1 ı̂ + ξ2 ȷ̂ + ξ3 k̂) + ε (ξ4 ı̂ +
+
+···
+
+ȷ q̇i xN ,
+
+2
+
+In practice, the end-effector trajectory is likely to be influenced
+by different sources of exogenous disturbances and inaccuracies
+in the manipulator’s geometrical parameters, resulting in an uncertain differential forward kinematics. To improve accuracy and
+control performance, the influence of those uncertainties and
+disturbances over the system must be explicitly regarded. Thus,
+we investigate two sources of disturbances, namely twist and
+pose uncertainties.
+Twist uncertainties may be caused by exogenous disturbances
+that directly influence the end-effector velocity, such as unmodeled time-varying uncertainties, aerodynamic forces acting on
+non-rigid manipulators, and the effects of discrete implementations of controllers designed in continuous time. The differential
+forward kinematics under the influence of a twist disturbance vw
+is modeled by2
+
+}
+
+{
+
+1∑
+
+3. Uncertainties and exogenous disturbances
+
+H ≜ η + µ1 ı̂ + µ2 ȷ̂ + µ3 k̂ : η, µ1 , µ2 , µ3 ∈ R .
+
+[
+ξ5 ȷ̂ + ξ6 k̂) yields vec6 ξ = ξ1
+denoted by vec6 : R6 → Hp .
+
+2
+
+n
+
+ξ N xN =
+
+ȷ = 2x0i−1
+
+2. Preliminaries
+
+[
+
+1
+
+x = xN c ,
+
+(5)
+
+where c ∈ Spin (3) ⋉ R and x denotes the real pose of the
+disturbed end-effector. The time derivative of (5) yields
+3
+
+n
+
+ẋ = ẋN c + xN ċ =
+
+1∑
+2
+
+ȷ q̇i x +
+i
+
+i=1
+
+1
+2
+
+1
+
+vw x + xv̄c ,
+2
+
+where v̄c ∈ Hp is the twist related to ċ, but expressed in the
+local frame; that is, ċ = (1/2) c v̄c . Since the disturbance v̄c
+can be expressed in the inertial frame by means of the normpreserving transformation v̄c = x∗ vc x, the actual differential forward kinematics, under twist and pose uncertainties, is described
+by
+n
+
+ẋ =
+
+]T
+ξ6 . The inverse mapping is
+
+1∑
+2
+
+ȷ q̇i x +
+i
+
+i=1
+
+1
+2
+
+1
+
+vw x + vc x .
+2
+
+(6)
+
+2 Notice that, since v ∈H is in the Lie algebra of Spin(3) ⋉ R3 , ẋ belongs
+p
+N
+w
+to the tangent space of Spin (3) ⋉ R3 at xN .
+2
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+Definition 1. For γO 1 , γO 2 , γT 1 , γT 2 ∈ (0, ∞), the robust
+control performance is achieved, in the H∞ sense, if the following
+hold (Abu-Khalaf et al., 2006)
+(1) The error (10) is exponentially stable for vw =vc =0;
+(2) Under the assumption of zero initial conditions, the disturbances’ influence upon the attitude and translation
+errors
+(
+) is
+attenuated below a desired level; that is, ∀ vw , vc , v′w , v′c ∈
+L2 ((0, ∞), Hp )
+
+3.1. Tracking error definition
+Given a desired differentiable pose trajectory xd (t ) ∈ Spin (3)⋉
+R3 , we seek to guarantee internal stability and tracking performance in terms of the noise-to-output influence over the
+end-effector trajectory. From (1), xd (t ) satisfies the first order
+kinematic equation
+1
+ẋd = ξ xd .
+(7)
+2 d
+We define the spatial difference in Spin(3) ⋉ R3 as
+1
+x̃ ≜ xx∗d = r̃ + ε p̃r̃ ,
+(8)
+2
+where r̃ = rr ∗d denotes the orientation error in Spin (3) given
+∗
+the desired orientation r d , and p̃ = p − r̃pd r̃ denotes the
+translational error in Hp given the desired position pd .
+From (6) and (7), the error kinematics is given by
+1
+x̃˙ = ẋx∗ + xẋ∗ =
+d
+
+=
+
+1(
+2
+
+d
+
+( n
+∑
+
+)
+ȷ q̇i + vw + vc
+i
+
+2
+
+i=1
+
+vec6 (J q̇) + vw + vc x̃ −
+
+)
+
+1
+2
+
+x̃ −
+
+1
+2
+
+x̃ξ
+
+∫ ∞
+∫ ∞
+∫ ∞
+ (
+)
+O z̃ (t ) 2dt ≤ γO2
+∥vc (t )∥2dt ,
+∥vw (t )∥2dt + γO2
+
+x̃ξ ,
+d
+
+′
+
+( )
+
+′
+
+0
+
+In this section, we exploit the dual quaternion algebra to solve
+the H∞ kinematic control problem while accounting for both
+additive and multiplicative disturbances.
+
+(9)
+
++
+5
+Theorem 1 (H∞ Tracking Control
+( ) ). Let( J) be the Moore–Penrose
+pseudo-inverse of J , and O z̃ and T z̃ be given by (11). For
+γO 1 , γO 2 , γT 1 , γT 2 ∈ (0, ∞), the task-space kinematic controller
+yielding joints’ velocity inputs
+
+( ) ]
+(
+))
+κO vec3 O z̃( )
++ vec6 x̃ξ d x̃∗ ,
+(12)
+−κT vec3 T z̃
+(
+)1/2
+(
+)1/2
+where κO = γO−12 + γO−22
+and κT = γT−12 + γT−22
+, ensures
+q̇ = J +
+
+(10)
+
+∗
+
+O z̃ ≜ Im z̃ , T z̃ ≜ −2z̃ (1−z̃ ) = p̃.
+
+( )
+
+c
+
+2
+
+4. H∞ control strategies
+d
+
+˙ Therefore, z̃ → 0 implies
+with dynamics described by z̃˙ = −x̃.
+x̃ → 1, which implies x → xd .
+To address the detrimental influence of the uncertainties and
+disturbances in system (9), we address as variable of interest
+the orientation and position errors from (8) and (10), defined
+respectively as
+
+( )
+
+0
+
+The H∞ criterion determines the maximum ratio of the error
+to the disturbance, in terms of their L2 -norms, such that the
+parameters γO2 1 , γO2 2 , γT2 1 , γT2 2 refer to the upper bounds of the
+performance index of each separate disturbance effect.
+
+where q = q1 [ · · · qn is the measured
+vector of joint vari]
+ables and J = vec6 ȷ1 · · · vec6 ȷn is the analytical Jacobian
+that maps the joints velocities q̇ to the (undisturbed) twist vec6 ξ
+N
+of the end-effector.
+From the spatial difference (8), we define a right invariant dual
+quaternion error function3
+z̃ ≜ 1 − x̃ = z̃ + ε z̃
+
+w
+
+1
+
+0
+
+]T
+
+[
+
+2
+
+1
+
+∫ 0∞
+∫0 ∞
+∫0 ∞
+ (
+ ′ 2
+ ′
+2
+)2
+2
+2
+T z̃ (t )  dt ≤ γT
+v (t ) dt .
+v (t ) dt + γT
+
+([
+
+exponential H∞ tracking performance with disturbance attenuation
+in the sense of Definition 1. Furthermore,
+if γ ≜γT 1 =γT 2 =γO 1 =γO 2
+√ −1
+such that κO = κT =
+2γ , then the aforementioned gains
+κO and κT ensure the minimum instantaneous control effort (i.e.,
+minimum norm of the control inputs) for the closed-loop system (9),
+(12).
+Proof. First, we replace (12) in (9) to obtain6
+( )
+)
+1(
+x̃˙ =
+vec6 J q̄˙ + vw + vc x̃,
+2
+[
+
+(11)
+
+3.2. Performance under uncertainties and disturbances
+
+( ))T
+
+(13)
+
+( ))T ]T
+
+where q̄˙ = J + κO vec3 O z̃
+.
+−κT vec3 T z̃
+(Exponential stability) To study the stability of the closed loop
+system, let us regard the following Lyapunov candidate function
+
+(
+
+The tracking error defined in the previous subsection explicitly
+accounts for uncertainties and noises in the closed-loop control
+of the robotic arm, allowing a performance assessment for any
+control strategy. If the statistics of the uncertainties and noises
+are available, a stochastic analysis can be considered (Simon,
+2006). However, for non-Euclidean spaces the probability density
+functions are, in general, hard to characterize and, when available,
+difficult to manipulate. In this paper, we propose a deterministic
+performance analysis based on the H∞ approach (Abu-Khalaf
+et al., 2006), in which the effect of the input onto the output
+is intuitively measured as a maximal level of amplification. The
+main advantage is the needlessness for assumptions regarding
+the statistics of the uncertainties and noises. As a result, the
+analysis is simpler than the stochastic one.
+The following definition describes the robust performance (in
+the H∞ sense) in terms of the dual quaternion error (10) and
+the disturbances vw = vw + εv′w and vc = vc + εv′c , assuming
+vw , v′w , vc , v′c ∈ L2 ([0, ∞), Hp ).4
+
+(
+
+′
+
+V (z̃ (t )) = V1 (z̃ (t )) + V2 (z̃ (t )),
+
+(14)
+
+ 2
+ ′ 2
+′
+where V1 (z̃ (t )) ≜ α1 z̃(t) and V2 (z̃ (t )) ≜ α2 z̃ (t) with
+α1 , α2 ∈ (0, ∞). The time-derivative of (14), considering (13) (see
+Appendix A) in the absence of disturbances (i.e., vw = vc = 0)
+yields
+
+V̇1 (z̃) ≤ −
+
+κO
+
+ 2
+ 2
+α1 z̃  , V̇2 (z̃ ′ ) = −2κT α2 z̃ ′  .
+
+2
+Hence, the closed-loop system, in the absence of disturbances,
+satisfy the following inequalities
+
+κO
+
+ 2
+
+2
+α1 z̃(t) − 2κT α2 z̃ ′ (t)
+{κ
+}
+O
+≤ − min
+, 2κT V (z̃ (t )) ≤ 0,
+
+V̇ (z̃ (t )) ≤ −
+
+(15)
+
+2
+
+2
+
+5 Set-point control (i.e., regulation) is a particular case that can be achieved
+by letting ξ = 0 in (12).
+d
+6 Eq. (13) holds even if ξ is not feasible, i.e., J J + vec (x̃ξ x̃∗ ) ̸ = vec (x̃ξ x̃∗ ).
+6
+6
+
+3 In order to prevent the unwinding phenomenon, see Remark 1.
+
+∗
+
+d
+
+d
+
+d
+
+Let s ≜ vec6 (x̃ξ x̃ ) then vec6 (J J + s) = vec6 (s) + vs , where vs is just another
+d
+source of disturbance to be added into vw .
+
+4 L is the Hilbert space of all square-integrable functions.
+2
+3
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+and g (α2 ) ≜ 2α2−1 + (1/8) α2 γT , where γO ≜γO−12 + γO−22 and
+γT ≜γT−12 + γT−22 , we minimize f (α1 ) and g(α2 ) to obtain α1opt =
+2γO−1/2 and α2opt =4γT−1/2 . Thus, the minimum values for the
+control gains κO and κT that satisfy (19) and (20) are
+
+which implies, by the Comparison Lemma (Khalil, 1996, p. 85),
+that the closed-loop system is exponentially stable:
+
+(
+
+V (z̃ (t )) ≤ V (z̃ (t0 )) exp − min
+
+{κ
+
+O
+
+)
+}
+, 2κT (t − t0 ) .
+
+2
+This way, Condition 1 in Definition 1 is satisfied for κO , κT ∈
+(0, ∞). In addition, by using the Comparison Lemma together
+with (A.3) and (A.4), both individual attitude and translation
+dynamics achieve exponential stability in the absence of disturbances, that is,
+
+(
+) (
+)1/2
+κO = f α1opt = γO−12 + γO−22
+,
+(
+) ( −2
+)
+−2 1/2
+κT = g α2opt = γT 1 + γT 2
+.
+√
+
+If γ ≜ γT 1 =γT 2 =γO 1 =γO 2 then κ = κO =κT =
+2γ −1 .
+Since the closed-loop
+system (9), (12) ]is equivalent to (13),
+[
+
+)
+(
+ 2 
+
+z̃(t) ≤ z̃(t0 )2 exp − 1 κO (t − t0 ) ,
+2
+ ′ 2  ′ 2
+z̃ (t) = z̃ (t0 ) exp (−2κT (t − t0 )) .
+
+( )T
+
+where q̄˙ =κ J + vec3 O z̃
+
+[
+
+( )T
+
+ 
+( )T T
+, then q̄˙  = κ ∥Γ κ ∥,
+− vec3 T z̃
+( ) T ]T
+. Therefore, since κ is
+− vec3 T z̃
+
+with Γ κ =J + vec3 O z̃
+the minimum gain that
+  satisfies the disturbance attenuation
+specification γ , then q̄˙  is the minimum instantaneous control
+effort. □
+
+(Disturbance attenuation) To verify Condition 2 in Definition 1,
+now we explicitly consider the influence of uncertainties and
+disturbances over the closed-loop system. As a consequence, the
+Lyapunov derivative yields (see (A.5))
+V̇1 (z̃ (t ))
+( )
+
+) 
+( )
+V̇ z̃ (t ) = −α1 ⟨O z̃ , κO O z̃ + vw + vc ⟩
+( )
+(16)
+α2 ( )
+− ⟨T z̃ , κT T z̃ − v′w − v′c ⟩.
+2
+
+
+
+V̇2 (z̃ (t ))
+ ( )2
+Defining Vγ O ≜ O z̃  − γO2 1 ∥vw ∥2 − γO2 2 ∥vc ∥2 and Vγ T ≜
+ ( )2
+ 
+
+
+T z̃  − γT2 v′ 2 − γT2 v′ 2 , Condition 2 is fulfilled if, for
+c
+w
+2
+1
+all t ∈ [0, ∞), the following inequalities hold
+(
+)
+(
+)
+V̇1 z̃ (t ) + Vγ O ≤ 0,
+V̇2 z̃ (t ) + Vγ T ≤ 0.
+(17)
+)
+(
+Indeed, under zero initial conditions (i.e., V z̃ (0) = 0), integrat-
+
+5. Simulation results
+
+(
+
+To validate and quantitatively assess the performance of the
+proposed techniques under different scenarios and conditions,
+this section presents simulated results of a KUKA LBR-IV arm connected to a Barrett Hand. The DQ Robotics toolbox from Adorno
+and Marinho (2020) was used for both robot modeling and control using dual quaternion algebra. Simulations are performed in
+V-REP,9 in asynchronous mode with 5 ms sampling period, with
+Bullet 2.83 to realistically simulate the robot dynamics.10
+5.1. Set-point control
+
+ing the first inequality in (17) results in
+
+We repeat the same procedure for the second inequality in (17)
+to obtain
+)
+2
+α2 ( −2
+κT ≥
++
+γT 1 + γT−22 .
+(20)
+α2
+8
+(Minimum instantaneous control effort) Since there exists an
+infinite number of solutions for α1 and α2 that satisfy (19) and
+(20), we seek α1opt and α2opt that minimize the positive control gains κO and κT . By letting f (α1 ) ≜ α1−1 + (1/4) α1 γO
+
+For the first scenario, the initial manipulator end-effector pose
+was x0 = r 0 + (1/2) ε p0 r 0 , with r 0 = cos (φ0 /2) + n0 sin (φ0 /2)
+such that φ0 = 2.187 rad and n0 = − 0.689ı̂ + 0.395ȷ̂ + 0.606k̂,
+from where it was supposed to travel to xd =r d +(1/2) ε pd r d with
+r d = cos (π/4) + ȷ̂ sin (π/4) and pd =1.56ı̂ − 0.43ȷ̂ + 0.65k̂.
+To evaluate Theorem 1 in a regulation problem, we compared
+the control law (12), with ξ =0, with two different controllers
+d
+based on dual quaternion representation (Adorno et al., 2010;
+Figueredo et al., 2013), a decoupled controller that concerns independent attitude and translation task Jacobians (Appendix B), and
+a classic HTM-based controller (Caccavale et al., 1999). To allow a
+fair comparison, all controllers were set with the same constant
+control gain κO = κT = κ = 2.
+The error norm in Fig. 1 (top figure) shows similar convergence for all controllers,11 as expected for undisturbed scenarios,
+because all of them result in a similar closed-loop first-order differential equation (in their own error variables) and they have the
+same gain. In contrast, the norm of the control inputs (i.e., the instantaneous control effort), shown in the bottom figure, indicates
+that the controller from Theorem 1 requires the least amount of
+control effort. This is due to the fact that, although all controllers
+have the same gain (which ensures the same convergence rate),
+they employ different error metrics, hence resulting in different
+end-effector trajectories as not all error metrics respect the topology of the space of rigid motions, which in turn require different
+control efforts.
+
+7 Notice that Γ ∗ is the (quaternion) conjugate transpose of Γ ∈ Hm×n , defined
+analogously to its complex matrices counterpart.
+8 Given a symmetric matrix M ∈ Rn×n , if uT M u ≤ 0, ∀u ∈ Rn , then
+
+9 https://www.coppeliarobotics.com/.
+10 http://bulletphysics.org.
+
+∫ ∞
+
+∫ ∞
+
+V̇1 z̃ (t ) dt =V1 z̃ (0) − lim V1 z̃ (t ) ≤0,
+
+Vγ O dt ≤ −
+
+(
+
+(
+
+)
+
+)
+
+t →∞
+
+0
+
+0
+
+(
+
+)
+
+where
+( the
+) last inequality above holds because V1 z̃ (0) = 0 and
+V1 z̃ (t ) ≥ 0, ∀t, which implies the first inequality of Condition 2
+in Definition 1. The same applies to the second inequality in (17).
+To satisfy (17), we use the definition of inner product as in
+Footnote 15 to rewrite the first inequality in (17) as7
+
+(
+
+⎡ ( )⎤∗⎡
+− (α1 κO −1) −α1/2
+O z̃
+⎣ vw ⎦ ⎣ −α1/2
+−γO2 1
+α
+1
+vc
+− /2
+0
+
+
+M
+
+−α1/2
+
+⎤⎡ ( )⎤
+O z̃
+
+⎦⎣ vw ⎦≤0.
+2
+vc
+−γO 2
+
+0
+
+)
+
+(18)
+
+Since M ≤ 0 implies (18),8 by using Schur complements it is
+possible to show that M ≤ 0 if and only if
+
+κO ≥
+
+1
+
+α1
+
++
+
+)
+α1 ( −2
+γO 1 + γO−22 .
+4
+
+(19)
+
+11 In this section, we used the real end-effector pose from V-REP.
+
+Γ ∗ M Γ ≤ 0, ∀Γ ∈ Hn .
+
+4
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+Fig. 3. Trajectory tracking: norm of the control input.
+Table 1
+Comparison between theoretical upper bound (γT , γO ) with the numerically
+calculated noise-to-error attenuation (γT sim , γO sim ).
+
+γT
+γT sim
+
+3.5
+1.914
+
+2.0
+1.235
+
+0.9
+0.736
+
+0.6
+0.528
+
+0.5
+0.404
+
+0.4
+0.326
+
+0.2
+0.167
+
+γO
+γO sim
+
+2
+0.95
+
+2
+1.01
+
+2
+0.99
+
+2
+1.03
+
+2
+1.04
+
+2
+1.01
+
+2
+0.99
+
+Fig. 1. Set-point control error (top) and control-input norm (bottom).
+Table 2
+Numerically computed noise-to-error attenuation (γT sim , γO sim ) compared
+against theoretical values γT =0.4 and γO =1.0.
+Theorem 1
+
+Figueredo et al.
+
+Adorno et al.
+
+HTM
+
+γT sim =0.32
+γO sim =0.65
+
+γT sim =0.63
+γO sim =0.86
+
+γT sim =0.61
+γO sim =0.87
+
+γT sim =0.67
+γO sim =0.78
+
+Theorem 1 was used with different values of γT , while keeping
+γO = 2 constant. Table 1 summarizes the numerically computed
+noise to error attenuation,
+
+∫T  (
+)
+T z̃ (t ) 2 dt
+0
+,
+γT sim = ∫ T 
+
+
+
+v′ (t )2 + v′ (t )2 dt
+c
+w
+0
+∫T  (
+)
+O z̃ (t ) 2 dt
+0
+γO sim = ∫ T
+.
+∥vw (t )∥2 + ∥vc (t )∥2 dt
+0
+
+Fig. 2. Tracking control error.
+
+5.2. Tracking
+To evaluate Theorem 1 in a tracking problem, the end-effector
+was prescribed to follow a desired task trajectory towards the
+end-pose xd (tf ) = r d (tf ) + (1/2)ε pd (tf )r d (tf ), where r d (tf ) =
+0.67ı̂ + 0.01ȷ̂ − 0.74k̂ and pd (tf ) = 0.05ı̂ − 1.15ȷ̂ + 0.75k̂. We
+compared Theorem 1 with the same controllers from the previous
+case. All controllers were set with control gain κ = 5.
+The trajectory tracking error is shown in Fig. 2. The dark blue
+curve concerns the result based on the tracking control law of
+Theorem 1. The result demonstrates the improved performance
+when compared to results from Adorno et al. 2010, Figueredo
+et al. 2013, decoupled controller, and HTM-based controller (Caccavale et al., 1999), all of them with similar control effort, as
+shown in Fig. 3, which highlights the importance of using a proper
+feedforward correction term during tracking control.
+
+As expected from the H∞ norm given by Definition 1, the noise
+to error attenuation remains below the prescribed thresholds,
+i.e., γO sim ≤γO and γT sim ≤γT , for all γO , γT .
+The proposed controller, with γT =0.4, γO =1, was again compared to the dual-quaternion based controllers from Adorno et al.
+(2010) and Figueredo et al. (2013), and the HTM-based controller (Caccavale et al., 1999). To maintain fairness, all controllers
+were
+∫ T manually set to ensure similar control effort in terms of
+∥u (t )∥ dt. The numerically calculated noise-to-error attenua0
+tion from the simulations, presented in Table 2, shows that for the
+same control effort our controller outperforms the other ones in
+terms of disturbance attenuation.
+6. Experimental results
+
+5.3. H∞ robustness
+
+This section presents results from the implementation on a
+real Meka Robotics A2 Arm, which is a highly compliant anthropomorphic 7-joint manipulator and presents several unmodeled
+dynamic effects. We defined a trajectory over a helix curve in
+space with 10 cm of both radius and axis length. Fig. 4 illustrates the trajectory with the aid of light-painting technique.12
+We implemented the controller using C++ and the DQ Robotics
+
+To illustrate the performance of the proposed robust H∞ controller under different uncertainties and disturbances, a task was
+devised based on the motion of a mobile platform, a Pioneer P3DX, which moved in triangle-wave fashion, alternating smoothly
+back and forth at fixed speed (respectively with period of 2.5 s
+and 3.45 s). The end-effector had to track the non-fixed target
+with a constant relative pose. Since in this scenario the robot
+manipulator does not have knowledge of the mobile base velocity, the trajectory has an additional unknown twist, which is a
+disturbance that directly affects the relative pose.
+
+12 A photographic technique of moving a light source while taking a long
+exposure photograph, which leaves a trail in the final image.
+5
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+Table 3
+Average mean square error (MSE) and standard deviation (STD) under different performance conditions for the real experiment..
+
+MSE ± STD
+
+/
+
+MSEmax MSE
+
+γ̄ = 0.93
+
+γ̄ ≜1.86
+
+1
+2
+
+3.118 ± 0.015
+1
+
+1.662 ± 0.007
+1.87
+
+1
+3
+
+γ̄ = 0.62
+
+1
+4
+
+1.123 ± 0.011
+2.78
+
+γ̄ = 0.47
+
+1
+5
+
+0.829 ± 0.011
+3.76
+
+γ̄ = 0.37
+
+0.662 ± 0.005
+4.71
+
+compared to the inner joint-level control-loop bandwidth. Fortunately, modern manipulators have very fast joint controllers,
+often around 1 KHz, while the outer-loop often runs between
+20–125 Hz. Also, considering the discrete-time joint dynamics
+given by ∆qk+1 =a∆qk +bT u, where a ∈ (−1, 1), b > 0, ∆qk =
+qk − qk−1 , and T is the sampling time, Bjerkeng et al. (2014)
+show that the gain κ = κT = κO for a controller such as (12)
+should respect κ < 2(1 + a)/bT . Assuming T = 1 ms and a tuned
+controller (i.e., a ≈ 0), one has κ < 2000/b. Thus, κ can still be
+very large without affecting the practical closed-loop stability.
+7. Further discussions and conclusions
+In this paper, we have exploited the geometrical significance
+of the dual quaternion algebra to derive an easy-to-implement
+closed-form H∞ task-space controller for the non-Euclidean space
+Spin(3) ⋉R3 that describes the end-effector pose. Realistic simulations and experiments on a real robot were performed in different
+conditions and with different control strategies, which led to the
+following conclusions: (a) compared to similar controllers with
+same convergence rate for regulation, the proposed controller
+requires less instantaneous control effort when no disturbances
+affect the system, and it has improved tracking performance;
+(b) when there are disturbances, if all controllers are tuned to
+have similar control effort, the proposed controller ensures less
+set-point and tracking errors.
+Lastly, our method works even when the end-effector pose
+is not directly measured because it can be estimated using the
+FKM. Although for most commercial robots the FKM provides
+sufficiently accurate end-effector poses, the nominal value may
+still differ from the real one due to several reasons. In that
+case, our strategy may be used to attenuate the influence of any
+disturbances over the end-effector trajectory, even if the FKM is
+not accurate enough. The residual error will then be bounded
+by the magnitude of the unknown transformation between the
+estimated and the actual end-effector pose.
+
+Fig. 4. Experiments on the real robot manipulator.
+
+toolbox (Adorno & Marinho, 2020) on ROS13 with a 8 ms sampling
+period. For the experiment, the end-effector pose used in the
+control-loop was computed through the FKM.
+The task trajectory was executed with different values for
+γ = γT = γO . Each experimental condition was then executed ten times for statistical significance (a total of 50 trials).
+Results are summarized in Table 3 in terms of mean square
+error and standard deviation integrated along the trajectory. As
+expected, the H∞ controller is able to deal with disturbances
+originated, for instance, from the coupled nonlinear dynamics,
+measurement noise, parameter’s uncertainties, among others. Indeed, assuming similar disturbances conditions in all trials–which
+is reasonable as the experimental conditions were the same–and
+normalizing the results over the worst performance (i.e., the
+mean square error MSEmax corresponding to γ =γ̄ ≜1.86), the average disturbance-to-error attenuation improvements (MSEmax/MSE)
+were almost inversely proportional to the decrease in γ . Fig. 4(b)
+shows the error along the trajectory for one execution of the
+robust controller for performance bounds γ ∈ {1.86, 0.93, 0.37}.
+As the theory predicts, setting smaller values for γ yields a
+controlled system with better disturbance attenuation, which
+is manifested by smaller errors. In this case, since we did not
+directly measure the end-effector pose, the error is given with
+respect to the nominal value obtained through the FKM.
+
+Acknowledgments
+This work was partially funded by Conselho Nacional de Desenvolvimento Científico e Tecnológico (CNPq) under the grant
+303901/2018-7.
+Appendix A. Derivative of the Lyapunov function
+′
+
+From (10), z̃ ≜ 1−x̃ = z̃ +ε z̃ . By letting x̃ ≜ η+µ+ε η′ + µ′ ,
+the positive definite functions V1 and V2 in the Lyapunov function
+(14) can be rewritten as
+
+
+
+2
+
+(
+
+ ′
+
+2
+
+(
+
+(
+
+)
+
+V1 (z̃ (t )) = α1 z̃(t) = α1 (1−η)2 + ∥µ∥2 = 2α1 (1−η) ,
+′
+
+)
+
+ 2 )
+
+V2 (z̃ (t )) = α2 z̃ (t) = α2 η′2 + µ′ 
+
+.
+′
+
+The derivative of (14) yields V̇1 (z̃ (t )) + V̇2 (z̃ (t )) with V̇1 (z̃ (t )) =
+−2α1 η̇, and V̇2 (z̃ ′ (t )) = 2α2 η′ η̇′ + 2α2 ⟨µ′ , µ̇′ ⟩.
+Using the closed-loop dynamics (13),14 we obtain
+1
+
+η̇′ = −
+
+14 Those hold
+usually happens
+
+if J is not full row rank (J J + ̸ =I ), which
+singular configuration. In that case, let s
+≜
+
+2
+
+When implementing the controller (12) on a digital computer,
+instability issues may arise if the tracking bandwidth is too high
+
+1(
+
+η̇ = − ⟨h1 , µ⟩,
+
+6.1. Practical considerations
+
+even
+in a
+
+2
+
+)
+⟨h1 , µ′ ⟩ + ⟨h2 , µ⟩ ,
+
+(
+)
+(
+( ))T
+(
+( ))T ]T
+then vec6 J J + s = vec6 (s) + vs ,
+κO vec3 O z̃
+−κT vec3 T z̃
+where vs is a disturbance to be added into vw .
+[
+
+13 https://www.ros.org/.
+6
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+µ̇′ =
+
+Automatica 132 (2021) 109817
+
+1( ′
+2
+
+Appendix B. Decoupled controller
+
+)
+η h1 + ηh2 + h1 × µ′ + h2 × µ ,
+
+Given x = r +(1/2) ε pr and xd = r d +(1/2) ε pd r d , the control
+input is
+
+where15 h1 = κO O z̃ + vw + vc and h2 = −κT T z̃ + v′w + v′c .
+Hence,
+
+( )
+
+( )
+
+V̇1 (z̃(t)) = α1 ⟨µ, h1 ⟩,
+′
+
+(A.1)
+
+V̇2 (z̃ (t)) = α2 ⟨ηµ − η µ + µ × µ , h2 ⟩.
+′
+
+q̇ = J +
+dec κ
+
+′
+
+′
+
+(A.2)
+
+[
+
+vec3 (pd − p)
+vec4 (1 − r ∗ r d )
+
+]
+
+, with J dec =
+
+[
+
+]
+
+Jp
+,
+N R4
+
+where vec4 : H → R4 is analogous to vec3 and the velocity
+satisfies vec3 ṗ = J p q̇. The matrix N R4 −corresponds
+to the four
+( )
+upper rows of NR8 , in which NR8 = H xd C 8 JR8 , with C 8 =
+diag (1, −1, −1, −1, 1, −1, −1, −1), and JR8 is the Jacobian matrix that satisfies vec8 ẋ = JR8 q̇, where vec8 : H → R8 is
+analogous to vec6 .
+
+To investigate the first condition from Definition 1, which regards
+exponential stability of (13) in the absence of disturbances vw and
+vc , let us rewrite (A.1)–(A.2) as V̇ (z̃ (t )) = V̇1 (z̃ (t )) + V̇2 (z̃ ′ (t ))
+with
+V̇1 (z̃ (t )) = α1 ⟨µ, κO O z̃ ⟩,
+
+( )
+
+V̇2 (z̃ (t )) = −α2 ⟨ηµ′ − η′ µ + µ × µ′ , κT T z̃ ⟩.
+
+References
+
+From (11) and considering the unit dual quaternion constraint
+( )
+ηη′ + ⟨µ, µ′ ⟩ = 0 (Kussaba( )et al., 2017), we have T z̃ =
+2(ηµ′ − η′ µ + µ × µ′ ) and O z̃ = −µ; therefore,
+
+Abu-Khalaf, M., Huang, J., & Lewis, F. L. (2006). Nonlinear H2 /H∞ constrained
+feedback control (p. 204). London: Springer-Verlag.
+Adorno, B. V. (2011). Two-arm Manipulation: From manipulators to enhanced
+human-robot collaboration (Ph.D. thesis), (p. 163). France: Laboratoire
+d’Informatique, de Robotique et de Microélectronique de Montpellier
+(LIRMM) - Université Montpellier 2.
+Adorno, B. V., Bó, A. P. L., & Fraisse, P. (2015). Kinematic modeling and control
+for human-robot cooperation considering different interaction roles. Robotica,
+33(2), 314–331.
+Adorno, B. V., Fraisse, P., & Druon, S. (2010). Dual position control strategies
+using the cooperative dual task-space framework. In IEEE/RSJ International
+Conference on Intelligent Robots and Systems (pp. 3955–3960).
+Adorno, B. V., & Marinho, M. M. (2020). DQ robotics: a library for robot modeling
+and control using dual quaternion algebra. IEEE Robotics & Automation
+Magazine, 1–12.
+Aspragathos, N. A., & Dimitros, J. K. (1998). A comparative study of three methods for robot kinematics. IEEE Transactions on Systems, Man and Cybernetics,
+Part B, 28(2), 135–145.
+Bjerkeng, M., Falco, P., Natale, C., & Pettersen, K. Y. (2014). Stability analysis of
+a hierarchical architecture for discrete-time sensor-based control of robotic
+systems. IEEE Transactions on Robotics, 30(3).
+Caccavale, F., Siciliano, B., & Villani, L. (1999). The role of Euler parameters in
+robot control. Asian Journal of Control, 1(1), 25–34.
+Figueredo, L. F. C., Adorno, B. V., Ishihara, J. Y., & Borges, G. A. (2013). Robust
+kinematic control of manipulator robots using dual quaternion representation. In IEEE International Conference on Robotics and Automation (pp.
+1949–1955).
+Figueredo, L. F. C., Adorno, B. V., Ishihara, J. Y., & Borges, G. A. (2014). Switching
+strategy for flexible task execution using the cooperative dual task-space
+framework. In 2014 IEEE/RSJ International Conference on Intelligent Robots and
+Systems (pp. 1703–1709).
+Han, D.-P., Wei, Q., & Li, Z.-X. (2008). Kinematic control of free rigid bodies
+using dual quaternions. International Journal of Automation and Computing,
+5(3), 319–324.
+Khalil, H. (1996). Nonlinear systems (2nd ed.). Prentice-Hall.
+Kussaba, H. T., Figueredo, L. F. C., Ishihara, J. Y., & Adorno, B. V. (2017). Hybrid
+kinematic control for rigid body pose stabilization using dual quaternions.
+Journal of the Franklin Institute, 354(7).
+Marinho, M. M., Adorno, B. V., Harada, K., & Mitsuishi, M. (2019). Dynamic
+active constraints for surgical robots using vector-field inequalities. IEEE
+Transactions on Robotics, 35(5), 1166–1185.
+Mas, I., & Kitts, C. (2017). Quaternions and dual quaternions: Singularity-free
+multirobot formation control. Journal of Intelligent & Robotic Systems, 87(3–4),
+643–660.
+Selig, J. M. (2005). Geometric fundamentals of robotics (2nd ed.). (p. 398).
+Springer-Verlag New York Inc.
+Simon, D. (2006). Optimal state estimation: Kalman, H∞ , and nonlinear approaches
+(pp. 1–550). Wiley-Interscience.
+Wang, X., & Yu, C. (2013). Unit dual quaternion-based feedback linearization
+tracking problem for attitude and position dynamics. Systems & Control
+Letters, 62(3), 225–233.
+Wang, X., Yu, C., & Lin, Z. (2012). A dual quaternion solution to attitude and
+position control for rigid-body coordination. IEEE Transactions on Robotics,
+28(5), 1162–1170.
+
+′
+
+( )
+
+V̇1 (z̃ (t )) = −α1 κO ⟨µ, µ⟩ = −α1 κO ∥µ∥2 ,
+′
+
+V̇2 (z̃ (t )) = −2α2 κT η2 ⟨µ′ , µ′ ⟩ + η′2 ⟨µ, µ⟩ − 2ηη′ ⟨µ, µ′ ⟩
+
+(
+
+)
++ ⟨µ, µ⟩⟨µ′ , µ′ ⟩ − ⟨µ, µ′ ⟩2 .
+Notice the identity ⟨µ×µ′ , µ×µ′ ⟩=⟨µ, µ⟩⟨µ′ , µ′ ⟩−⟨µ, µ′ ⟩2 in
+the last equality. Since ⟨µ, µ′ ⟩ = −ηη′ and η2 + ∥µ∥2 = 1,
+
+)
+)
+κO (
+κO (
+∥µ∥2 + ∥µ∥2 = −α1
+1−η2 + ∥µ∥2 ,
+2(
+2
+ 2
+(
+) 2)
+′
+V̇2 (z̃ (t ))=−2α2 κT η2µ′  +η′2 ∥µ∥2 +η2 η′2 + 1−η2 µ′ 
+(
+
+2
+ 2 )
+(A.3)
+= − 2α2 κT η′2 + µ′  =−2α2 κT z̃ ′ (t) .
+V̇1 (z̃ (t ))= − α1
+
+For η ∈ [0, 1], it is easy to see that (1−η)2 ≤ 1−η2 . Thus,
+
+(
+
+V̇1 (z̃ (t )) ≤ −α1
+
+)
+
+
+)
+κO (
+κO 
+z̃(t)2 ,
+(1 − η)2 + ∥µ∥2 = −α1
+2
+
+2
+
+(A.4)
+
+and, therefore,
+V̇ (z̃ (t )) ≤ −α1
+
+κO 
+
+2
+
+2
+
+ ′
+
+2
+
+z̃(t) − 2α2 κT z̃ (t) ,
+
+which in turn yields (15).
+Remark 1. To address the interval η ∈ [−1, 0] and prevent the
+problem of unwinding (Kussaba et al., 2017), one must assume
+z̃ = 1 + x̃ instead of (10). Hence, without loss of generality, the
+ 2
+exact same controller from Theorem 1 yields (15) with z̃(t) =
+(1+η)2 + ∥µ∥2 where η = −1 is the equilibrium.16
+Now, if we explicitly regard the influence of vw and vc , the
+Lyapunov derivative (A.1)–(A.2) yields17
+V̇ (z̃ (t )) = −α1 ⟨O z̃ , κO O z̃ +vw +vc ⟩
+
+( )
+
++
+
+α2
+2
+
+( )
+
+( )
+( )
+⟨T z̃ , −κT T z̃ + v′w +v′c ⟩,
+
+(A.5)
+
+which is equivalent to (16).
+
+15 Herein, we use the fact that given u, v ∈ H , uv = −⟨u, v⟩ + u × v,
+p
+where both cross product, u × v ≜ (uv − vu)/2, and inner product, ⟨u, v⟩ ≜
+− (uv + vu) /2, are equivalent to their counterparts in R3 .
+( )
+16 One must only observe that O z̃ = µ when z̃ = 1 + x̃, and the inequality
+
+(1 + η)2 ≤ 1 − η2 holds when η ∈ [−1, 0].
+( )
+(
+)
+( )
+17 Recall that T z̃ = 2 ηµ′ − η′ µ + µ × µ′ and O z̃ = −µ.
+7
+
+L.F.C. Figueredo, B.V. Adorno and J.Y. Ishihara
+
+Automatica 132 (2021) 109817
+
+Luis Felipe da Cruz Figueredo is a Senior Scientist at the Munich School of Robotics and Machine
+Intelligence (MSRM) of the Technische Universität
+München (TUM). Before joining the TUM, he was a
+Marie-Skłodowska Curie Action research fellow at the
+University of Leeds. Previously, he was a post-doctoral
+researcher at the Federal University of Minas Gerais,
+Brazil. He completed his Ph.D. in 2016 and won the
+Best Ph.D. Thesis award in Engineering at the University of Brasilia, Brazil. He also worked at the MERS
+group at CSAIL-MIT in 2013–14 and received awards
+for robotic demonstrations at ICAPS-14 and IROS-14.
+
+Department of Electrical Engineering at the Federal University of Minas Gerais,
+Belo Horizonte, Brazil. His current research interests include both practical and
+theoretical aspects related to robot kinematics, dynamics, and control with
+applications to mobile manipulators, humanoids, and cooperative manipulation
+systems.
+João Yoshiyuki Ishihara received the Ph.D. degree in
+Electrical Engineering from the University of São Paulo,
+São Paulo, Brazil, in 1998. He is currently an Associate Professor with the University of Brasilia, Brasilia,
+Brazil. His research interests include robust filtering
+and control theory, singular systems, and robotics.
+
+Bruno Vilhena Adorno received the B.Sc. degree in
+Mechatronics Engineering and the M.Sc. degree in
+Electrical Engineering from the University of Brasilia,
+Brasilia, Brazil, in 2005 and 2008, respectively, and
+the Ph.D. degree in Automatic and Microelectronic Systems from the University of Montpellier, Montpellier,
+France, in 2011. He is currently a Senior Lecturer in
+Robotics with the Department of Electrical and Electronic Engineering at The University of Manchester
+(UoM), Manchester, United Kingdom. Before joining
+the UoM, he was an Associate Professor with the
+
+8
+
+

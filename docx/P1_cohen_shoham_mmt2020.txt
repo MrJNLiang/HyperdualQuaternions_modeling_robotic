@@ -1,0 +1,2863 @@
+Mechanism and Machine Theory 150 (2020) 103861
+
+Contents lists available at ScienceDirect
+
+Mechanism and Machine Theory
+journal homepage: www.elsevier.com/locate/mechmachtheory
+
+Research paper
+
+Hyper Dual Quaternions representation of rigid bodies
+kinematics
+Avraham Cohen∗, Moshe Shoham
+Robotics Laboratory, Department of Mechanical Engineering, Technion – Israel Institute of Technology, Technion City, Haifa 32000, Israel
+
+a r t i c l e
+
+i n f o
+
+Article history:
+Received 13 November 2019
+Revised 6 February 2020
+Accepted 20 February 2020
+
+Keywords:
+Dual-quaternion
+Hyper-dual numbers
+Hyper dual-quaternion
+Rigid body kinematics
+
+a b s t r a c t
+Hyper-Dual Quaternions, HDQ, are ﬁrst introduced in this paper. Utilizing the Hyper-Dual
+Numbers, HDN, Dual Quaternions, DQ, and hyper-dual angle, the general expression of
+HDQ is obtained. Rigid single- and multi-body kinematics such as in a serial robot kinematics, are then expressed in HDQ form. Taking advantage of the dual numbers’ “automatic
+differentiation” feature, HDQ encompasses both body pose (translational and rotational)
+and body velocities in a compact form with no need for further pose differentiation.
+© 2020 Elsevier Ltd. All rights reserved.
+
+1. Introduction
+In 1843 Hamilton invented the quaternions that perform rotation of vectors in a three-dimensional space. Then, in 1870,
+Clifford introduced the dual numbers which he applied to quaternion and named bi-quaternions that combine both rotation
+and translation in one expression [1].
+Today, bi-quaternions, commonly named Dual Quaternion (DQ), are widely used in rigid body kinematics and dynamics
+[2–6], computer graphics [7–12], multirotor attitude and trajectory tracking [13–16], general multirotor control purposes
+[17–21], and for the translation and attitude synchronization of multiple rigid bodies [22,23].
+Recently Hyper-Dual Numbers (HDN) were introduced by Fike and Alonso [24–27]. As evident from those investigations,
+the purpose of Fike and Alonso in introducing the HDN was to perform second-order numerical differentiation that leads to
+smaller numerical (subtractive and cancellation) errors as well as to reduced computational time. Then, in 2015 and 2017,
+HDN were utilized by the authors of the present paper, to represent rigid body’s kinematics and dynamics [28,29]. Taking
+advantage of the “automatic differentiation” feature of the HDN, rigid body equations-of-motion were derived in a compact
+form with no need for further differentiation.
+The aim of the present investigation is to introduce the Hyper-Dual Quaternions (HDQ), composed of hyper-dual hypercomplex numbers. This is achieved by replacing every real number in a quaternion by the associated HDN. We then proceed
+to represent a rigid body kinematics in HDQ form.
+
+∗
+
+Corresponding author:
+E-mail addresses: avrahamc@seas.upenn.edu (A. Cohen), shoham@technion.ac.il (M. Shoham).
+
+https://doi.org/10.1016/j.mechmachtheory.2020.103861
+0094-114X/© 2020 Elsevier Ltd. All rights reserved.
+
+2
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+List of symbols
+a
+aˆ
+
+a
+
+scalar
+dual number
+hyper-Dual number
+
+
+
+f (a)
+
+function of a Hyper-Dual number
+Hyper-Dual vector
+dual unit
+Hyper-Dual unit
+quaternion
+dual Quaternion
+Hyper-Dual Quaternion
+dual twist
+angular velocity
+dual angle
+
+
+
+v
+
+ɛ
+ɛ∗
+q
+qˆ
+
+q
+ξˆ
+
+ω
+θˆ
+
+θ
+
+Hyper-Dual angle
+
+2. Mathematical formulation of Hyper-Dual Quaternions
+2.1. Arithmetic operations of Dual Quaternions (DQ)
+We next give the elementary arithmetic operations of DQ, the reader is referred to Appendix A for a list of elementary
+arithmetic operations necessary for quaternions.
+For a DQ, qˆ = qr + ε qd , where qr is named the real part, qd is named the dual part and ɛ is a dual unit with the property
+ε 2 = 0, the elementary arithmetic operations are [8]:
+Scalar Multiplication (by a scalar s)
+
+sqˆ = sqr + ε sqd
+
+(1)
+
+Addition
+
+qˆ1 + qˆ2 = qr1 + qr2 + ε (qd1 + qd2 )
+
+(2)
+
+Multiplication
+
+qˆ1  qˆ2 = qr1  qr2 + ε (qr1  qd2 + qd1  qr2 )
+
+(3)
+
+where quaternion multiplication follows Hamilton’s multiplication rule of the vector components i2 = j2 = k2 = i jk = −1.
+Other quaternion multiplication formulae exist such as representing the quaternion elements in a matrix form [30] which
+also follows Hamilton’s quaternions multiplication rule by matrix multiplication and leads to the same result.
+Conjugate
+
+qˆ∗ = q∗r + ε q∗d
+
+(4)
+
+Magnitude – For a DQ, the magnitude is deﬁned as the DQ multiplied by its conjugate,
+
+  
+qˆ = qˆqˆ∗
+
+(5)
+
+Since a DQ is a dual number with quaternion entries, we use the deﬁnition of the square root of a dual number to
+compute the square root of the DQ
+
+
+
+qr + ε qd =
+
+√
+q
+qr + ε √d , qr = 0.
+2 qr
+
+Hence, for a given DQ, qˆ = qr + ε qd , and its conjugate, qˆ∗ = q∗r + ε q∗d ,
+
+
+
+
+
+
+
+
+
+
+
+qˆqˆ∗ = (qr + ε qd ) q∗r + ε q∗d = qr q∗r + ε qr q∗d + qd q∗r = qr 2 + ε qr q∗d + qd q∗r
+and the Magnitude of the DQ is
+
+
+
+
+∗
+  
+
+ 
++ qd q∗r
+qr q∗d + qd q∗r
+d
+qˆ = qˆqˆ∗ = qr 2 + ε qr q∗ + qd q∗r = qr 2 + ε qr q
+=
+q
++
+ε
+
+
+r
+d
+2 q r 
+2 q r 2
+
+Where for a unit DQ, that has a magnitude of 1, we use the unit condition
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+3
+
+n̂
+pd
+po
+
+T
+
+O
+
+D
+
+θ
+c
+
+d
+O'
+
+Fig. 1. Screw motion, along a unit vector axis n.
+
+q r  = 1
+qr q∗d + qd q∗r = 0
+
+(6)
+
+Inverse
+
+1
+qˆ−1 =  2  qˆ∗
+qˆ
+
+(7)
+
+Where qr = 0, and for a unit DQ, the inverse is qˆ−1 = qˆ∗ .
+2.2. Dual angle and the unit Dual-Quaternion
+Next the dual quaternion representation of rigid body’s kinematics is deﬁned. Let a coordinate frame D undergoes translation T and rotation θ with respect to frame O, (see Fig. 1).
+Using Study’s dual angle [31], the coordinates of frame D is given by the DQ [32]:
+
+ 
+
+1
+qˆ = q + ε q  T = C
+2
+
+ 
+
+= C
+
+θ
+2
+
+
+
+,S
+
+θ
+2
+
+
+
+θ
+2
+
+n +
+
+ε
+
+,S
+
+
+
+2
+
+θ
+2
+
+
+−S
+
+θ
+2
+
+n +
+
+ε
+
+ 
+
+2
+
+C
+
+
+
+nT  T , C
+
+θ
+2
+
+θ
+2
+
+
+
+,S
+
+θ
+
+
+T +S
+
+n  [0 , T ]
+
+2
+
+θ
+2
+
+n×T
+
+(8)
+
+2.3. Mathematical formulation of Hyper-Dual numbers
+Hyper-dual numbers (HDN) were ﬁrst introduced by Fike et al. [24–27]. In [28] Hyper-dual numbers were augmented to
+better represent rigid body’s kinematics.
+
+An HDN, x , is a number consisting of four real numbers (x1 , x2 , x3 , x4 ) and two dual units, ɛ, ɛ∗ , with the following
+multiplication rules:
+
+ε 2 = ε ∗2 = (ε ε ∗ )2 = 0
+
+(9)
+
+ε , ε ∗ , ε ε ∗ = 0
+
+(10)
+
+
+
+Where x is:
+
+
+x = x1 + ε x2 + ε ∗ ( x3 + ε x4 )
+
+(11)
+
+
+In this paper dual numbers are marked as xˆ and HDN are marked as x .
+2.4. Arithmetic operations of Hyper-Dual Quaternions
+A HDQ, is a quaternion with HDN components,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q = a, v = a + xi + y j + zk
+
+
+
+
+yielding a hyper-dual hyper-complex number, where a is the scalar part of HDN, and v is it’s vector part (hyper-dual vectors).
+
+4
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+The dual units ɛ, ɛ∗ commute with the quaternion units, for example iε = ε i.
+
+
+The elementary arithmetic operations of HDQ, q = qˆd + ε ∗ qˆhd , where qˆd is a DQ composing the dual part of q, and qˆhd is
+
+
+a DQ composing the hyper-dual part of q, are:
+Scalar Multiplication (by scalar s)
+
+
+sq = sqˆd + sε ∗ qˆhd
+
+(12)
+
+Addition
+
+
+
+
+
+
+q1 + q2 = qˆd1 + qˆd2 + ε ∗ qˆdh1 + qˆdh2
+
+
+
+
+(13)
+
+
+
+Multiplication - For two quaternions, q1 , q2 , with HDN components,
+
+
+
+
+
+
+
+
+
+
+
+
+q1 = a1 , v1 = qd1 + ε ∗ qhd1
+q2 = a2 , v2 = qd2 + ε ∗ qhd2
+HDQ multiplication is:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+q1  q2 = qˆd1 + ε ∗ qˆhd1  qˆd2 + ε ∗ qˆhd2 = qˆd1  qˆd2 + ε ∗ qˆd1  qˆhd2 + qˆhd1  qˆd2
+
+
+
+(14)
+
+Conjugate– The conjugate of a HDQ is the extension of the conjugate of a dual quaternion, that is
+∗
+
+q = qˆ∗d + ε ∗ qˆ∗hd
+
+(15)
+
+HDQ Magnitude – A HDQ multiplied by its conjugate gives the magnitude squared, hence:
+
+  ∗
+ 
+q = qq
+
+(16)
+
+
+Where the square root of the HDQ, q = qr + ε qd + ε ∗ (qhr + ε qhd ), is computed from the deﬁnition of the square root of an
+HDN [33]
+
+
+
+√
+εq
+q = qr + √ d + ε ∗
+2 qr
+
+
+
+
+
+
+
+qhr
+√ +ε
+2 qr
+
+
+
+qhd
+qd qhr
+√ + 
+2 qr
+4 qr 3
+∗
+
+
+
+, qr = 0 .
+∗
+
+For a given HDQ, q = qˆd + ε ∗ qˆhd , and its conjugate, q = qˆd + ε ∗ qˆ∗hd ,
+ ∗
+
+
+
+qq = qˆd + qˆhd ε ∗
+
+ ∗
+
+
+
+
+
+
+
+ 2
+
+
+
+qˆd + ε ∗ qˆ∗hd = qˆd qˆ∗d + ε ∗ qˆd qˆ∗hd + qˆhd qˆ∗d = qˆd  + ε ∗ qˆd qˆ∗hd + qˆhd qˆ∗d
+
+
+
+Hence, for a unit HDQ, that has a magnitude of 1, we deﬁne the HDQ unit condition as
+
+q r  = 1
+qr q∗d + qd q∗r = 0
+qˆd qˆ∗hd + qˆhd qˆ∗d = 0
+3. Hyper-Dual Quaternions representation of kinematics
+Given a quaternion,
+
+ 
+
+q= C
+
+θ
+2
+
+
+
+,S
+
+θ
+2
+
+n
+
+(17)
+
+a dual quaternion is deﬁned by
+
+ 
+
+q= C
+
+θˆ
+2
+
+
+
+,S
+
+θˆ
+2
+
+nˆ
+
+(18)
+
+Where θˆ is Study’s dual angel [31] and nˆ is the Plücker coordinate of the rotational axis n.
+We next deﬁne the HDQ as
+
+
+   
+θ
+θ 
+
+q= C
+
+2
+
+,S
+
+2
+
+n
+
+
+
+(19)
+
+
+where n is the hyper-dual vector ﬁrst introduced in [33], and θ is the hyper-dual angle [28,29]:
+
+
+
+θ = θˆ + ε ∗ θˆ˙ = θ + ε d + ε ∗ θ˙ + ε d˙
+
+(20)
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+5
+
+Applying the Taylor series expansion of a hyper-dual function [28,33], one obtains the following Sine and Cosine trigonometric functions of a hyper-dual angle:
+
+
+
+
+
+
+
+
+
+sin θ = sin(θ ) + ε d cos (θ ) + ε ∗ θ˙ cos (θ ) + ε d˙ cos (θ ) − dθ˙ sin(θ )
+cos
+
+
+
+
+
+θ = cos(θ ) − ε d sin (θ ) − ε ∗ θ˙ sin (θ ) + ε d˙ sin (θ ) + dθ˙ cos (θ )
+
+(21)
+·
+
+
+
+Consider a particular HDQ that represents a helical motion of a rigid body, for which n = n and n= 0, Eq. (19) takes the
+following form:
+
+
+q=
+
+   
+θ
+θ 
+C
+
+,S
+
+2
+
+
+
+
+sin
+
+
+=
+
+
+cos
+
+
+
+, sin
+
+ 
+
++ε
+
++ε
+
+2
+
+2
+∗
+
+2
+
+θ
+
+θ
+−
+
+n
+
+θ˙
+2
+
+
+
+d
+cos
+2
+
+θ
+
+
+
+θ
+
+= cos
+
+
+
+2
+
+
+
+θ
+2
+
+
+
+2
+
+
+
+sin
+
+θ
+2
+
+
++ε
+
+2
+
+d
+sin
+2
+
+d˙
+sin
+2
+
+cos
+
+
+
+
+
+
+
+θ
+2
+
+θ
+
+θ
+2
+
+,
+
+
+
+θ
+
+− ε∗
+
+2
+
+
+
+θ˙
+
++ ε∗
+
+n +ε −
+
+d
+sin
+2
+
+−ε
+
+
++ε
+
+d
+cos
+2
+
+
+
+dθ˙
++
+cos
+4
+
+2
+
+2
+
+
+sin
+
+d˙
+cos
+2
+
+θ
+
+
+
+θ
+
++ε
+
+2
+
+
+
+d˙
+sin
+2
+
+
+
+θ
+2
+
+
+
+θ
+
+−
+
+2
+
+dθ˙
+cos
+4
+
++
+
+θ
+dθ˙
+sin
+4
+2
+
+
+
+θ
+
+,
+
+2
+
+
+
+n
+
+n
+
+2
+
+
+
+θ˙
+
+
+
+θ
+
+,
+
+2
+
+θ˙
+2
+
+
+cos
+
+θ
+2
+
+
++ε
+
+d˙
+cos
+2
+
+
+
+θ
+2
+
+
+
+θ
+dθ˙
+−
+sin
+4
+2
+
+n
+
+(22)
+
+where the hyper-dual part of Eq. (22) is a derivative with respect to time of the dual part of the hyper-dual quaternion.
+3.1. Hyper-Dual Quaternion representation of rigid body kinematics
+The hyper-dual quaternion encompasses the derivatives of a quaternion and hence can be utilized to obtain a rigid body’s
+pose and its derivatives. Time derivative of a body pose is obtained from a dual quaternion using the dual twist as follows
+[34,35]:
+
+1
+qˆ˙ = qˆ  ξˆ
+2
+ξˆ = 2qˆ∗  qˆ˙
+
+(23)
+
+where ξˆ is the dual twist, a combination of rotational and translational velocities,
+
+
+
+ξˆ = ω + ε ω × T + T˙
+
+(24)
+
+ω is the rotational velocity about the instantaneous rotation axis and T is the point mass radius vector from this axis.
+We next deﬁne the HDQ to be expressed as:
+
+q = qˆ + ε ∗ qˆ˙
+
+(25)
+
+Substituting Eqs. (8), (23) and (24) into Eq. (25), yields:
+
+
+
+
+
+
+
+
+
+1
+1
+1
+1
+q = qˆ + ε ∗ qˆ  ξˆ = q + ε q  T + ε ∗
+q + ε q  T  ω + ε ω × T + T˙
+2
+2
+2
+2
+
+
+
+1
+1
+∗1
+= q+ε qT +ε
+q  ω + ε q  ω × T + q  T˙ + q  T  ω
+2
+2
+2
+
+
+(26)
+
+Taking the product of multiple HDQ as for example in a serial robot’s kinematic chain:
+
+
+
+
+
+
+q1  q2 = qˆ1  qˆ2 + ε ∗ qˆ1  qˆ˙ 2 + qˆ˙ 1  qˆ2
+
+
+
+
+
+
+
+
+q1  q2  q3 = qˆ1  qˆ2  qˆ3 + ε ∗ qˆ1  qˆ2  qˆ˙ 3 + qˆ1  qˆ˙ 2  qˆ3 + qˆ˙ 1  qˆ2  qˆ3
+
+..
+....
+
+
+
+
+
+
+
+
+q1  q2 ....  qn = qˆ1  qˆ2 ....  qˆn + ε ∗ qˆ˙ 1  qˆ2  qˆ3  qˆ4 ...  qˆn + .... + qˆ1  qˆ2 ....  qˆ˙ n−1  qˆn + qˆ1  qˆ2 ....  qˆ˙ n
+
+
+
+
+
+
+
+n
+
+ 
+
+
+
+the hyper-dual part of q1  q2 ....  qn is equal to:
+
+n
+
+i=1
+
+
+
+i−1
+j=0
+
+ 
+
+qˆ j · qˆ˙ i ·
+
+qˆ0 = 1
+
+k=i+1
+
+qˆk
+
+(27)
+
+6
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+Fig. 2. Two cylindrical, four degrees-of-freedom robot.
+
+which leads to the following recursive formula for n consecutive HDQ multiplications,
+
+
+
+
+
+
+
+
+
+
+
+q f = q1  q2 ....  qn = qˆ1  qˆ2 ....  qˆn + ε
+
+∗
+
+n
+
+i=1
+
+
+
+i−1 
+
+
+
+
+qˆ j · qˆ˙ i ·
+
+n 
+
+
+
+
+qˆk
+
+
+
+(28)
+
+k=i+1
+
+j=0
+
+
+
+Where q f is the resulting HDQ, and the hyper-dual part of the above equation is equal to the derivative of the dual part
+according to the chain rule, assuming all functions are differentiable.
+Using Eqs. (23) and (25), the HDQ is expressed as:
+
+1
+q = qˆ + ε ∗ qˆ  ξˆ
+2
+
+(29)
+
+which leads to the ﬂowing result for n consecutive HDQ multiplications,
+
+
+q f = qˆ1  qˆ2 ....  qˆn + ε ∗
+
+
+
+1
+qˆ1  ξˆ1  qˆ2 ....  qˆn + .... + qˆ1  qˆ2 ....  qˆn−1  ξˆn−1  qˆn + qˆ1  qˆ2 ....  qˆn  ξˆn
+2
+
+
+(30)
+
+The recursive formula for n consecutive HDQ transformations is, then, obtained by:
+
+
+
+n
+1 
+q f = qˆ1  qˆ2 ....  qˆn + ε ∗
+2
+
+
+i=1
+
+
+
+i 
+
+
+
+
+qˆ j · ξˆi ·
+
+j=1
+
+n 
+
+
+
+
+qˆk
+
+
+
+(31)
+
+k=i+1
+
+Deﬁning the product of n HDQ multiplications as
+
+
+q f = qˆ f _d + ε ∗ qˆ f _hd
+
+(32)
+
+where qˆ f _hd = qˆ˙ f _d , then the resulting dual twist is given by:
+
+ξˆf = 2qˆ∗f _d  qˆ f _hd
+
+(33)
+
+4. Illustrative example of a serial manipulator
+Robot manipulators are an example of a multi-body system connected by joints. DQ are widely used in robotics (see for
+example [36–42]).
+Consider the serial manipulator given in Fig. 2, also given in [28,29].
+In [28] the derivation of the forward kinematic of a serial manipulator, was expressed as multiplications of hyper-dual
+3 × 3 transformation matrices.
+Similarly, in the hyper-dual quaternion form, by applying the hyper-dual angle and the extended principle of transference
+given in [33], the serial manipulator’s kinematics is expressed as multiplications of HDQ as follows:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+qe f = q1  q2  q3  q4
+
+(34)
+
+
+where q1 to q4 are HDQ dual quaternions corresponding to each transformation, for which q1 represents a translation and
+
+
+
+
+rotation by θ 1 and d1 , q2 represents a constant translation by a1 , q3 represents a translation and rotation by θ 2 and d2 , and
+
+
+q4 represents a constant translation by a2 .
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+7
+
+Keeping in mind that for the special case as a revolute or prismatic joint where the screw axis is coincident with the
+
+joint axis, one may write ni = ni , and Eq. (19) takes the form:
+
+     
+θi
+θi
+
+
+
+qi = C
+
+2
+
+,S
+
+ni
+
+2
+
+Hence from Eq. (22),
+
+ 
+
+
+
+q1 =
+
+C
+
+θ1
+2
+
+
+
+,S
+
+ 
++ ε∗ −
+
+θ˙ 1
+2
+
+
+
+ 
+
+
+
+C
+
+θ2
+2
+
++ε
+
+∗
+
+−
+
+
+
+
+S
+
+θ˙ 2
+2
+
+q4 = [1, 0] + ε 0,
+
+
+
+θ1
+
++ε
+
+2
+
+a1
+[1, 0, 0]
+2
+
+
+
+,S
+
+ 
+
+[0, 0, 1] + ε −
+
+2
+
+q2 = [1, 0] + ε 0,
+q3 =
+
+
+
+θ1
+
+θ2
+
+S
+
+
+
+[0, 1, 0] + ε −
+
+2
+
+
+
+
+
+θ1
+d˙1
+S
+2
+2
+
+θ2
+2
+
+
++ε
+
+
+
+θ2
+d˙2
+S
+2
+2
+
+
+
+θ1
+d1
+S
+2
+2
++
+
+,
+
+d1 θ˙ 1
+C
+4
+
+
+
+,
+
+d2 θ˙ 2
++
+C
+4
+
+
+
+θ1
+
+θ1
+
+d2
+C
+2
+
+
+
+θ1
+2
+
+[0, 0, 1]
+
+2
+
+
+,
+
+2
+
+
+
+θ2
+d2
+S
+2
+2
+
+d1
+C
+2
+
+
+
+θ2
+
+θ˙ 1
+2
+
+
+C
+
+θ1
+2
+
+
++ε
+
+d˙1
+C
+2
+
+
+
+θ1
+2
+
+
+
+−
+
+θ1
+d1 θ˙ 1
+S
+4
+2
+
+[0, 0, 1]
+
+[0, 1, 0]
+
+2
+
+
+,
+
+θ˙ 2
+2
+
+
+C
+
+θ2
+2
+
+
++ε
+
+d˙2
+C
+2
+
+
+
+θ2
+2
+
+
+
+θ2
+d2 θ˙ 2
+−
+S
+4
+2
+
+[0, 1, 0]
+
+a2
+[1, 0, 0]
+2
+
+
+
+for which qe f = qˆe f _d + ε ∗ qˆe f _hd , (see Appendix B for a complete deﬁnition of qˆe f _d and qˆe f _hd ).
+Next by applying Eq. (33) one may now calculate the twist of the end-effector with no need for further differentiation
+yielding the rotational and translational velocities of the end-effector.
+
+
+
+ξˆe f = 2qˆ∗e f _d  qˆe f _hd = 0,ωe f + ε ve f
+
+
+
+
+= 0, −θ˙ 1 S (θ2 ), θ˙ 2 , θ˙ 1 C(θ2 ) + ε 0, −d˙1 S (θ2 ) − θ˙ 1 d2 C(θ2 ),d˙2 + θ˙ 1 a1 + θ˙ 1 a2 C(θ2 ), d˙1 C(θ2 ) − θ˙ 2 a2 − θ˙ 1 d2 S (θ2 )
+
+It should be mentioned that the kinematic equations, Eq. (34), represented by HDQ, is compact and straightforward.
+The expansion however of this equation results in a complicated equation. From computational eﬃciency however this
+expression is more eﬃcient and less computational intensive then homogeneous transformation matrices [3,43,44], and also
+spares the need for a separated velocity transformation calculate for example by the Jacobian matrices.
+5. Conclusions
+This paper introduces for the ﬁrst time, the hyper-dual quaternions (HDQ). Hyper-dual quaternion is composed of hyperdual numbers (HDN) as components of the quaternion, yielding a hyper-complex hyper-dual number. The arithmetic operations of HDQ is then developed and by using the hyper-dual angle as components of the HDQ it was applied to rigid
+body kinematics. It was shown that rigid body kinematics, that contains both translational and rotational motions and their
+derivatives, are obtained in a compact HDQ expression with no need for explicit differentiation.
+This approach provides a systematic and compact means for the derivation of a single and multi-body systems’ kinematics, kinematics terms i.e. body pose and its derivatives are embedded in the products of the HDQ, and there is no need to
+differentiate the expressions of the bodies’ pose to obtain its derivatives.
+A four degrees of freedom serial manipulator is used as an illustrative example of a multi-body system, for which the
+equations of motion in hyper-dual quaternion form are developed.
+For acceleration, jerk, snap or higher order derivative calculations, one may expand the HDQ to dual-quaternions of
+higher orders, taking advantage of the extension of Kotelnikov’s "Principle of transference" to dual-numbers of order n [33].
+Appendix A
+For a quaternion, q = [a, v], where a is named the scalar part, v is named the vector part, the elementary arithmetic
+operations are:
+Scalar Multiplication
+
+sq = [sa, sv]
+
+(A.1)
+
+Addition
+
+q1 + q2 = [a1 , v1 ] + [a2 , v2 ] = [a1 + a2 , v1 + v2 ]
+Quaternion Multiplication
+
+
+
+q1  q2 = a1 a2 − vT1 v2 , a1 v2 + a2 v1 + v1 × v2
+
+
+
+(A.2)
+
+(A.3)
+
+8
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+Conjugate
+
+q∗ = [a, −v]
+
+(A.4)
+
+Magnitude
+
+q = a + q1 i + q2 j + q3 k
+
+q  =
+
+
+
+
+
+qq∗ =
+
+a2 + q21 + q22 + q23
+
+(A.5)
+
+Unit Condition
+
+q  = 1
+
+(A.6)
+
+Appendix B
+
+ 
+qˆe f _d =
+
+C
+
+C
+
+2
+
+
+
+C
+
+
+C
+
+θ1
+
+S
+
+2
+
+
+
+θ2
+
+S
+
+2
+
+
+−
+
+θ˙ 1
+2
+
++ d2 S
+−S
+
+−
+
+θ˙ 1
+2
+
+
+S
+
++
+
+θ˙ 1
+2
+
+S
+
+
+
+
+C
+
+θ1
+
+
+
+θ2
+
+2
+
+C
+
+
+S
+
+θ˙ 1
+2
+
+θ2
+
+θ2
+2
+
+θ2
+
+
+C
+
+θ1
+
+−
+
+θ˙ 2
+2
+
++ a2 S
+
+S
+
+2
+
+θ˙ 2
+
+
+
+
+
+θ2
+
+θ1
+
+
+
+S
+
+2
+
+θ1
+2
+
+
+S
+
+
+S
+
+−d1 S
+
+θ2
+
++
+
+2
+
+θ1
+2
+
+θ1
+2
+
+θ2
+2
+
+
+
++
+
+C
+
+θ2
+2
+
+
++ε
++
+
+θ˙ 2
+4
+
+
+
+θ1
+
+
+S
+
+
+
+θ1
+
+S
+
+
+
+
+
+C
+
+2
+
+
+
+θ1
+2
+
+−d1C
+
+
+
+
+
+C
+
+θ1
+
+
+C
+
+θ1
+2
+
+θ2
+
+S
+
+
+
+θ2
+
+θ˙ 1
+
+θ2
+2
+
+θ2
+
+
+
+θ1
+2
+
+
+
+
+
+θ2
+
+S
+
+2
+
+
+
+θ1
+
+
+θ1
+
+S
+
+2
+
+
+
+
+
+−d1C
+
+
+
+− a1 S
+
+
+
+θ1
+2
+
+− d2 S
+
+
+
+2
+
+
+
+S
+
+θ1
+2
+
+
+
+θ2
+2
+
+
+
+C
+
+
+
+θ1
+2
+
+2
+
+θ2
++
+
+θ2
+2
+
+θ˙ 1
+4
+
+
+
+
+S
+
+
+
++ a1 C
+
+θ1
+
+
+
+
+
+−d1 S
+
++ a1 C
+
+
+
+θ1
+2
+
+− a2 C
+
+θ1
+2
+
+
+
+C
+
+
+
+C
+
+S
+
+2
+
+
+
+θ2
+
+
+
+θ2
+2
+
+θ2
+
+
+θ2
+2
+
+θ2
+2
+
+θ2
+
+
+S
+
+
+
+− d2 S
+
+
+
+− a1 S
+
+− a2 C
+
+
+
+θ1
+2
+
+θ2
+2
+
+2
+
+,
+
+
+
+C
+
+2
+
+2
+
+
+
+θ2
+
+θ1
+
+S
+
+
+
+C
+
+θ2
+2
+
+C
+
+2
+
+2
+
+θ2
+
+θ1
+
+θ1
+
+θ2
+
+,
+
+C
+
+θ1
+
+
+
+2
+
+
+
+θ1
+
+2
+
+S
+
+2
+
+2
+
+,S
+
+2
+C
+
+C
+
+2
+
+− a1 S
+
+2
+
+2
+
+θ1
+
+
+θ2
+
+2
+
+
+
+
+
+θ1
+
+− a1 C
+
+2
+
++ a2 S
+
+θ1
+
+
+
+θ2
+
+
+θ2
+
+S
+
+θ1
+
+
+
+C
+
+2
+
+
+
+θ1
+
+2
+
+
+
+θ1
+
+2
+
+2
+
+− a2 S
+
+2
+
+θ1
+
+C
+
+
+
+
+
+θ2
+
+,
+
+2
+
+
+
+d1 S
+
+4
+
+S
+
+S
+
+2
+
+θ˙ 1
+
+θ2
+
+−d1C
+
+4
+
+
+
+,
+
+2
+
+2
+
+
+
+θ˙ 1
+
++ d2 S
+
+2
+
+θ1
+
+S
+
+
+
+θ2
+
+θ1
+
+
+
+2
++
+
++
+
+2
+
+
+S
+
+θ2
+
+θ2
+
+S
+
+2
+
+,
+
+2
+
+
+
+θ1
+
+θ1
+
+θ2
+
+S
+
+2
+
++ d2 C
+
+2
+
+
+
+θ1
+
+2
+
+
+
+2
+
+θ2
+
+
+
+
+
+
+
+θ2
+
+S
+
+C
+
+2
+
+d2
+S
+2
+
+−
+
+2
+
+
+
+d1
+S
+2
+
+−
+
+2
+
+θ1
+
+4
+
+d˙2
+−
+S
+2
+
+2
+
+
+
++
+
+2
+
+θ2
+
+S
+
+S
+
+− a1 C
+
+2
+
+
+
+2
+
+d˙2
+C
+2
+
+θ2
+
+2
+
+θ1
+
+θ1
+
+−a1 S
+−
+
+
+
+
+
+
+
+θ2
+
+θ1
+
+S
+
+d1
+C
+2
+
+−
+
+2
+
+
+
+2
+
+θ1
+
+C
+
+2
+
+a2
+S
+2
+
++
+
+2
+
+
+
+θ2
+
+θ2
+
+θ2
+
+S
+
+2
+
+2
+
+θ2
+
+θ2
+
+2
+
+
+
+
+
+θ1
+
+d˙2
+−
+C
+2
+
+2
+
+θ1
+
+
+
+
+
+
+
+2
+
+2
+
+− d2 C
+
+
+
+a2
+C
+2
+
+C
+
+2
+
+2
+
+d˙1
+C
+2
+
+
+
+
+
+θ1
+
+2
+
+d˙2
+C
+2
+
+−
+
+2
+
+−d1C
+
+4
+
+
+
+
+
+
+
+θ˙ 2
+
+θ2
+2
+
+d˙1
+− S
+2
+
+a1
+C
+2
+
++
+
+θ2
+
+S
+
+2
+
+d˙1
+C
+2
+
+θ2
+2
+
+
+
+d1 S
+
+4
+
++ε −
+
+
+
+a1
+C
+2
+
++
+
+2
+
+C
+
+θ1
+
+θ2
+
+C
+
+2
+
+a1
+S
+2
+
+−
+
+2
+
+
+
+θ1
+
+θ1
+
+θ2
+
+S
+
+2
+
+
+
+θ˙ 2
+
+
+
+θ1
+
+2
+
+
+
++ε
+
+
+
+
+
+
+
+
+
+
+
+θ2
+
+2
+
+a1
+C
+2
+
++
+
+2
+
+2
+
+
+
+4
+
+
+
+θ2
+
+C
+
+d˙1
+S
+2
+
+θ2
+2
+
+
+
+θ1
+2
+
+S
+
+
+
+
+θ1
+
++
+
+S
+
+S
+
+2
+
+θ2
+
+d2
+S
+2
+
+a2
+S
+2
+
++
+
+
+
+2
+
+−
+
+2
+
+2
+
+θ1
+
+C
+
+θ2
+
+2
+
+d2
+C
+2
+
+−
+
+2
+
+θ2
+
+C
+
+
+
+
+
++
+
+
+
+
+θ1
+
+
+
+2
+
+2
+
+2
+
+C
+
+C
+
+2
+
+θ˙ 2
+
+
+
+θ1
+
+2
+
+θ2
+
+C
+
+2
+
+θ1
+
++ε −
+
+2
+
+
+
+
+
+
+
+θ1
+
+2
+
+
+
+θ2
+
+C
+
+d1
+C
+2
+
+
+
+
+
+
+
+− a2 S
+
+2
+
+
+
+2
+
+θ1
+
+θ2
+
+S
+
+d2
+C
+2
+
+−
+
+−
+
+2
+
+
+
+a2
+C
+2
+
++ a2 C
+
+2
+
+θ1
+
+2
+
+θ2
+
+C
+
+2
+
+θ1
+
+θ2
+2
+
+
+
+θ1
+
+
+
+− d2 C
+
+
+
+
+2
+
++ +a2 C
+
++ε
+C
+
+C
+
+− d2 C
+
+
+
+θ1
+
+2
+
+
+
++ε
+
+2
+
+θ1
+
+2
+
+
+
+θ2
+
+2
+
+θ1
+
++ε
+
+2
+
+θ1
+
+S
+
+
+
+θ2
+
+2
+
+
+
+
+
+
+
+
+
+d1
+S
+2
+
++ε −
+
+2
+
+S
+
+2
+
+
+
+θ2
+
+
+
+θ1
+
+−S
+
+qˆe f _hd =
+
+
+
+θ1
+
+2
+
+
+
+θ2
+2
+
+θ2
+2
+
+References
+[1] W.K. Clifford, Preliminary sketch of Bi-quaternions, Proc. Lond. Math. Soc. 4 (1873) 381–395.
+[2] H.L. Pham, V. Perdereau, B.V. Adorno, P. Fraisse, Position and orientation control of robot manipulators using dual quaternion feedback, in: Proceedings
+of the Intelligent Robots and Systems (IROS), IEEE/RSJ International Conference, 2010, pp. 658–663.
+[3] M. Schilling, Universally manipulable body models — dual quaternion representations in layered and dynamic MMCs, Autonom. Robot. (2011), doi:10.
+1007/s10514- 011- 9226- 3.
+[4] Q. Ge, A. Varshney, J.P. Menon, C.F. Chang, Double quaternions for motion interpolation, in: Proceedings of the ASME Design Engineering Technical
+Conference, 1998.
+[5] Y. Lin, H. Wang, Y. Chiang, Estimation of relative orientation using dual quaternion, Syst. Sci. (2) (2010) 413–416.
+[6] A. Perez, J.M. McCarthy, Dual quaternion synthesis of constrained robotic systems, J. Mech. Des. 126 (2004) 425.
+[7] L. Kavan, S. Collins, J. Žára, C. O’Sullivan, Geometric skinning with approximate dual quaternion blending, ACM Trans. Graph. (TOG) 27 (4) (2008) 105.
+[8] L Kavan, S Collins, C O’Sullivan, J. Zara, Dual Quaternions for Rigid Transformation Blending, Technical Report, Trinity College, Dublin, 2017.
+[9] F.Z. Ivo, H. Ivo, Spherical skinning with dual quaternions and QTangents, ACM SIGGRAPH Talks 27 (2011) 4503.
+[10] J. Selig, Rational interpolation of rigid-body motions, Adv. Theory of Control Signals Syst. Phys. Model. (2011) 213–224.
+[11] A. Vasilakis, I. Fudos, Skeleton-based rigid skinning for character animation, in: Proceedings of the Fourth International Conference on Computer
+Graphics Theory and Applications, 2009, pp. 302–308.
+[12] Y. Kuang, A. Mao, G. Li, Y. Xiong, A strategy of real-time animation of clothed body movement, in: Proceedings of the International Conference on
+Multimedia Technology (ICMT), 2011, pp. 4793–4797.
+[13] D. Mellinger, V Kumar, Minimum snap trajectory generation and control for quadrotors, in: Proceedings of the IEEE International Conference on
+Robotics and Automation Shanghai International Conference Center, Shanghai, China, 2011.
+[14] E. Fresk, G. Nikolakopoulos, Full quaternion based attitude control for a quadrotor, in: Proceedings of the European Control Conference (ECC), Zürich,
+Switzerland, 2013.
+[15] S. Zhao, W. Dong, A. Jay, Farrell, quaternion-based trajectory tracking control of vtol-uavs using command ﬁltered backstepping, in: Proceedings of the
+American Control Conference (ACC), Washington, DC, USA, 2013.
+
+A. Cohen and M. Shoham / Mechanism and Machine Theory 150 (2020) 103861
+
+9
+
+[16] M. Bangura, R. Mahony, An open-source implementation of a unit quaternion based attitude and trajectory tracking for quadrotors, in: Proceedings of
+the Australasian Conference on Robotics and Automation, Melbourne, Australia, The University of Melbourne, 2014.
+[17] A. Kehlenbeck, Quaternion-Based Control for Aggressive Trajectory Tracking with a Micro-Quadrotor UAV M.Sc thesis, University of Maryland, 2014.
+[18] H. Abaunza, Quadrotor dual quaternion control, Res. Educ. Dev. Unmann. Aerial Syst. (RED-UAS) (2015), doi:10.1109/RED-UAS.2015.7441007.
+[19] H. Abaunza, Dual quaternion modeling and control of a quad-rotor aerial manipulator, J. Intell. Robot. Syst. (2016), doi:10.1007/s10846- 017- 0519- 4.
+[20] V. Artale, C.L.R. Milazzo, C. Orlando, A. Ricciardello, A PSO-PID quaternion model based trajectory control of a hexarotor UAV, in: Proceedings of the
+AIP Conference, 1702, doi:10.1063/1.49389652016.
+[21] J. Colmenares-Vazquez, N. Marchand, P. Castillo, J.E. Gómez-Balderas, An intermediary quaternion-based control for trajectory following using a quadrotor, in: Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2017.
+[22] Y. Wang, C. Yu, Translation and attitude synchronization for multiple rigid bodies using dual quaternions, J. Frankl. Inst. 354 (8) (2017) 3594–3616.
+[23] Y. Wang, C. Yu, Distributed attitude and translation consensus for networked rigid bodies based on unit dual quaternion, Int. J. Robust Nonlinear
+Control 27 (17) (2017) 3971–3989.
+[24] J.A. Fike, S. Jongsma, J.J. Alonso, E. van der Weida, Optimization with gradient and hessian information calculated using hyper-dual numbers, in:
+Proceedings of the Twenty-ninth AIAA Applied Aerodynamics Conference, Honolulu, 2011.
+[25] J.A. Fike, Numerically exact derivative calculations using hyper-dual numbers, in: Proceedings of the Third Annual Student Joint Workshop in Simulation- Based Engineering and Design, 2009.
+[26] J.A. Fike, J.J. Alonso, The development of hyper-dual numbers for exact second-derivative calculations, in: Proceedings of the Forty-ninth AIAA
+Aerospace Sciences Meeting including the New Horizons Forum and Aerospace Exposition 4–7, Orlando, Florida, 2011.
+[27] J.A. Fike, J.J. Alonso, Automatic differentiation through the use of hyper-dual numbers for second derivatives, Lect. Notes Comput. Sci. Eng. 87 (2011)
+163–173 LNCSE201.
+[28] A. Cohen, M. Shoham, Application of hyper-dual numbers to multi-body kinematics, J. Mech. Robot. 8 (2015), doi:10.1115/1.4030588.
+[29] A. Cohen, M. Shoham, Application of hyper-dual numbers to rigid bodies equations-of-motion, J. Mech. Mach. Theory 111 (2017) 76–84.
+[30] Prošková, J. et al. Application of Dual Quaternions on Selected Problems, (2017).
+[31] E. Study, Die Geometrie der Dynamen, Verlag Teubner, Leipzig, 1903, p. 437.
+[32] Y.X. Wu, X.P. Hu, D.W. Hu, J.X. Lian, Strapdown inertial navigation system algorithms based on dual quaternions, IEEE Trans. Aerosp. Electron. Syst. 41
+(1) (2015) 110–132.
+[33] A. Cohen, M. Shoham, Principle of transference – an extension to hyper-dual numbers, J. Mech. Mach. Theory (2017), doi:10.1016/j.mechmachtheory.
+2017.12.007.
+[34] D. Hongyang, et al., Dual-quaternion-based fault-tolerant control for spacecraft tracking with ﬁnite-time convergence, IEEE Trans. Control Syst. Technol.
+25 (4) (2017).
+[35] X. Wang, C. Yu, Unit-dual-quaternion-based PID control scheme for rigid-body transformation, IFAC Proc. 44 (1) (2011) 9296–9301.
+[36] H.T.M. Kussaba, L.F.C. Figueredo, J.Y. Ishihara, B.V. Adorno., Hybrid kinematic control for rigid body pose stabilization using dual quaternions, J. Frankl.
+Inst. (2017).
+[37] E. Sariyildiz, E. Cakiray, H. Temeltas, A comparative study of three inverse kinematic methods of serial industrial robot manipulators in the screw
+theory framework, Int. J. Adv. Robot. Syst. (2011).
+[38] H.-L. Pham, V. Perdereau, B.V. Adorno, P. Fraisse, Position and orientation control of robot manipulators using dual quaternion feedback, in: Proceedings
+of the IEEE/RSJ International Conference on Intelligent Robots and Systems, Taipei, Taiwan, October 18-22, 2010.
+[39] Z. Zhao, T. Wang, D. Wang, Inverse kinematic analysis of the general 6R serial manipulators based on unit dual quaternion and Dixon resultant, in:
+Proceedings of the Chinese Automation Congress (CAC), 2017 20–22 Oct.
+[40] H. Su, P. Dietmaier, J.M. McCarthy, Trajectory planning for constrained parallel manipulators, J. Mech. Des 125 (4) (2004) 709–716, doi:10.1115/1.
+1623187.
+[41] M. Gouasmi, M. Ouali, F. Brahim, Robot kinematics using dual quaternions, Int. J. Robot. Autom. 1 (1) (2012) 13–30.
+[42] A.-N. Sharkawy, N. Aspragathos, A comparative study of two methods for forward kinematics and Jacobian matrix determination, in: Proceedings of
+the International Conference on Mechanical, System and Control Engineering, 2017.
+[43] B. Kenwright, A beginners guide to dual-quaternions: what they are, how they work, and how to use them for 3D, in: Proceedings of the Twentieth
+International Conference on Computer Graphics, Visualization and Computer Vision, Communication Proceedings, 2012, pp. 1–13.
+[44] A. Valverde, P. Tsiotras, Spacecraft robot kinematics using dual quaternions, Robotics 7 (64) (2018).
+
+

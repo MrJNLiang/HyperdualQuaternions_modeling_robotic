@@ -1,0 +1,3462 @@
+Available online at www.sciencedirect.com
+
+ScienceDirect
+IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+Resolved-Acceleration Control of Serial
+Resolved-Acceleration Control of Serial
+Robotic
+Manipulators
+Using
+Unit
+Dual
+Resolved-Acceleration
+Control
+of Serial
+Robotic
+Manipulators
+Using
+Unit
+Dual
+Resolved-Acceleration
+Control
+of Serial
+Robotic
+Manipulators
+Using
+Unit
+Dual
+
+Quaternions
+Robotic
+Manipulators
+Using
+Unit
+Dual
+
+Robotic Manipulators
+Using
+Unit
+Dual
+
+Quaternions
+Quaternions
+
+Quaternions
+
+∗
+Rohit Chandra Quaternions
+Juan Antonio Corrales-Ramon ∗∗
+
+∗∗
+∗∗
+Rohit Chandra
+Chandra ∗∗∗Youcef
+Juan Antonio
+Antonio
+Corrales-Ramon
+∗∗
+∗∗
+Rohit
+Juan
+MezouarCorrales-Ramon
+∗∗
+∗∗
+∗∗
+Mezouar
+Rohit Chandra ∗∗∗Youcef
+Juan
+Antonio
+Corrales-Ramon
+∗∗
+∗∗
+Youcef
+Mezouar
+∗∗
+Rohit Chandra
+Chandra Juan
+Juan Antonio
+Antonio Corrales-Ramon
+Corrales-Ramon
+∗∗
+Rohit
+Youcef Mezouar ∗∗
+∗
+∗∗
+Université
+Clermont
+Auvergne,
+SIGMA
+Clermont,
+Institut
+Pascal,
+Youcef Mezouar
+Mezouar
+Youcef
+∗
+∗
+Clermont
+Auvergne,
+SIGMA
+Clermont,
+Institut
+Pascal,
+∗ Université
+Université
+Clermont
+Auvergne,
+SIGMA
+Clermont,
+Institut
+Pascal,
+(e-mail:
+ol.chandra@gmail.com)
+∗
+(e-mail:
+ol.chandra@gmail.com)
+Université
+Clermont
+Auvergne,
+SIGMA
+Clermont,
+Institut
+Pascal,
+∗∗
+∗
+(e-mail:
+ol.chandra@gmail.com)
+Université
+Clermont
+Auvergne,
+CNRS,
+SIGMA
+Clermont,
+Institut
+∗
+Université
+Clermont
+Auvergne,
+SIGMA
+Clermont,
+Institut
+∗∗Université Clermont Auvergne, SIGMA Clermont, Institut Pascal,
+Pascal,
+∗∗
+Université
+Clermont
+Auvergne,
+CNRS,
+SIGMA
+Clermont,
+Institut
+(e-mail:
+ol.chandra@gmail.com)
+∗∗ Université
+Clermont
+Auvergne,
+CNRS,
+SIGMA
+Clermont,
+Institut
+Pascal, F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+(e-mail:
+ol.chandra@gmail.com)
+∗∗
+(e-mail:
+ol.chandra@gmail.com)
+Pascal,
+F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+Clermont
+Auvergne,
+CNRS, SIGMA
+Clermont,
+Institut
+∗∗ Université
+Pascal,
+F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+∗∗
+Université
+Clermont Auvergne,
+Auvergne, CNRS,
+CNRS, SIGMA
+SIGMA Clermont,
+Clermont, Institut
+Institut
+Université
+Clermont
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+Pascal,
+F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+youcef.mezouar@sigma-clermont.fr)
+Pascal,
+F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+Pascal,
+F-63000
+Clermont–Ferrand,
+France,
+(e-mail:
+youcef.mezouar@sigma-clermont.fr)
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+youcef.mezouar@sigma-clermont.fr)
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+juan-antonio.corrales-ramon@sigma-clermont.fr,
+youcef.mezouar@sigma-clermont.fr)
+youcef.mezouar@sigma-clermont.fr)
+youcef.mezouar@sigma-clermont.fr)
+Abstract: A new method for
+resolved-acceleration control of serial chain manipulators has
+Abstract:
+A
+new
+method
+for
+resolved-acceleration
+control of
+of screw-based
+serial chain
+chain motion
+manipulators
+has
+Abstract:
+A
+new
+method
+for
+control
+of
+serial
+manipulators
+has
+been proposed which uses dualresolved-acceleration
+quaternion representation
+variables,
+been
+proposed
+which
+uses
+dual
+quaternion
+representation
+of
+screw-based
+motion
+variables,
+Abstract:
+A
+new
+method
+for
+resolved-acceleration
+control
+of
+serial
+chain
+manipulators
+has
+been
+proposed
+which
+uses
+dual
+quaternion
+representation
+of
+screw-based
+motion
+variables,
+i.e. pose, velocity
+and acceleration.
+The corresponding
+controller
+considers both
+Abstract:
+A new
+new method
+method
+for resolved-acceleration
+resolved-acceleration
+controlcoupled
+of serial
+serial
+chain manipulators
+manipulators
+has
+Abstract:
+A
+for
+control
+of
+chain
+has
+i.e. pose,
+pose,
+velocity
+anduses
+acceleration.
+The corresponding
+corresponding
+coupled
+controller
+considers
+both
+been
+proposed
+dual
+representation
+of
+screw-based
+motion
+variables,
+translation
+and which
+orientation
+errorsquaternion
+simultaneously
+for trajectory
+tracking
+and
+utilizes
+spatial
+i.e.
+velocity
+and
+acceleration.
+The
+coupled
+controller
+considers
+both
+been
+proposed
+which
+uses
+dual
+quaternion
+representation
+of
+screw-based
+motion
+variables,
+been
+proposed
+which
+uses
+dual
+quaternion
+representation
+of
+screw-based
+motion
+variables,
+translation
+and
+orientation
+errors
+simultaneously
+for trajectory
+trajectory
+tracking
+and
+utilizes spatial
+spatial
+i.e.
+pose, velocity
+and acceleration.
+Thecompensation
+corresponding
+coupled
+controller
+considers
+both
+acceleration
+to compute
+theerrors
+feedforward
+term
+for tracking
+feedback
+linearization.
+The
+translation
+and
+orientation
+simultaneously
+for
+and
+utilizes
+i.e.
+pose,
+and
+The
+corresponding
+coupled
+controller
+considers
+both
+i.e.
+pose, velocity
+velocity
+and acceleration.
+acceleration.
+Thecompensation
+corresponding
+coupled
+controller
+considers
+both
+acceleration
+to
+compute
+the
+feedforward
+term
+for
+feedback
+linearization.
+The
+translation
+and
+orientation
+errors
+simultaneously
+for
+trajectory
+tracking
+and
+utilizes
+spatial
+acceleration
+to
+compute
+the
+feedforward
+compensation
+term
+for
+feedback
+linearization.
+The
+proposed
+coupled
+control
+law
+was
+validated
+on
+a
+robotic
+arm
+along
+a
+pre-defined
+trajectory.
+translation
+and
+orientation
+errors
+simultaneously
+for
+trajectory
+tracking
+and
+utilizes
+spatial
+translation
+and
+orientation
+errors
+simultaneously
+for trajectory
+tracking
+and
+utilizes
+spatial
+proposed
+coupled
+control
+law
+was
+validated
+on
+arm
+along
+aa pre-defined
+trajectory.
+acceleration
+todemonstrated
+compute
+feedforward
+compensation
+term
+for
+feedback
+proposed
+coupled
+control the
+lawan
+was
+validated
+on aa robotic
+robotic
+armperformance
+along
+pre-defined
+trajectory.
+The
+controller
+improved
+trajectory
+tracking
+aslinearization.
+compared
+toThe
+the
+acceleration
+todemonstrated
+compute
+the
+feedforward
+compensation
+term
+for
+feedback
+linearization.
+The
+acceleration
+to
+compute
+the
+feedforward
+compensation
+term
+for
+feedback
+linearization.
+The
+controller
+an
+improved
+trajectory
+tracking
+performance
+as
+compared
+toThe
+the
+proposed
+coupled
+control
+law
+was
+validated
+on
+a
+robotic
+arm
+along
+a
+pre-defined
+trajectory.
+conventional
+decoupled
+resolved-acceleration
+controller
+which
+treats
+translation
+and
+orientation
+The
+controller
+demonstrated
+an
+improved
+trajectory
+tracking
+performance
+as
+compared
+to
+the
+proposed
+coupled
+control
+law was
+was validated
+validated controller
+on aa robotic
+robotic
+arm
+along
+pre-defined
+trajectory.
+proposed
+coupled
+control
+law
+on
+arm
+along
+aa pre-defined
+trajectory.
+conventional
+decoupled
+resolved-acceleration
+which
+treats
+translation
+and
+orientation
+The
+controller
+demonstrated
+an
+improved
+trajectory
+tracking
+performance
+as
+compared
+to
+the
+error
+separately.
+conventional
+decoupled
+resolved-acceleration
+controllertracking
+which treats
+translation
+and orientation
+The
+demonstrated
+an
+performance
+as
+to
+The
+controller
+demonstrated
+an improved
+improved trajectory
+trajectory
+performance
+as compared
+compared
+to the
+the
+errorcontroller
+separately.
+conventional
+decoupled
+resolved-acceleration
+controllertracking
+which treats
+translation
+and orientation
+error
+separately.
+conventional
+decoupled
+resolved-acceleration
+controller
+which
+treats
+translation
+and
+orientation
+conventional
+decoupled resolved-acceleration controller which treats translation and orientation
+error
+separately.
+BY-NC-ND license
+the CC
+article under
+access systems,
+is an open
+Authors. This motion
+2020 The
+©Robots
+Copyright
+error
+separately.
+Keywords:
+manipulators,
+control
+torque
+control
+error
+separately.
+Keywords:
+Robots manipulators,
+manipulators,
+motion control
+control systems,
+systems, torque
+torque control
+control
+licenses/by-nc-nd/4.0)
+(http://creativecommons.org/
+Keywords:
+Robots
+motion
+Keywords: Robots manipulators, motion control systems, torque control
+Keywords: Robots
+Robots manipulators,
+manipulators, motion
+motion control
+control systems,
+systems, torque
+torque control
+control
+Keywords:
+
+1. INTRODUCTION
+1. INTRODUCTION
+INTRODUCTION
+1.
+1. INTRODUCTION
+Robotic manipulators
+are often required to follow the de1. INTRODUCTION
+INTRODUCTION
+1.
+Robotic
+manipulators
+are of
+often
+required
+to follow
+follow
+the dedeRobotic
+manipulators
+are
+often
+required
+to
+the
+sired
+trajectory
+composed
+position
+as well
+as orientation
+sired
+trajectory
+composed
+of
+position
+as
+well
+as
+orientation
+Robotic
+manipulators
+aredesired
+often
+required
+to
+follow
+the
+desired
+trajectory
+composed
+of
+position
+as
+well
+as
+orientation
+set
+points,
+along
+with
+the
+profile
+of
+linear
+and
+anguRobotic
+manipulators
+aredesired
+often required
+required
+to
+follow
+the
+deRobotic
+manipulators
+are
+often
+to
+follow
+deset velocities
+points,
+along
+with the
+the
+profile
+of
+linear
+andthe
+angusired
+trajectory
+of
+position
+as of
+well
+as orientation
+lar
+for composed
+tighter
+control
+and
+smooth
+motion.
+Due
+to
+set
+points,
+along
+with
+desired
+profile
+linear
+and
+angusired
+trajectory
+composed
+of
+position
+as
+well
+as
+orientation
+sired
+trajectory
+composed
+of
+position
+as
+well
+as
+orientation
+lar velocities
+velocities
+for
+tighter
+control
+and
+smooth
+motion.
+Due
+to
+set
+points,ease
+along
+with the
+desired
+profile
+of
+linear
+and
+anguintuitive
+of
+trajectory
+specification
+and
+the
+control
+of
+lar
+for
+tighter
+control
+and
+smooth
+motion.
+Due
+to
+set
+points,
+along
+with
+the
+desired
+profile
+of
+linear
+and
+anguset
+points,ease
+along
+with the
+desired
+profile
+of
+linear
+and
+anguintuitive
+of
+trajectory
+specification
+and
+the
+control
+of
+lar
+velocities
+for
+tighter
+control
+and
+smooth
+motion.
+Due
+to
+intuitive
+ease
+of
+trajectory
+specification
+and
+the
+control
+of
+end-effector
+interaction
+with
+the
+environment,
+a
+task
+space
+lar
+velocities
+for
+tighter
+control
+and
+smooth
+motion.
+Due
+to
+lar
+velocities
+for
+control
+and
+smooth
+motion.
+Due
+to
+end-effector
+interaction
+withspecification
+the
+environment,
+a controller.
+task
+space
+intuitive
+ease
+of tighter
+trajectory
+and
+the
+control
+of
+controller
+is
+often
+preferred
+over
+a
+joint
+space
+end-effector
+interaction
+with
+the
+environment,
+a
+task
+space
+intuitive
+ease
+of trajectory
+trajectory
+specification
+and
+thecontroller.
+control of
+of
+intuitive
+of
+specification
+the
+control
+controllerease
+is interaction
+often
+preferred
+overenvironment,
+jointand
+space
+end-effector
+with
+the
+a controller.
+task
+space
+Operational
+space
+control
+(Khatib
+Nakanishi
+et al.
+controller
+is
+often
+preferred
+over
+aa(1987),
+joint
+space
+end-effector
+interaction
+with
+the
+environment,
+a
+task
+space
+end-effector
+interaction
+with
+the
+environment,
+a
+task
+space
+Operational
+space
+control
+(Khatib
+(1987),
+Nakanishi
+et al.
+al.
+controller
+is resolved-acceleration
+often control
+preferred
+over control
+a(1987),
+joint (Caccavale
+space
+controller.
+Operational
+space
+(Khatib
+Nakanishi
+et
+(2008))
+and
+controller
+is resolved-acceleration
+often preferred
+preferred
+over control
+joint (Caccavale
+space
+controller.
+controller
+is
+often
+over
+aa(1987),
+joint
+space
+controller.
+(2008))
+and
+et
+al.
+Operational
+space
+control
+(Khatib
+Nakanishi
+(2008))
+and
+resolved-acceleration
+control
+(Caccavale
+et
+al.
+(1998), Luh space
+et al.control
+(1980))(Khatib
+have been
+theNakanishi
+two preferred
+Operational
+space
+control
+(Khatib
+(1987),
+Nakanishi
+et al.
+al.
+Operational
+(1987),
+et
+(1998), and
+Luh
+et al.
+al.space
+(1980))
+have
+been
+the
+two preferred
+preferred
+(2008))
+(Caccavale
+et
+al.
+methods
+for resolved-acceleration
+task
+control
+in control
+previous
+decades.
+They
+(1998),
+Luh
+et
+(1980))
+have
+been
+the
+two
+(2008))
+and
+resolved-acceleration
+control
+(Caccavale
+et
+al.
+(2008))
+and
+resolved-acceleration
+control
+(Caccavale
+et
+al.
+methods
+for task
+task
+space
+control
+in been
+previous
+decades.
+They
+(1998),
+Luh
+et al.
+(1980))
+have
+two preferred
+differ
+primarily
+inspace
+theircontrol
+treatment
+of the
+singularity,
+apart
+methods
+for
+in
+previous
+decades.
+They
+(1998),
+Luh
+et al.
+al.
+(1980))
+have
+been
+the
+two preferred
+preferred
+(1998),
+Luh
+et
+(1980))
+have
+been
+the
+two
+differ
+primarily
+in
+their
+treatment
+of
+singularity,
+apart
+methods
+for
+task
+space
+control
+in
+previous
+decades.
+They
+differ
+primarily
+in
+their
+treatment
+of
+singularity,
+apart
+from the for
+dynamic
+formulation.
+methods
+for
+task space
+space
+control in
+in previous
+previous decades.
+decades. They
+They
+methods
+task
+from
+dynamic
+formulation.
+differ
+primarily
+theircontrol
+treatment
+of singularity, apart
+from the
+the
+dynamicin
+formulation.
+differ
+primarily
+in
+their
+treatment
+of
+singularity,
+apart
+differ
+primarily
+their treatment
+of singularity,
+Traditionally
+thein
+trajectory
+tracking strategies
+in theapart
+case
+from
+the
+dynamic
+formulation.
+Traditionally
+the trajectory
+trajectory
+tracking
+strategies in
+in
+the case
+case
+from
+the dynamic
+dynamic
+formulation.
+from
+the
+formulation.
+Traditionally
+the
+tracking
+strategies
+the
+of
+robotics
+manipulation
+involve
+the decoupling
+of position
+of
+robotics
+manipulation
+involve
+the
+decoupling
+of
+position
+Traditionally
+the
+trajectory
+tracking
+strategies
+in
+the
+case
+of
+robotics
+manipulation
+involve
+the
+decoupling
+of
+position
+and orientation
+is desired
+Traditionally
+thevariables.
+trajectoryHowever,
+tracking it
+strategies
+in to
+thestrive
+case
+Traditionally
+the
+trajectory
+tracking
+strategies
+in
+the
+case
+and
+orientation
+variables.
+However,
+it
+is desired
+desired
+to
+strive
+of
+robotics
+manipulation
+involve
+the decoupling
+of to
+position
+for
+aorientation
+coupled
+controller
+to
+take into
+account
+the
+inherent
+and
+variables.
+However,
+it
+is
+strive
+of
+robotics
+manipulation
+involve
+the
+decoupling
+of
+position
+of
+robotics
+manipulation
+involve
+the
+decoupling
+of
+position
+for aaorientation
+coupled
+controller
+take
+account
+the
+inherent
+and
+variables.
+However,
+is desired
+strive
+controller
+to translation
+take into
+into it
+account
+the to
+inherent
+effect
+of rotation
+on theto
+of
+a rigid
+body
+as
+for
+coupled
+and
+orientation
+variables.
+However,
+it
+is desired
+desired
+to
+strive
+and
+orientation
+variables.
+However,
+it
+is
+to
+strive
+effect
+of
+rotation
+on
+the
+translation
+of
+a
+rigid
+body
+as
+for
+a
+coupled
+controller
+to
+take
+into
+account
+the
+inherent
+effect
+of
+rotation
+on
+the
+translation
+of
+a
+rigid
+body
+as
+mentioned
+by
+Han
+et
+al.
+(2008).
+The
+basis
+of
+such
+control
+for
+a
+coupled
+controller
+to
+take
+into
+account
+the
+inherent
+for
+a coupled
+controller
+take into
+account
+the
+inherent
+mentioned
+by
+Han
+et
+al.
+(2008).
+The
+basis
+such
+control
+effect
+of rotation
+on
+theto
+translation
+of a of
+rigid
+body
+asa
+mentioned
+by
+Han
+et
+al.
+(2008).
+The
+basis
+of
+such
+control
+was
+given
+by
+Bullo
+and
+Murray
+(1995),
+along
+with
+effect
+of rotation
+rotation
+on and
+the translation
+translation
+of aa rigid
+rigid
+body
+asa
+effect
+of
+on
+the
+of
+was given
+given
+by
+Bullo
+Murray
+(1995),
+along
+with as
+mentioned
+Han
+et coupled
+al.
+The(1995),
+basis
+ofalong
+suchbody
+control
+strategy
+to by
+deal
+with
+trajectory
+tracking
+problem
+was
+by
+Bullo
+and(2008).
+Murray
+with
+a
+mentioned
+by
+Han
+et
+al.
+(2008).
+The
+basis
+of
+such
+control
+mentioned
+by
+Han
+et
+al.
+(2008).
+The
+basis
+of
+such
+control
+strategy
+to by
+deal
+with
+coupled
+trajectory
+tracking
+was
+given
+Bullo
+and
+Murray
+(1995),
+along problem
+with a
+trajectory
+tracking
+problem
+for
+a
+rigid
+body
+using
+the
+homogeneous
+transformation
+strategy
+to
+deal
+with
+coupled
+was
+given
+by
+Bullo
+and
+Murray
+(1995),
+along
+with
+was
+Bullo
+and
+(1995),
+along problem
+with aa
+for a
+agiven
+rigid
+body
+using
+theMurray
+homogeneous
+transformation
+strategy
+to by
+deal
+with
+coupled
+trajectory
+tracking
+for
+rigid
+body
+using
+the
+homogeneous
+transformation
+matrix
+(HTM)
+representation
+of
+pose.
+The
+difference
+in the
+strategy
+to
+deal
+with
+coupled
+trajectory
+tracking
+problem
+strategy
+to deal
+with
+coupled
+trajectory
+tracking
+problem
+matrix
+(HTM)
+representation
+of
+in
+for
+a rigid
+body
+using
+the homogeneous
+transformation
+matrix
+(HTM)
+representation
+of pose.
+pose. The
+The difference
+difference
+in the
+the
+for
+a
+rigid
+body
+using
+the
+homogeneous
+transformation
+for
+a
+rigid
+body
+using
+the
+homogeneous
+transformation
+
+matrix
+(HTM)
+representation
+of
+pose.
+The
+difference
+in
+the
+”The authors are supported by the H2020 FoF project SoftMan
+matrix
+(HTM)are
+representation
+of pose.
+pose.
+The
+difference
+in the
+the
+matrix
+(HTM)
+representation
+of
+in
+”The authors
+supported by the
+H2020The
+FoFdifference
+project SoftMan
+
+
+Fig. 1. (a) Desired trajectory description; (b, c) Baxter
+Fig.
+1.performing
+(a) Desired
+Desired
+trajectory
+description;
+(b, c)
+c) Baxter
+Baxter
+Fig.
+(a)
+trajectory
+description;
+robot1.
+trajectory
+tracking
+task. (b,
+robot
+trajectory
+tracking
+task.
+Fig.
+1.performing
+(a) Desired
+trajectory
+description;
+(b, c) Baxter
+robot
+performing
+trajectory
+tracking
+task.
+Fig. 1.
+1. (a)
+(a) Desired
+Desired trajectory
+trajectory description;
+description; (b,
+(b, c)
+c) Baxter
+Baxter
+Fig.
+robot performing
+trajectory tracking
+task.
+robot
+performing
+trajectory
+tracking
+task.
+convergence
+behavior
+of coupled
+and decoupled
+control of
+robot
+performing
+trajectory
+tracking
+task.
+convergence
+behavior
+of
+and
+of
+convergence
+behavior
+of coupled
+coupled
+and decoupled
+decoupled
+control
+of
+linear and angular
+terms
+were reported
+in Han et control
+al. (2008)
+linear
+and
+angular
+terms
+were
+reported
+in
+Han
+et
+al.
+(2008)
+convergence
+behavior
+of
+coupled
+and
+decoupled
+control
+of
+linear
+and
+angular
+terms
+were
+reported
+in
+Han
+et
+al.
+(2008)
+for
+the
+motion
+on
+SE(2)
+of
+a
+ground
+omnidirectional
+robot
+convergence
+behavior
+of of
+coupled
+andomnidirectional
+decoupled control
+control
+of
+convergence
+behavior
+of
+coupled
+and
+decoupled
+of
+for
+the
+motion
+on
+SE(2)
+a
+ground
+robot
+linear
+and
+angular
+terms
+were
+reported
+in
+Han
+et
+al.
+(2008)
+for
+motion
+onthat
+SE(2)
+a ground
+omnidirectional
+robot
+theytheconcluded
+theof
+coupled
+treatment
+is al.
+a (2008)
+better
+linear
+and
+angular
+terms
+were
+reported
+in
+Han
+et
+linear
+and
+angular
+terms
+were
+reported
+in
+Han
+et
+al.
+(2008)
+they
+concluded
+that
+theof coupled
+coupled
+treatment
+is a
+a better
+better
+for
+theconcluded
+motion
+onthat
+SE(2)
+a ground
+omnidirectional
+robot
+they
+the
+treatment
+is
+choice
+when the
+synergy
+position
+and orientation
+is
+for
+the
+motion
+on
+SE(2)
+of aaof
+ground
+omnidirectional
+robot
+for
+theconcluded
+motion
+onthat
+SE(2)
+ground
+omnidirectional
+robot
+choice
+when
+the
+synergy
+of
+position
+and
+orientation
+is
+they
+theof coupled
+treatment
+is a better
+choice
+when
+the
+synergy
+of
+position
+and
+orientation
+is
+important,
+i.e.
+for
+applications
+where
+the
+position
+and
+they
+concluded
+that
+the
+coupled
+treatment
+is
+a
+better
+they
+concluded
+that
+the
+coupled
+treatment
+is
+a
+better
+important,
+i.e.
+for
+applications
+where
+the
+position
+and
+choice
+when
+the
+synergy
+of
+position
+and
+orientation
+is
+orientation
+setpoints
+are
+desired
+to
+be
+achieved
+simultaimportant,
+i.e.
+for
+applications
+where
+the
+position
+and
+choice
+whensetpoints
+the synergy
+synergy
+of position
+position
+and
+orientation
+is
+choice
+when
+the
+of
+and
+orientation
+is
+orientation
+are
+desired
+to
+be
+achieved
+simultaimportant,
+i.e.
+for
+applications
+where
+the
+position
+and
+orientation
+are desired
+to be
+simultaneously,
+for setpoints
+instance,
+robotic
+welding
+of achieved
+a curved
+surface.
+important,
+i.e.
+for
+applications
+where
+the
+position
+and
+important,
+i.e.
+for
+applications
+where
+the
+position
+and
+neously, for
+for setpoints
+instance, robotic
+robotic
+welding
+of achieved
+curved simultasurface.
+orientation
+are desired
+to be
+”The
+authors
+supported
+the
+FoF
+project
+Bot.
+This
+projectare
+has
+received by
+funding
+from the
+Union’s
+neously,
+instance,
+welding
+of
+aa curved
+surface.
+”The
+authors
+are
+supported
+by
+the H2020
+H2020
+FoFEuropean
+project SoftManSoftManorientation
+setpoints
+are
+to
+be
+achieved
+simulta
+Bot.
+This
+project
+has
+received
+funding
+from the
+the
+European
+Union’s
+orientation
+areofdesired
+desired
+to and
+be
+”The
+authors
+are
+supported
+by
+theprogramme
+H2020
+FoFunder
+project
+SoftManThe
+coupled
+treatment
+position
+variBot.
+This
+project
+has
+received
+funding
+from
+European
+Union’s
+neously,
+for setpoints
+instance,
+robotic
+welding
+of achieved
+aorientation
+curved simultasurface.
+Horizon
+2020
+research
+and
+innovation
+grant
+agree
+Bot.
+This
+project
+has
+received
+funding
+from the
+European
+Union’s
+
+”The
+authors
+are
+supported
+by
+the
+H2020
+FoF
+project
+SoftManThe
+coupled
+treatment
+of
+and
+orientation
+varineously,
+for instance,
+instance,
+robotic
+welding
+of aagiven
+curved
+surface.
+”The
+authors
+are
+supported
+by
+theprogramme
+H2020
+FoFunder
+project
+SoftManHorizon
+2020
+research
+and
+innovation
+grant
+agreeneously,
+for
+robotic
+welding
+of
+curved
+surface.
+Bot.
+This
+project
+has
+received
+funding
+from the
+European
+Union’s
+The
+coupled
+treatment
+of position
+position
+and
+orientation
+variHorizon
+2020
+research
+and
+innovation
+programme
+under
+grant
+agreement
+no
+869855.
+ables
+using
+spatial
+dynamics
+concepts
+by
+FeathHorizon
+2020
+research
+and
+innovation
+programme
+under
+grant
+agreeBot.
+This
+project has
+has received
+received funding
+funding from
+from the
+the European
+European Union’s
+Union’s
+Bot.
+project
+ment This
+no 2020
+869855.
+ables
+using
+spatial
+dynamics
+concepts
+given
+by
+FeathThe
+coupled
+treatment
+of
+position
+and
+orientation
+variHorizon
+research
+and
+innovation
+programme
+under
+grant
+agreement
+no
+869855.
+ables
+using
+spatial
+dynamics
+concepts
+given
+by
+Feathment no 2020
+869855.
+The
+coupled
+treatment
+of
+position
+and
+orientation
+variHorizon
+research
+and
+innovation
+programme
+under
+grant
+agreeThe coupled
+treatment
+of position
+and given
+orientation
+variHorizon
+research and innovation programme under grant agreement no 2020
+869855.
+ables
+using spatial
+dynamics
+concepts
+by Feathment
+no
+869855.
+ables
+using
+spatial
+dynamics
+concepts
+given
+by
+Feathment
+no
+869855.
+ables
+using
+spatial
+dynamics
+concepts
+given
+by
+Feath2405-8963 Copyright © 2020 The Authors. This is an open access article under the CC BY-NC-ND license.
+Peer review under responsibility of International Federation of Automatic Control.
+10.1016/j.ifacol.2020.12.1425
+
+Rohit Chandra et al. / IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+erstone (2010a,b) and compact representation of screw
+displacements using unit dual quaternions (UDQs) are
+the motivations for the development of the proposed new
+approach of UDQ based resolved-acceleration control. The
+interpretation of screw-based dynamics using spatial dynamics Featherstone (2010a,b, 2001) led to compact and
+more tractable formulations of kinematic and dynamic
+equations. The simplicity is evident from the formulations
+of the Jacobian and the derivative of the Jacobian for a
+kinematic chain as compared to the approach followed by
+Bruyninckx and De Schutter (1996).
+The UDQ based approach for kinematic modeling of serial
+manipulator provides storage and computational advantage, as demonstrated by Özgür and Mezouar (2016).
+We also combine the approach given by Featherstone
+(2010a,b) for the computation of Jacobian derivative with
+the UDQ based kinematic formulation developed by Özgür
+and Mezouar (2016). The control law for task-space trajectory tracking by a robotic serial manipulator is based on
+the work of Wang and Yu (2013), where UDQ based error
+dynamics as derived from the UDQ based dynamics for a
+single rigid body for the attitude and position tracking.
+In our implementation, we derive the error dynamics of
+an end-effector in a desired frame attached to the base of
+a manipulator using a slightly different definition of the
+UDQ based pose error. Hence it allows for an intuitive
+representation of trajectory which is more prevalent in
+robotics literature, compared to the error represented in
+the body frame in Wang and Yu (2013).
+The contributions of this paper can be summarized as:
+• Extension of the kinematics developed by Özgür and
+Mezouar (2016) for the computation of the derivative
+of Jacobian for a serial manipulator using the theory
+of spatial dynamics given by Featherstone (2010b).
+The proposed approach for the computation of the
+Jacobian derivative is computationally advantageous.
+• A screw-based resolved-acceleration controller using
+UDQ representation to compute the joint torque commands for the end-effector trajectory tracking. The
+coupled controller designed for a serial manipulator
+to follow the end-effector trajectory treats both orientation and position set-points jointly, thus addressing
+the inherent effect of rotational motion on translation
+motion.
+In the following section (section 2) the theoretical background and the design of resolved-acceleration controller
+in explained. The derivation of UDQ error dynamics based
+control Law is given in section 3. The experimental validation and related discussions are given in section 4. Section
+5 presents the conclusion and discussion about the current
+work.
+2. THEORY AND PROBLEM FORMULATION
+2.1 Resolved-Acceleration Control
+The dynamic model of a serial manipulator consisting on
+n joints in joint space is given as:
+H(q)q̈ + C(q, q̇)q̇ + G(q) = Γ
+(1)
+where H(q) is a symmetric and positive definite inertia
+matrix. C(q, q̇) consists of Coriolis and centrifugal terms,
+
+8501
+
+whereas G(q) represents gravity vector. Γ is a vector
+of joint driving torques. The joint positions, velocities
+and acceleration are represented above with q, q̇, and q̈,
+respectively.
+Assuming perfect dynamic compensation, the driving
+torques can be computed with a new control input as:
+˙
+Γ = H(q)Ĵ−1 (q)(â
+− Ĵ(q,
+q̇)q̇) + C(q, q̇)q̇ + G(q)
+cmd
+
+(2)
+
+˙
+q̇)q̇) terms actually replaces q̈ in (1)
+The (âcmd − Ĵ(q,
+using following equation relating the joint velocities to the
+end-effector velocity, and its derivative:
+ω̂ = Ĵq̇
+(3)
+â = Ĵ · q̈ + Ĵ˙ · q̇
+(4)
+The goal of resolved acceleration control is to find the
+acceleration command (âcmd ) for (2) from the desired
+trajectory consisting of desired acceleration, velocity, and
+position of end-effector. Note that the dual velocity and
+acceleration terms, i.e. ω̂ and â, has different meaning in
+the context of this paper, and is explained in the next
+section.
+2.2 Mathematical and Theoretical Preliminaries
+In this section, the concepts required for subsequent formulation are given. It includes: the meaning of mathematical notations used; relevant background related to the
+dual-quaternions; the formulation of screw-based forward
+and inverse kinematics concepts proposed in Özgür and
+Mezouar (2016); and, concepts and formulations related
+to the spatial acceleration.
+Notations: Dual quaternions and dual vectors have been
+notated with bold characters with hat, e.g. x̂ and ŝ, respectively. Dual numbers have been named with variables
+with hats (e.g. θ̂), whereas dual number arrays have been
+notated with underlined bold characters with hats (e.g. θ̂).
+Arrays of real number variables are named using underlined bold characters (e.g. θ) and vectors and quaternions
+are notated with bold characters (e.g. l and q respectively).
+Quaternions: A Quaternion is a 4-tuple consisting of a
+scalar and a vector part and is defined as:
+q = s + v = s + (v1 î + v2 ĵ + v3 k̂)
+(5)
+A pure quaternion q has zero as the scalar component and
+is defined as q = q1 i + q2 j + q3 k. Quaternion product is
+given as:
+q 1 · q 2 = (s1 s2 − v1T v2 ) + (s1 v2 + s2 v1 + v1 × v2 ) (6)
+Dual Quaternions: A dual quaternions is an 8-tuple and
+consists of quaternions as their real and dual parts:
+(7)
+x̂ = q r + εq d = (sr + vr ) + ε(sd + vd )
+2
+where ε is the dual number element, such that ε = 0, and
+ε = 0. The classical conjugate of dual quaternion, used for
+transforming poses, is given as:
+(8)
+x̂∗ = q ∗r + εq ∗d = sr − vr + ε(sd − vd )
+Dual quaternion product is given as:
+(9)
+x̂a · x̂b = (q r1 + εq d1 ) · (q r2 + εq d2 )
+= q r1 · q r2 + ε(q r1 · q d2 + q d1 · q r2 )
+(10)
+
+Rohit Chandra et al. / IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+8502
+
+If the product of a dual quaternion with its classical
+conjugate has unity norm represented with a dual number,
+x̂ · x̂∗ = x̂2 = 1 + ε0, it is defined as a unit dual
+quaternion.
+An adjoint operation for dual quaternions (Wang and Yu
+(2013)) is defined as:
+Ad(n x̂m ) x̂a = n x̂m · x̂a · n x̂∗m
+
+(11)
+
+where n x̂∗m is the classic dual quaternion conjugate of
+n
+x̂m . If x̂a was a directed line represented using a unit
+dual vector or a motion screw ∈ M 6 represented with
+dual vectors, and n x̂m represented the transformation
+from frame m to frame n, the adjoint operation given in
+(11), will transform the corresponding element ∈ M 6 from
+frame m to n.
+
+A v
+ecx̂ operation is defined for pure dual quaternions
+(dual quaternions with zero scalar parts in both real and
+dual components) which extracts the vectors from the
+dual quaternion product if applied to another pure dual
+quaternion. This operation is similar to the cross product
+operation for spatial vectors with motion basis (i.e. vectors
+∈ M 6 ). For instance, if x̂ = q r + εq d was a spatial
+vector representing a dual vector ∈ M 6 (note that we have
+reduced the dimension from 8 to 6 for x̂× operation by
+eliminating the scalar part, for the sake of explanation),
+x̂× (cross product operation) is given by Featherstone
+(2010a) as:
+
+
+qr × 0
+(12)
+x̂× =
+qd × qr ×
+Pose of a frame is represented using UDQ as:
+
+
+ 
+ 
+θ̂
+θ̂
+θ̂
+x̂ = exp
+· ŝ = cos
++ ŝ sin
+(13)
+2
+2
+2
+
+ 
+ 
+θ
+θ
+= cos
++ l sin
+(14)
+2
+2
+ 
+ 
+ 
+
+θ
+d
+θ
+θ
+d
++ l cos
++ m sin
+(15)
++ ε − sin
+2
+2
+2
+2
+2
+where θ̂ ∈ D is a dual angle and ŝ ∈ D3×1 is a directed
+line represented using unit dual vector.
+θ̂ = θ + ε d,
+
+ŝ = l + ε m
+
+(16)
+
+where θ is a rotation around the screw axis, d is translation
+along the same axis, l is the unit direction vector of the
+screw axis, and m (= p × l) is the moment of this screw
+axis with respect to the origin of the reference frame, and
+p is any point lying on the screw axis.
+Serial Manipulator Kinematics: For a serial kinematic
+chain, let x̂c0 be the initial end-effector configuration, and
+θ̂ 0 be the initial joint configuration such that:
+
+T
+(17)
+θ̂ 0 = θ̂10 θ̂20 · · · θ̂n0 ∈ Dn×1
+
+The end-effector pose x̂c corresponding to the new joint
+configuration θ̂ is obtained by multiplying the successive
+screw displacements caused by the intermediate joints
+between the base frame and the end-effector link, starting
+from the link to the base and ending at the joint closest
+to the end-effector.
+
+x̂c = δ̂1 · δ̂2 · · · · · δ̂n · x̂c0
+
+
+θ̂i
+· ŝi0
+δ̂i = exp
+2
+
+(18)
+
+where
+θ̂i = ∆θi
+
+for revolute joints,
+
+θ̂i = ε ∆di
+for prismatic joints.
+In (18), ŝi0 refers to the unit dual vector representing the
+initial configuration of the joint screw, and δ̂i represents
+the screw displacement of link i relative to the link (i − 1)
+resulting from the motion of the previous joint.
+The end-effector screw-velocity or spatial velocity (Featherstone (2010a)) represented as a pure dual quaternion, is
+obtained by adding the twist cause by the intermediate
+joints. The screw-based Jacobian is given as:
+
+
+ω
+˙
+= Ĵθ̂
+(19)
+ω̂ = v
+c/b0
+˙
+= [ŝ1 ŝ2 · · · ŝn ] θ̂
+where
+
+T
+˙
+θ̂ = θ̂˙1 θ̂˙2 · · · θ̂˙n ∈ Dn×1
+
+In (19), vc/b0 represents the linear velocity of a point
+attached to the end-effector, which is instantaneously
+coincident with the origin of the base frame. It will be
+hereafter notated as v0 .
+
+The current unit dual vector of joint screw (ŝi ) for the
+ith joint, can be obtained from its initial value ŝi0 , by
+transforming it using the total displacement caused by the
+previous (i − 1) joints, using the adjoint operation.
+ŝi = Ad(b δ̂T
+(20)
+) ŝi0
+(i−1)
+
+b
+
+δ̂ T(i−1) can be obtained as:
+b
+
+δ̂ T(i−1) = δ̂1 · δ̂2 · · · · · δ̂i−1
+
+(21)
+
+Note that in the case of the first joint, i.e. ŝ1 , the dual
+vector of the corresponding joint screw is constant with
+respect to the reference frame. However, the first link
+closest to the base frame will move due to the motion of
+the first joint.
+Spatial Acceleration:
+A brief discussion about spatial
+acceleration is provided here to relate our control approach
+to traditional controllers. All the terms are given in the
+base frame of the robot.
+Spatial acceleration is the derivative of screw velocity and
+defines a helicoidal vector field Featherstone (2001).
+ 
+ω̇
+â = ω̂˙ =
+(22)
+v˙0
+The angular acceleration ω̂˙ of a body in conventional
+sense and spatial dynamics is the same. However, the
+linear acceleration of a point attached to the body is quite
+different in both paradigm.
+Let âc/b0 = ω̇ + ε ac/b0 represents the conventional
+acceleration of a frame c/b0 rigidly attached to the endeffector and instantaneously coincident with the origin of
+the base frame. The linear acceleration ac/b0 is related to
+the linear part of spatial acceleration (v˙0 ) as :
+
+Rohit Chandra et al. / IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+ac/b0 = v˙0 + ω × v0
+
+(23)
+
+Note that the dual part of âc/b0 , i.e. ac/b0 is not a
+derivative of vc/b0 (i.e. vc0 ). In fact, ac/b0 ”refers to
+the acceleration of an individual body-fixed point at the
+moment when it happens to be passing through the origin”
+Featherstone (2001).
+The conventional dual acceleration with the linear acceleration of a general point i.e. origin of a frame on the endeffector, say c, can be obtained from spatial acceleration
+(ac/b0 ) as follows:
+
+  
+ω̇
+ω̇c
+−→
+−→
+(24)
+=
+âc =
+ac
+ac/b0 + ω̇ × OC + ω × (ω × OC)
+3. DERIVATION OF CONTROL LAW
+3.1 UDQ based Pose Error
+Given two poses, i.e. current (x̂c ) and desired (x̂c ), both
+expressed in a static base frame, there are four possible
+permutations for error computation. The error UDQ used
+in our formulation is:
+x̂e = x̂d · x̂∗c = b x̂c→d
+(25)
+The screw axis related this error choice represents a screw
+displacement vector directed from the current frame c to
+the desired frame d (expressed in the base frame b). It
+means if we transform the error screw axis derived from
+x̂e , from the base frame to the current frame using Ad(b x̂∗c ) :
+c
+
+ŝe = Ad(b x̂∗c ) b ŝe = Ad(c x̂b ) b ŝe
+
+(26)
+
+and then postmultiply the corresponding UDQ (obtained
+using (13)) to the current frame pose x̂c , we will get the
+desired pose:
+
+
+c
+θ̂e c
+· ŝe = x̂d
+(27)
+x̂c · exp
+2
+
+8503
+
+where
+ω̂e = Ad(x̂∗e ) ω̂d − ω̂c
+
+(32)
+
+Taking the derivative of (32), we obtain:
+˙ (x̂∗ ) ω̂d + Ad(x̂∗ ) ω̂˙ d − ω̂˙ c
+ω̂˙ e = Ad
+
+(33)
+After expanding the involved terms and using the property
+of UDQs, we obtain:
+
+ecω̂c Ad(x̂∗e ) ω̂ d
+(34)
+ω̂˙ e = Ad(x̂∗e ) ω̂˙ d − ω̂˙ c + v
+e
+
+e
+
+Now ω̂˙ c can be substituted with the following acceleration
+command (âcmd ) for feedback linearisation:
+
+ecω̂c Ad(x̂∗e ) ω̂ d
+âcmd = 2K̂p · ln x̂e + K̂v · ω̂ e + v
+˙
++ Ad(x̂∗ ) ω̂ d
+(35)
+e
+
+Substituting âcmd in (34), we obtain the following error
+dynamics:
+ω̂˙ e + K̂v ω̂ e + 2 K̂p ln x̂e = 0
+(36)
+where the expression (2 ln x̂e ) refers to the product of dual
+angle and unit dual vector pertaining to the axis of the
+screw (see (13)),
+1
+(37)
+ln x̂e = θ̂e · ŝe
+2
+The details of obtaining the screw parameters from a
+dual quaternion can be found in Özgür and Mezouar
+(2016). The asymptotic stability of equilibrium point
+(ln(x̂e ), ω̂ e ) = (0̂, 0̂) for the above system has been proven
+in Wang and Yu (2013) for an appropriate choice of the
+gains K̂p and K̂v . Therefore, the end-effector motion
+will eventually converge to the desired trajectory for the
+control command obtained in (35). The two equilibria
+problem for dual quaternion has been discussed in Wang
+and Yu (2013), where the system (36) has two identical
+ˆ 0̂)and(−I.
+ˆ 0̂), which was resolved by
+equilibria at x̂e = (I.
+multiplying the error UDQ with −1 to make the scalar
+part of the real quaternion positive.
+
+The same interpretation can also applied for obtaining
+orientation error in a desired frame when using unit
+quaternion representation.
+
+The âcmd obtained in (35) can be used in (2) to compute
+the joint torque commands for the manipulator. Note that
+the dual angle θ̂i used in (19) is converted to qi in (4),
+depending on the type of joint (see (17)).
+
+3.2 Control Law Design:
+
+3.3 Formulation of Jacobian Derivative:
+
+In this section we derive the error dynamics similar to
+Wang and Yu (2013) for the attitude and position tracking
+problem of a rigid body using feedback linearization.
+Taking the derivative of the error UDQ given in (25) we
+obtain:
+∗
+x̂˙ e = x̂˙ d · x̂∗c + x̂d · x̂˙ c
+(28)
+
+In order to compute the driving torque command in (2),
+from the control law âcmd obtained in (35), the compu˙ is required. Derivative
+tation of Jacobian derivative (Ĵ)
+
+Now, it has been proved in Han et al. (2008) that:
+1
+(29)
+x̂˙ = ω̂ · x̂
+2
+where ω̂ is the screw velocity of the body, whose pose is
+represented using x̂. The conjugate is given as:
+∗
+1
+(30)
+x̂˙ = − x̂∗ · ω̂
+2
+Hence (28) can be rewritten as:
+1
+x̂˙ e = x̂e · ω̂e
+(31)
+2
+
+of the Jacobian of a serial robotic manipulator can be
+obtained as in Featherstone (2010b), assuming a joint
+screw axis ŝi given as a dual vector is fixed on the child
+link i, and noting that ŝi ∈ M 6 :
+
+
+Ĵ˙ = ŝ˙ 1 ŝ˙ 2 · · · ŝ˙ n
+
+
+vecω̂1 ŝ1 v
+ecω̂n ŝn ]
+ecω̂2 ŝ2 · · · v
+= [
+(38)
+
+where ω̂i represents the screw velocity of an ith link, and
+can be computed from the twists effected by the joints
+between the base frame and the ith link (see (19)).
+4. EXPERIMENTAL VALIDATION
+The controller obtained in section 3.2 was validated in on
+one of the redundant arms of Baxter dual arm collabo-
+
+Rohit Chandra et al. / IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+5
+
+10
+
+15
+
+5
+0
+
+-5
+
+0
+
+10 -3
+
+5
+
+10
+
+15
+
+8
+6
+4
+2
+
+0
+
+5
+
+10
+
+15
+
+time (secs.)
+
+0
+
+0.04
+0.02
+0
+-0.02
+-0.04
+0.04
+0.02
+0
+-0.02
+-0.04
+
+5
+
+10
+
+10
+
+0
+
+5
+
+0
+
+5
+
+ZvelLinear
+
+0
+
+10
+
+15
+
+10
+
+time (secs.)
+
+15
+
+10
+
+15
+
+0
+
+5
+
+10
+
+15
+
+5
+
+10
+
+15
+
+time (secs.)
+
+0
+
+-0.06
+0
+
+0
+
+5
+
+10
+
+15
+
+0.04
+
+0.06
+
+-0.05
+
+0
+
+-0.2
+
+-0.1
+
+5
+
+0.05
+
+0
+
+0.1
+
+ZvelAngular
+
+0
+
+XvelAngular
+(rad./secs.)
+
+YvelLinear
+
+-0.1
+
+YvelAngular
+
+XvelLinear
+(m/secs.)
+
+0
+
+5
+
+10
+
+15
+
+time (secs.)
+
+-0.04
+0
+
+5
+
+10
+
+15
+
+time (secs.)
+
+rative robot (Robotics (2017)). The joint inertia matrix,
+Coriolis and centrifugal torques, and the gravity torques
+were obtained using KDL library Smits et al. (2011),
+and q̇ was provided by the Baxter ROS interface. The
+presented implementation does not address redundancy
+resolution for the extra joint in the used robotic arm, and
+the starting configuration of the manipulator was carefully
+chosen to avoid the effects of null space motion on the
+tracking task. The complete implementation along with
+the instructions to repeat the experiments and reproduce
+the results discussed in this section can be obtained from
+the source 1 .
+Table 1. Root mean square error (RMSE) and
+standard deviation (StD) of position (P os)
+and orientation (Orient) errors for the coupled
+controller with optimal gain, and decoupled
+controller with the same and optimal gain.
+Controller
+
+Coupled
+
+Decoupsame
+
+Decoupopt
+
+RMSEOrient (rad.)
+StDOrient (rad.)
+RMSEP os (m)
+StDP os (m)
+
+0.1852
+0.0718
+0.0089
+0.0026
+
+0.3436
+0.1553
+0.0066
+0.0021
+
+0.2748
+0.1119
+0.0049
+0.0013
+
+https://github.com/rohitChan/ifacWC2020
+
+0.2
+
+6
+
+2
+
+0.1
+
+0
+
+5
+
+10
+
+time (secs.)
+
+15
+
+0
+
+5
+
+10
+
+time (secs.)
+
+15
+
+Fig. 4. Position and orientation norm error of for the coupled (
+) and decoupled (
+) controllers with optimally
+tuned gains.
+The controller performance was compared with the control
+law used in Caccavale et al. (1998), where the translation and orientation components of the trajectory were
+treated separately. The Jacobian of the manipulator and
+the derivative of this Jacobian for the quaternion based
+controller were obtained from the KDL library since the
+corresponding terms obtained in (19) and (38) are screwbased.
+The Cartesian position and quaternion based control law
+was used for comparative validation of the proposed controller was given as follows in Caccavale et al. (1998):
+
+0
+
+Fig. 3. Velocity error (Desired − Current) plot for the
+coupled (
+) and decoupled (
+) controllers with optimally tuned gains.
+
+1
+
+0.3
+
+15
+
+Fig. 2. Pose error (Desired − Current) plot for the coupled (
+) and decoupled (
+) controller with optimally
+tuned gains.
+
+0.1
+
+NormError: Orientation
+
+0.4
+
+14
+
+meter
+
+yerror(m)
+
+10
+
+10 -3
+
+pitcherror(rad.)
+
+0
+
+-3
+
+10 NormError: Position
+
+0.3
+0.2
+0.1
+0
+
+rollerror(rad.)
+
+xerror(m)
+
+5
+
+0
+
+zerror(m)
+
+yawerror(rad.)
+
+10 -3
+
+10
+
+radian
+
+8504
+
+ac = p̈d + KVp ṗe + KPp pe
+ω̇c = ωd + KVo ωe + KPo ve
+
+(39)
+
+where pe refers to the position error of the end-effector
+frame for a given desired position pd . ve refers to the vector
+part of the error quaternion computed as qe = qd · q∗c ,
+from which the orientation error in the base frame can
+be derived. ac and ω̇c are used to obtain the combined
+acceleration command similar to âcmd , to be used in (2).
+Both the controllers were tuned for a stable profile in
+velocity and to obtain the best tracking performance. The
+proportional and derivative gain, 190 and 6 respectively,
+were given in a diagonal matrix form in (35) for the
+coupled controller using UDQ. The gains for the decoupled
+controller for the position and orientation error were
+KPp = KPo = 270 and for the linear and angular
+velocity error, KVp = KVo = 7.5 in (39), and the control
+loop frequency for both the controllers was set 200 Hz.
+Additionally, the conventional decoupled controller was
+also tested with the same gain as the one chosen for the
+proposed coupled controller for fair assessment of their
+performance.
+The description of trajectory generation for validation of
+the controller has been given in Fig. 1. The end-effector
+was desired to rotate around a pre-selected line, defined
+the base frame of the robot, while keeping one of its
+frame axes always pointing towards the line, thus requiring
+both translation and orientation control. The screw axis
+corresponding to the line, and taking the rotation (θtraj (t))
+as a cubic function of time were used to obtain the
+
+Rohit Chandra et al. / IFAC PapersOnLine 53-2 (2020) 8500–8505
+
+s0 (N.m)
+
+8505
+
+5
+
+priate to keep the joint torque bounded for this kind of
+dynamics.
+
+std_dq = 2.223 -20
+std_kdl = 1.983 -25
+
+In addition to that, redundancy resolution is needed to
+utilize the additional degrees of freedom for redundant manipulators, as during the current implementation special
+attention was taken during the definition of trajectory.
+
+std_dq = 0.425 0
+std_kdl = 1.216 -5
+
+s1 (N.m)
+
+e0 (N.m)
+
+4
+
+std_dq = 1.568 0
+std_kdl = 1.921 -4
+
+e1 (N.m) -8
+
+REFERENCES
+
+std_dq = 1.378
+std_kdl = 1.267 -12
+
+w0 (N.m) 0.2
+
+std_dq = 0.049
+std_kdl = 0.078-0.2
+
+w1 (N.m) 0.2
+
+std_dq = 0.093 0
+std_kdl = 0.096-0.2
+
+w2 (N.m)
+
+std_dq = 0.0130.15
+std_kdl = 0.010 0.10
+
+2
+
+4
+
+6
+
+8
+
+10
+
+time (secs.)
+
+12
+
+14
+
+16
+
+18
+
+Fig. 5. Joint Effort plot for the coupled (
+) and decoupled (
+) controllers. std dq and std kdl refers to the
+standard deviation of the joint efforts for coupled approach
+and decoupled approach, respectively.
+desired trajectory of the end-effector. The coefficients
+of the polynomial were computed with four boundary
+condition: θtrajInit = 0, θtrajF inal = π/2, θ̇trajInit = 0,
+θ̇trajF inal = π/2. The θ̈traj (t), θ̇traj (t) and θtraj (t) thus
+computed, gave spatial acceleration, spatial velocity and
+pose, when multiplied by the given screw axis. The total
+duration of the experiment was 18 seconds.
+The robot performing the trajectory tracking task can be
+seen in Fig. 1, and performance of both the controller for
+pose and velocity tracking have been given in Fig. 2 and
+3, respectively. The evolution of position and orientation
+error norm is given in Fig. 4. The error norm for the
+position and orientation tracking for both the controllers
+have been summarized in Table 1. The joint efforts given
+as an input the joints of the manipulator is given in Fig.
+5.
+While the coupled controller performance for position
+tracking is slightly worse than the traditional decoupled
+controller for both the same and optimal gains, the coupled controller performed better in terms of orientation
+tracking. The performance is identical in terms of velocity
+error as is shown in Fig. 3. The commanded joint torques
+were also close in terms of magnitude, however higher oscillations in the commanded joint torques can be observed
+in Fig. 5 for decoupled controller for joints s0, e0 and w0.
+5. CONCLUSION
+A new controller for resolved acceleration control of
+robotic manipulators was proposed for the trajectory
+tracking of the serial robotic manipulator using screw theory and concepts from spatial dynamics. Representation
+of the motion variables with dual quaternions allowed
+coupled treatment of translation and orientation components of trajectory tracking error. A comparison with a
+decoupled controller reveals better orientation tracking
+while achieving comparable performance for the translation components. However, a more thorough analysis is
+required to formulate a better control law that is appro-
+
+Bruyninckx, H. and De Schutter, J. (1996). Symbolic
+differentiation of the velocity mapping for a serial kinematic chain. Mechanism and machine theory, 31(2),
+135–148.
+Bullo, F. and Murray, R.M. (1995). Proportional derivative (pd) control on the euclidean group. In European
+Control Conference, volume 2, 1091–1097.
+Caccavale, F., Natale, C., Siciliano, B., and Villani, L.
+(1998). Resolved-acceleration control of robot manipulators: A critical review with experiments. Robotica,
+16(5), 565–573.
+Featherstone, R. (2001). The acceleration vector of a rigid
+body. The International Journal of Robotics Research,
+20(11), 841–846.
+Featherstone, R. (2010a). A beginner’s guide to 6-d vectors
+(part 1). IEEE robotics & automation magazine, 17(3),
+83–94.
+Featherstone, R. (2010b). A beginner’s guide to 6-d
+vectors (part 2)[tutorial]. IEEE robotics & automation
+magazine, 17(4), 88–99.
+Featherstone, R. (2014). Rigid body dynamics algorithms.
+Springer.
+Han, D.P., Wei, Q., and Li, Z.X. (2008). Kinematic control
+of free rigid bodies using dual quaternions. International
+Journal of Automation and Computing, 5(3), 319–324.
+Khatib, O. (1987). A unified approach for motion and
+force control of robot manipulators: The operational
+space formulation. IEEE Journal on Robotics and
+Automation, 3(1), 43–53.
+Luh, J., Walker, M., and Paul, R. (1980). Resolvedacceleration control of mechanical manipulators. IEEE
+Transactions on Automatic Control, 25(3), 468–474.
+Nakanishi, J., Cory, R., Mistry, M., Peters, J., and Schaal,
+S. (2008). Operational space control: A theoretical and
+empirical comparison. The International Journal of
+Robotics Research, 27(6), 737–757.
+Özgür, E. and Mezouar, Y. (2016). Kinematic modeling
+and control of a robot arm using unit dual quaternions.
+Robotics and Autonomous Systems, 77, 66–73.
+Robotics, R. (2017). Baxter collaborative robots for
+industrial automation.
+Smits, R., Bruyninckx, H., and Aertbeliën, E. (2011).
+Kdl: Kinematics and dynamics library.
+Avaliable:
+http://www. orocos. org/kdl.
+Wang, X. and Yu, C. (2013). Unit dual quaternion-based
+feedback linearization tracking problem for attitude and
+position dynamics. Systems & Control Letters, 62(3),
+225–233.
+Wang, X. and Zhu, H. (2014). On the comparisons of
+unit dual quaternion and homogeneous transformation
+matrix. Advances in Applied Clifford Algebras, 24(1),
+213–229.
+
+

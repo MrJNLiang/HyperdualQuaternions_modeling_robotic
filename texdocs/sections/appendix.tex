@@ -1,45 +1,24 @@
 % ---------------------------------------------------------------------
-% 附录 A：DQ/HDQ 层的验证性推导
 % 附录 C：控制层的补充推导
-% （原文档即无附录 B 与 C.5，此处保持一致）
+% （原附录 A（伴随输运公式）已并入定理 3(a) 证明；原文档即无附录 B 与 C.5）
 % ---------------------------------------------------------------------
-
-\section*{附录 A：DQ/HDQ 层的验证性推导}
-
-\subsection*{A.1 定理 1 的 (i)(ii)(iii)}
-
-(ii)：由 \eqref{eq:4.3} 直接右乘 $\tilde x$。(i)：翻转不变性：$2(-\dot{\tilde x})(-\tilde x^*)=2\dot{\tilde x}\tilde x^*$。(iii)：$\dot{\tilde x}=\dot{\hat{\underline x}}\hat{\underline x}_d^{\,*}+\hat{\underline x}\dot{\hat{\underline x}}_d^{\,*}$；用 $\dot{\hat{\underline x}}=\tfrac12\boldsymbol\xi\hat{\underline x}$ 与 $\dot{\hat{\underline x}}_d^{\,*}=-\tfrac12\hat{\underline x}_d^{\,*}\boldsymbol\xi_d$（后者由 $\dot{\hat{\underline x}}_d=\tfrac12\boldsymbol\xi_d\hat{\underline x}_d$ 取共轭）：
-$\dot{\tilde x}=\tfrac12\boldsymbol\xi\tilde x-\tfrac12\hat{\underline x}\hat{\underline x}_d^{\,*}\boldsymbol\xi_d=\tfrac12\boldsymbol\xi\tilde x-\tfrac12\tilde x\boldsymbol\xi_d$。右乘 $2\tilde x^*$：$\tilde{\boldsymbol\xi}=\boldsymbol\xi-\tilde x\boldsymbol\xi_d\tilde x^*=\boldsymbol\xi-\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d$。含速度级扰动 $\boldsymbol v_w,\boldsymbol v_c$（\cite{P2} 模型）时右端加 $\boldsymbol v_w+\boldsymbol v_c$。
-
-\subsection*{A.2 引理 1 的证明}
-
-\begin{equation*}
-\tfrac{d}{dt}(\tilde x\boldsymbol a\tilde x^*)
-=\dot{\tilde x}\boldsymbol a\tilde x^*+\tilde x\dot{\boldsymbol a}\tilde x^*+\tilde x\boldsymbol a\dot{\tilde x}^* .
-\end{equation*}
-代入 $\dot{\tilde x}=\tfrac12\tilde{\boldsymbol\xi}\tilde x$、$\dot{\tilde x}^*=-\tfrac12\tilde x^*\tilde{\boldsymbol\xi}$：
-\begin{equation*}
-=\tfrac12\tilde{\boldsymbol\xi}(\mathrm{Ad}_{\tilde x}\boldsymbol a)+\mathrm{Ad}_{\tilde x}\dot{\boldsymbol a}-\tfrac12(\mathrm{Ad}_{\tilde x}\boldsymbol a)\tilde{\boldsymbol\xi}
-=\mathrm{Ad}_{\tilde x}\dot{\boldsymbol a}+\mathrm{ad}_{\tilde{\boldsymbol\xi}}(\mathrm{Ad}_{\tilde x}\boldsymbol a).
-\end{equation*}
-\eqref{eq:5.4}：对 \eqref{eq:4.4} 逐项求导并取 $\boldsymbol a=\boldsymbol\xi_d$。$\blacksquare$
 
 \section*{附录 C：控制层的补充推导}
 
-\subsection*{C.1 扰动项的适定性（\eqref{eq:5.1} 为何是显式等式，以及 $\alpha$ 条件的真正作用）}
+\subsection*{C.1 扰动项的显式性与 $\alpha$ 条件的作用}
 
 $\boldsymbol\tau=\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+\hat C\dot{\boldsymbol q}+\hat g$ 代入真实动力学 $M\ddot{\boldsymbol q}+C\dot{\boldsymbol q}+\boldsymbol g=\boldsymbol\tau+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}$ 并解出 $\ddot{\boldsymbol q}$：
 \begin{equation*}
 \ddot{\boldsymbol q}=M^{-1}\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+M^{-1}\bigl(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr),
 \qquad M^{-1}\hat M=I+M^{-1}\Delta M ,
 \end{equation*}
-即 \eqref{eq:5.1}。注意 $\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 \eqref{eq:5.2} 完全由\textbf{当前可测量} $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出，\textbf{不依赖 $\ddot{\boldsymbol q}$}，故 \eqref{eq:5.1} 对 $\ddot{\boldsymbol q}$ 是\textbf{显式赋值}：不存在隐式代数环，既不需要移项、也不需要 Neumann 级数，更不会产生 $\alpha/(1-\alpha)$ 型的等效扰动增益因子。
+即 \eqref{eq:5.1}。$\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 \eqref{eq:5.2} 完全由当前可测量 $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出、不依赖 $\ddot{\boldsymbol q}$，故 \eqref{eq:5.1} 对 $\ddot{\boldsymbol q}$ 是显式赋值，不存在隐式代数环。
 
-由此可见 $\alpha<1/\mathrm{cond}_2(K_d)$（\eqref{eq:5.1f}）与适定性无关，而是为了使定理 3(d) 中的\textbf{有效阻尼保持正定}：乘性分量 $\Theta u_{\mathrm{fb}}$ 中与 $-K_de_\xi$ 同向的部分会削弱阻尼，由 $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 得 $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$，正性恰好等价于 \eqref{eq:5.1f}。$\alpha$ 条件是一个小增益型的证书条件，而非微分方程适定性条件；若 $\alpha$ 过大，闭环仍然定义良好，但本文的 Lyapunov 证书失效。
+$\alpha<1/\mathrm{cond}_2(K_d)$（\eqref{eq:5.1f}）并非适定性条件，而是保证有效阻尼正定：由 $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 得 $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$，其正性即 \eqref{eq:5.1f}。$\alpha$ 过大时闭环仍定义良好，但 Lyapunov 证书失效。
 
-\subsection*{C.2 定理 3(b) 的定量奇异值下界与收敛论证细节}
+\subsection*{C.2 定理 3(b)：$A$ 的奇异值下界}
 
-$\dot V=-e_\xi^\top K_de_\xi$ 只是关于全状态的\textbf{半}负定（$e_\xi=0$ 面上 $\dot V=0$），故不能直接给出收敛，必须补 LaSalle 步骤（定理 3(b) 证明第 4 步），而 LaSalle 步骤需要 $A$ 在工作域内可逆。定量化如下。
+C.6 第 4 步的 LaSalle 论证需要 $A$ 在工作域内一致可逆。定量化如下。
 
 由 \eqref{eq:4.5}，$A=\begin{bmatrix}A_{11}&0\\ -[\mathcal T]_\times& I_3\end{bmatrix}$，$A_{11}=-\tfrac12(\tilde\eta I+[\mathcal O]_\times)$。其逆为
 \begin{equation*}
@@ -49,41 +28,31 @@ A_{11}^{-1}=-2\,\frac{\tilde\eta^2I+\tilde\eta[\mathcal O]_\times^{\top}+\mathca
 =-\frac2{\tilde\eta}\bigl(\tilde\eta^2I-\tilde\eta[\mathcal O]_\times+\mathcal O\mathcal O^\top\bigr),
 \end{gathered}
 \end{equation*}
-用到 $\tilde\eta^2+\|\mathcal O\|^2=1$。$\|A_{11}^{-1}\|_2$ 无需放缩即可精确算出：记 $B\triangleq\tilde\eta I+[\mathcal O]_\times$（故 $A_{11}=-\tfrac12B$），则
+用到 $\tilde\eta^2+\|\mathcal O\|^2=1$。记 $B\triangleq\tilde\eta I+[\mathcal O]_\times$（故 $A_{11}=-\tfrac12B$），则
 \begin{equation*}
 B^\top B=(\tilde\eta I-[\mathcal O]_\times)(\tilde\eta I+[\mathcal O]_\times)=\tilde\eta^2I-[\mathcal O]_\times^2=(\tilde\eta^2+\|\mathcal O\|^2)I-\mathcal O\mathcal O^\top=I-\mathcal O\mathcal O^\top ,
 \end{equation*}
-其特征值为 $\{\,\tilde\eta^2,\,1,\,1\,\}$（沿 $\mathcal O$ 方向为 $1-\|\mathcal O\|^2=\tilde\eta^2$，两个正交方向为 1）。于是 $B$ 的奇异值为 $\{\tilde\eta,1,1\}$，同时给出两个\textbf{精确}等式
+其特征值为 $\{\tilde\eta^2,1,1\}$，故 $B$ 的奇异值为 $\{\tilde\eta,1,1\}$，得
 \begin{equation*}
 \|A_{11}\|_2=\tfrac12\sigma_{\max}(B)=\tfrac12 ,
 \quad
 \|A_{11}^{-1}\|_2=\frac2{\sigma_{\min}(B)}=\frac2{\tilde\eta} ,
 \end{equation*}
-前者正是 §5.2 与定理 3(b) 反复使用的精确值。再由分块下三角结构 $\|A^{-1}\|_2\le(1+\|\mathcal T\|)\allowbreak\|A_{11}^{-1}\|_2+1$，
+由分块下三角结构 $\|A^{-1}\|_2\le(1+\|\mathcal T\|)\allowbreak\|A_{11}^{-1}\|_2+1$，
 \begin{equation*}
 \sigma_{\min}(A)=\frac1{\|A^{-1}\|_2}\;\ge\;\Bigl[\frac{2(1+\|\mathcal T\|)}{\tilde\eta}+1\Bigr]^{-1} .
 \end{equation*}
-在 $\Omega_c$ 内 $\tilde\eta\ge\eta_0$（\eqref{eq:5.5c}）且 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$，故 $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ 一致成立。于是 LaSalle 第 4 步中由 $A^\top K_pe_z\equiv0$ 推出 $\|e_z\|\le\|K_p^{-1}\|_2\|A^{-\top}\|_2\cdot0=0$ 严格成立。局部指数率由线化矩阵 $F$ 的谱给出，逐分量具体极点见 \eqref{eq:5.8}。域限制 $\tilde\eta>0$ 与 \cite{P2} Remark 1 的 unwinding 条件一致。
+在 $\Omega_c$ 内 $\tilde\eta\ge\eta_0$（\eqref{eq:5.5c}）且 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$，故 $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ 一致成立，C.6 第 4 步中由 $A^\top K_pe_z\equiv0$ 即推出 $e_z\equiv0$。
 
-\begin{remark}
-注：无扰情形下 LaSalle 路线自身是完整的，但不能改用级联 ISS 论证闭合。
-\end{remark}
+\subsection*{C.3 定理 3(c-2) 拆分条件的细节}
 
-\subsection*{C.3 定理 3(c) 的二次型/Schur 补细节}
+拆分依赖两条恒等式：(i) $(A^\top e_z)_\omega$ 中 $[\mathcal T]_\times\mathcal T=0$；(ii) $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中 $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$。二者为代数恒等式，不依赖工作域，故 (c-2) 与 (c-1) 同为全局结论；$K_d$ 非块对角时 $-e_\xi^\top K_de_\xi$ 含 $\tilde\omega^\top K_{\omega v}\tilde v$ 交叉项，两分量能量不再分离，退回 (c-1)。
 
-\textbf{(c-1) Schur 补判据。} 记供给率 $s(e_\xi,d)\triangleq-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$。性能目标 $\dot V\le s$ 等价于 $-e_\xi^\top K_de_\xi+e_\xi^\top d-s(e_\xi,d)\le0$，整理为 $-[e_\xi;d]^\top M[e_\xi;d]\le0$，其中 $M$ 为 \eqref{eq:5.6a} 的分块矩阵。$M\succeq0$ 且右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得
-\begin{equation*}
-M\succeq0\iff K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0\iff K_d\succeq\tfrac12(\kappa^{-1}+\gamma_a^{-2})I .
-\end{equation*}
-这是\textbf{当且仅当}判据：不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，无任何符号放缩。
-
-\textbf{(c-2) 两处恒零的几何含义与失效条件。} 拆分精确成立依赖两条叉积混合积恒等式：(i) $(A^\top e_z)_\omega$ 中 $[\mathcal T]_\times\mathcal T=\mathcal T\times\mathcal T=0$；(ii) $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中耦合项对 $\tfrac12\|\mathcal T\|^2$ 不做功，$\mathcal T^\top(\mathcal T\times\tilde\omega)=0$。二者是代数恒等式，不依赖工作域，故 (c-2) 与 (c-1) 一样是全局结论。若 $K_d$ 非块对角，$-e_\xi^\top K_de_\xi$ 含 $\tilde\omega^\top K_{\omega v}\tilde v$ 型交叉项，两分量能量不再分离，退回合并判据 (c-1)。
-
-\textbf{$K_{p,T}$ 各向同性的必要性。} 将平移刚度写作一般对称正定 $K_{p,T}$ 时，上述两处恒零均失效：(i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$，而 $[\mathcal T]_\times K_{p,T}\mathcal T=\mathcal T\times(K_{p,T}\mathcal T)\ne0$ 除非 $\mathcal T$ 是 $K_{p,T}$ 的特征向量；(ii) 平移储能变为 $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$，其导数中的耦合项 $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$ 不再为零（仅当 $K_{p,T}=k_{p,T}I_3$ 时由 $\mathcal T^\top[\mathcal T]_\times=0$ 而消失）。两项残留均是 $\tilde\omega$--$\mathcal T$ 型耦合，使 $V_\omega,V_v$ 不再各自闭合，退回 (c-1)。
+$K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处恒零均失效——(i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$，而 $[\mathcal T]_\times K_{p,T}\mathcal T\ne0$ 除非 $\mathcal T$ 为 $K_{p,T}$ 的特征向量；(ii) $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$ 的导数含耦合项 $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$，仅当 $K_{p,T}=k_{p,T}I_3$ 时为零。残留耦合使 $V_\omega,V_v$ 不再各自闭合，退回 (c-1)。
 
 \subsection*{C.4 strictification 与局部 ISS（未来工作）}
 
-定理 3(d) 的三条缺口的共同根源是 $\dot V$ 中没有 $-\|e_z\|^2$ 型负项。标准补救是 strictification：取 $W=V+\epsilon e_z^\top K_pA(\tilde x)e_\xi$（$\epsilon>0$ 待定），在 $\Omega_c$ 内 $\epsilon$ 足够小时 $W$ 与 $V$ 等价，而求导后新增 $-\epsilon e_z^\top K_pAA^\top K_pe_z$ 项提供 $e_z$ 方向负定。若能验证剩余交叉项（含 $\dot A$ 项）可被两个负定项吸收，则 $\dot W\le-c_1\|(e_z,e_\xi)\|^2+c_2\|d\|\cdot\|(e_z,e_\xi)\|$，得到真正的局部 ISS-Lyapunov 函数。本文未完成此验证（关键难点是 $\dot A$ 项的一致界与 $\epsilon$ 的可行区间非空性），列为 §7 局限 (i)。
+定理 3(d) 缺口的根源是 $\dot V$ 中无 $-\|e_z\|^2$ 项。标准补救为 strictification：取 $W=V+\epsilon e_z^\top K_pA(\tilde x)e_\xi$，$\epsilon$ 足够小时 $W$ 与 $V$ 在 $\Omega_c$ 内等价，求导新增 $-\epsilon e_z^\top K_pAA^\top K_pe_z$ 提供 $e_z$ 方向负定；若剩余交叉项（含 $\dot A$ 项）可被两个负定项吸收，则 $\dot W\le-c_1\|(e_z,e_\xi)\|^2+c_2\|d\|\cdot\|(e_z,e_\xi)\|$，即局部 ISS-Lyapunov 函数。该验证（$\dot A$ 项的一致界与 $\epsilon$ 可行区间非空性）本文未完成，列为 §7 局限。
 
 \subsection*{C.6 定理 3(b) 的完整证明}
 
@@ -94,9 +63,9 @@ M\succeq0\iff K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0\iff K_d\succeq
   =e_\xi^\top\bigl(-K_de_\xi-A^\top K_pe_z\bigr)+e_z^\top K_pAe_\xi
   =-e_\xi^\top K_de_\xi ,
   \end{equation*}
-  因 $e_z^\top K_pAe_\xi=(A^\top K_p^\top e_z)^\top e_\xi=(A^\top K_pe_z)^\top e_\xi$——这里\textbf{只}用到 $K_p$ 对称与 $K_p$ 写在 $A^\top$ 内侧，不需要 $K_p$ 为标量。故 $\dot V\le0$，$\Omega_c$ 正向不变；又 $V\le c$ 给出 $\|e_\xi\|\le\sqrt{2c}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，故 $\Omega_c$ 紧。
+  因 $e_z^\top K_pAe_\xi=(A^\top K_pe_z)^\top e_\xi$（只用 $K_p$ 对称），$\dot V\le0$，$\Omega_c$ 正向不变；$V\le c$ 给出 $\|e_\xi\|\le\sqrt{2c}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，故 $\Omega_c$ 紧。
 
-  \item \textbf{工作域保号 \eqref{eq:5.5c}}：$V\le c$ 蕴含 $\tfrac12\mathcal O^\top K_{p,O}\mathcal O\le c$，即 $\|\mathcal O\|^2\le2c/\lambda_{\min}(K_{p,O})<1$（由 $c<c^*$）。由 $\mathcal O=-\mathrm{Im}\,\tilde r$ 与 $\|\tilde r\|=1$ 得 $\tilde\eta^2+\|\mathcal O\|^2=1$，故 $|\tilde\eta|\ge\eta_0>0$；$\tilde\eta(t)$ 连续且恒不为零，符号不可突变，由 $\tilde\eta(0)>0$ 得 \eqref{eq:5.5c}。
+  \item \textbf{工作域保号 \eqref{eq:5.5c}}：$V\le c$ 蕴含 $\tfrac12\mathcal O^\top K_{p,O}\mathcal O\le c$，即 $\|\mathcal O\|^2\le2c/\lambda_{\min}(K_{p,O})<1$（由 $c<c^*$）。由 $\mathcal O=-\mathrm{Im}\,\tilde r$ 与 $\|\tilde r\|=1$ 得 $\tilde\eta^2+\|\mathcal O\|^2=1$，故 $|\tilde\eta|\ge\eta_0>0$；$\tilde\eta(t)$ 连续且恒非零，由 $\tilde\eta(0)>0$ 得 \eqref{eq:5.5c}。
 
   \item \textbf{$A$ 的行列式}：$A$ 块下三角（\eqref{eq:4.5}），故
   \begin{equation*}
@@ -111,56 +80,56 @@ M\succeq0\iff K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0\iff K_d\succeq
   \begin{equation*}
   F=\begin{bmatrix}0_6 & A_0\\ -A_0^\top K_p & -K_d\end{bmatrix}.
   \end{equation*}
-  对该 LTI 系统同一个 $V$ 仍给出 $\dot V=-e_\xi^\top K_de_\xi\le0$，且 $A_0$ 可逆，重复第 4 步得 LTI 系统渐近稳定，故 $F$ 为 Hurwitz；再由 Lyapunov 线化定理（\cite{Kha02} Thm 4.7）得非线性系统在原点邻域指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，其两个二阶多项式与极点由 \eqref{eq:5.8} 显式给出。
+  对该 LTI 系统同一 $V$ 给出 $\dot V\le0$，$A_0$ 可逆，重复第 4 步得 $F$ Hurwitz；由 Lyapunov 线化定理（\cite{Kha02} Thm 4.7）得局部指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，极点由 \eqref{eq:5.8} 显式给出。
 \end{enumerate}
 
 \subsection*{C.7 定理 3(c) 的完整证明}
 
-\textbf{第一步（$\dot V$ 精确式）}：含扰时定理 3(b) 证明第 1 步的交叉项相消与 $d$ 无关，故
+\textbf{第一步（$\dot V$ 精确式）}：含扰时交叉项相消与 $d$ 无关，故
 \begin{equation*}
 \dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d
 \end{equation*}
-精确成立（此式不含任何放缩；$e_\xi^\top d$ 可正可负）。
+精确成立。
 
 \textbf{第二步（(c-1) 判据的等价性）}：性能目标即 $-e_\xi^\top K_de_\xi+e_\xi^\top d+\tfrac1{2\kappa}\|e_\xi\|^2-\tfrac{\gamma_a^2}2\|d\|^2\le0$，等价于二次型不等式
 \begin{equation*}
 \begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!M\!
 \begin{bmatrix}e_\xi\\ d\end{bmatrix}\ge0\quad\forall(e_\xi,d)\in\mathbb R^{12},
 \end{equation*}
-即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 \eqref{eq:5.6a}。关键在于不定号交叉项 $e_\xi^\top d$ 保留在二次型内整体判定，不经任何符号放缩。
+即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 \eqref{eq:5.6a}。
 
 \textbf{第三步（全局存在性）}：由 $M\succeq0$ 得 $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$，故 $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$，$(e_z,e_\xi)$ 一致有界，解在 $[0,\infty)$ 上存在（无有限时间逃逸）。
 
-\textbf{第四步（积分收尾）}：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 \eqref{eq:5.6}。
+\textbf{第四步（积分）}：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 \eqref{eq:5.6}。
 
-\textbf{第五步（(c-2) 分量解耦）}：块对角 $K_d$ 与各向同性平移刚度 $K_{p,T}=k_{p,T}I_3$ 下两分量储能精确解耦，关键是两处混合积恒零：由 \eqref{eq:4.5}，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$，故旋转反馈不含 $\mathcal T$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$；又 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中的耦合项做功为零（$\mathcal T\cdot(\mathcal T\times\tilde\omega)=0$）。于是位姿交叉项在两分量内分别由 $K_{p,O}$ 对称与 $k_{p,T}$ 为标量而精确相消，
+\textbf{第五步（(c-2) 分量解耦）}：由 \eqref{eq:4.5}，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$，且 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中 $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$，故两分量内位姿交叉项分别精确相消，
 \begin{equation*}
 \dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega+\tilde\omega^\top d_\omega,
 \qquad
 \dot V_v=-\tilde v^\top K_v\tilde v+\tilde v^\top d_v ,
 \end{equation*}
-对每个分量重复第二至第四步的论证（$I_6\to I_3$）即得 \eqref{eq:5.6b}$\Rightarrow$\eqref{eq:5.6p}。两处恒零为代数恒等式，故 (c-1)/(c-2) 的全部结论均不依赖工作域 $\tilde\eta>0$。
+对每个分量重复第二至第四步（$I_6\to I_3$）即得 \eqref{eq:5.6b}$\Rightarrow$\eqref{eq:5.6p}。
 
 \subsection*{C.8 定理 3(d) 的完整证明}
 
 \begin{enumerate}[leftmargin=2em]
-  \item \textbf{精确耗散等式与乘法项展开}：由定理 3(c) 证明第一步，$\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$ 精确成立（无任何放缩）。代入 \eqref{eq:5.1d} 与 \eqref{eq:5.2} 的 $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$：
+  \item \textbf{乘法项展开}：$\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$（C.7 第一步）。代入 \eqref{eq:5.1d} 与 $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$：
   \begin{equation*}
   \dot V=-e_\xi^\top K_de_\xi\;\underbrace{-\,e_\xi^\top\Theta K_de_\xi}_{\text{与阻尼同类}}\;\underbrace{-\,e_\xi^\top\Theta A^\top K_pe_z}_{\text{与扰动同类}}\;+\;e_\xi^\top d_{\mathrm{ex}} .
   \end{equation*}
 
-  \item \textbf{两类乘法项的分别回收}：$|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$（回收进阻尼，得 \eqref{eq:5.7a} 的 $\lambda_{\mathrm{eff}}$；由 (A3)/\eqref{eq:5.1f} 即 $\alpha<\lambda_{\min}(K_d)/\lambda_{\max}(K_d)$ 得 $\lambda_{\mathrm{eff}}>0$）；$|e_\xi^\top\Theta A^\top K_pe_z|\allowbreak\le\alpha\|A\|_2\allowbreak\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$（回收进等效扰动幅值 $D$）。
+  \item \textbf{分别回收}：$|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 并入阻尼，由 \eqref{eq:5.1f} 得 \eqref{eq:5.7a} 的 $\lambda_{\mathrm{eff}}>0$；$|e_\xi^\top\Theta A^\top K_pe_z|\allowbreak\le\alpha\|A\|_2\allowbreak\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$ 并入等效扰动幅值 $D$。
 
-  \item \textbf{$A$ 的谱范数界}：由 $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（\textbf{精确值}，与 $\tilde x$ 无关；奇异值计算见附录 C.2），再由 $A$ 的块下三角结构得 $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$。在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步即得 \eqref{eq:5.7b} 与
+  \item \textbf{$A$ 的谱范数界}：由 $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ 得 $\|A_{11}\|_2=\tfrac12$（附录 C.2），由块下三角结构得 $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$。在 $\Omega_c$ 上 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$、$\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$，代入第 2 步得 \eqref{eq:5.7b} 与
   \begin{equation}
   \dot V\ \le\ -\lambda_{\mathrm{eff}}\|e_\xi\|^2+D\,\|e_\xi\| .
   \tag{5.7d}\label{eq:5.7d}
   \end{equation}
 
-  \item \textbf{Young 与积分收尾}：$D\|e_\xi\|\le\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$，故 $\dot V\le-\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$。在 $[0,T]$ 上积分并弃去 $V(T)\ge0$：
+  \item \textbf{Young 不等式与积分}：$D\|e_\xi\|\le\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$，故 $\dot V\le-\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$。在 $[0,T]$ 上积分并弃去 $V(T)\ge0$：
   \begin{equation*}
   \begin{gathered}
-  \tfrac{\lambda_{\mathrm{eff}}}2\int_0^T\|e_\xi\|^2dt\\[2pt]
+  \tfrac{\lambda_{\mathrm{eff}}}2\int_0^T\|e_\xi\|^2dt
   \ \le\ V(0)+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}\,T ,
   \end{gathered}
   \end{equation*}

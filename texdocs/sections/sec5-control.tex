@@ -44,23 +44,6 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
 \end{equation}
 其中 $A^\top$-整形位姿反馈使 Lyapunov 导数的交叉项精确相消（定理 3 证明），前馈与 $\dot J\dot{\boldsymbol q}$ 分别取自期望链的 $\sigma^2$ 项与 \eqref{eq:3.5}；全部反馈量取自定理 1 的 HDQ 误差元素，不需要任何加速度误差的测量或估计。
 
-\begin{lemma}[伴随输运公式]\label{lem:1}
-沿定理 1 的误差曲线，对任意光滑纯 DQ 曲线 $\boldsymbol a(t)$：
-\begin{equation}
-\frac{d}{dt}\mathrm{Ad}_{\tilde x}\boldsymbol a=\mathrm{Ad}_{\tilde x}\dot{\boldsymbol a}+\mathrm{ad}_{\tilde{\boldsymbol\xi}}\bigl(\mathrm{Ad}_{\tilde x}\boldsymbol a\bigr);
-\tag{5.3}\label{eq:5.3}
-\end{equation}
-从而（含扰时右端加 $\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$）
-\begin{equation}
-\dot{\tilde{\boldsymbol\xi}}=\dot{\boldsymbol\xi}-\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d-\mathrm{ad}_{\tilde{\boldsymbol\xi}}\bigl(\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr).
-\tag{5.4}\label{eq:5.4}
-\end{equation}
-\end{lemma}
-
-\begin{proof}
-附录 A.2（由 $\dot{\tilde x}=\tfrac12\tilde{\boldsymbol\xi}\tilde x$ 与其共轭直接展开）。
-\end{proof}
-
 \subsection{主定理}
 
 本节四个结果（定理 3(a)--3(d)）共用假设 (A1)--(A4)（§5.1）、控制律 \eqref{eq:5.2} 与扰动模型 \eqref{eq:5.1}/\eqref{eq:5.1d}；统一存储函数
@@ -68,7 +51,7 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
 V(e_z,e_\xi)=\tfrac12\|e_\xi\|^2+\tfrac12\,e_z^{\top}K_pe_z\;\ge0 ,
 \tag{5.4a}\label{eq:5.4a}
 \end{equation}
-$K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|^2$）。以下两点决定结论的强弱：(i) $\tilde\eta=0$ 处 $A(\tilde x)$ 奇异且 $SO(3)$ 的双覆盖带来拓扑障碍，全部收敛声明都是工作域（水平集）内的局部结论；(ii) $\dot V$ 只含 $-\|e_\xi\|^2$ 型负项而无 $-\|e_z\|^2$ 项（扰动到 $e_z$ 的相对阶为 2），故 $V$ 不能单独给出 $e_\xi$ 的逐点极限球（定理 3(d) 注记）。
+$K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|^2$）。受 $\tilde\eta=0$ 处 $A$ 奇异与 $SO(3)$ 双覆盖的拓扑障碍所限，以下收敛声明均为工作域（水平集）内的局部结论。
 
 % ---- 定理 3(a)：手工编号 ----
 \setcounter{theorem}{2}%
@@ -84,7 +67,12 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \end{theorem}
 
 \begin{proof}
-将 \eqref{eq:5.2} 代入 \eqref{eq:3.5} 并利用引理 1，前馈项与期望/输运项精确相消即得 \eqref{eq:5.5}。
+对 \eqref{eq:4.4} 逐项求导，用伴随求导法则 $\frac{d}{dt}\bigl(\mathrm{Ad}_{\tilde x}\boldsymbol a\bigr)=\mathrm{Ad}_{\tilde x}\dot{\boldsymbol a}+\mathrm{ad}_{\tilde{\boldsymbol\xi}}(\mathrm{Ad}_{\tilde x}\boldsymbol a)$（由 $\dot{\tilde x}=\tfrac12\tilde{\boldsymbol\xi}\tilde x$ 与其共轭直接展开）得 twist 误差动态
+\begin{equation}
+\dot{\tilde{\boldsymbol\xi}}=\dot{\boldsymbol\xi}-\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d-\mathrm{ad}_{\tilde{\boldsymbol\xi}}\bigl(\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr)
+\tag{5.5a}\label{eq:5.5a}
+\end{equation}
+（含扰时右端加 $\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$）。将 \eqref{eq:5.2} 代入 \eqref{eq:3.5} 所得 $\dot{\boldsymbol\xi}$ 再代入上式，前馈项与期望/输运项精确相消即得 \eqref{eq:5.5}。
 \end{proof}
 
 % ---- 定理 3(b) ----
@@ -110,7 +98,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \end{proof}
 
 \begin{remark}
-全局指数稳定不可得，原因在于 $SO(3)$ 双覆盖的拓扑障碍（unwinding）与 $A$ 在 $\tilde\eta=0$ 处的奇异性。水平集条件 \eqref{eq:5.5b} 可数值核验：§6 tuned 档 $c^{*}=160$，实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494$，余度约 2.5 个数量级（§6.4）。当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即强制 $\tilde\eta\ge0$。$\blacksquare$
+水平集条件 \eqref{eq:5.5b} 可数值核验：§6 tuned 档 $c^{*}=160$，实测 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le0.494$，余度约 2.5 个数量级（§6.2.3）。当 $\tilde\eta<0$ 时将 HDQ 误差整体翻转符号（定理 1(i) 不改变 $\tilde{\boldsymbol\xi}$）即强制 $\tilde\eta\ge0$。$\blacksquare$
 \end{remark}
 
 % ---- 定理 3(c) ----
@@ -190,10 +178,8 @@ D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{
 \end{proof}
 
 \begin{remark}
-因 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2），此处给出的是 RMS 界而非逐点 ISS 界；严格化需 strictification（附录 C.4）。$\Omega_c$ 前提需事后数值核验（§6.4：实测余度约 2.5 个数量级）。$\blacksquare$
+因 $\dot V$ 的负项只含 $-\|e_\xi\|^2$（扰动到 $e_z$ 的相对阶为 2），此处给出的是 RMS 界而非逐点 ISS 界；严格化需 strictification（附录 C.4）。$\Omega_c$ 前提需事后数值核验（§6.2.3）。$\blacksquare$
 \end{remark}
-
-\noindent\textbf{边界说明}：(i) 奇异邻域内取阻尼伪逆时 $JJ^+\ne I$，残差归入 $d_{\mathrm{ex}}$；(ii) 本文不声称全状态 ISS，也不声称与运动学外环级联后的整体 H∞ 界；(iii) \eqref{eq:5.6}/\eqref{eq:5.6p}/\eqref{eq:5.7} 均只约束 $e_\xi$；$e_z$ 的稳态量级由 \eqref{eq:5.9} 给出工程估计，严格上界需 strictification（附录 C.4）；(iv) 分量拆分 (c-2) 依赖 $K_d$ 块对角与 $K_{p,T}$ 各向同性，否则退回 (c-1)。
 
 \subsection{近恒等线性化模型与静态刚度标度律}
 
@@ -201,23 +187,21 @@ D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{
 
 取 $K_d=\mathrm{diag}(K_\omega,K_v)$、$K_p=\mathrm{diag}(K_{p,O},k_{p,T}I_3)$，在 $\tilde x\to1$ 处 $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$，消去 $e_\xi$ 得两条解耦的二阶方程：
 \begin{equation}
-\boxed{\;
 \ddot{\mathcal O}+K_\omega\dot{\mathcal O}+\tfrac14K_{p,O}\,\mathcal O=-\tfrac12\,d_\omega ,
 \qquad
-\ddot{\mathcal T}+K_v\dot{\mathcal T}+k_{p,T}\,\mathcal T=+\,d_v .\;}
+\ddot{\mathcal T}+K_v\dot{\mathcal T}+k_{p,T}\,\mathcal T=+\,d_v .
 \tag{5.8}\label{eq:5.8}
 \end{equation}
 
 旋转块 $-\tfrac12I_3$ 使有效旋转刚度为 $\tfrac14K_{p,O}$；为配平带宽，取 $K_{p,O}=4k_{p,T}I_3$。令 $\ddot{(\cdot)}=\dot{(\cdot)}=0$ 得\textbf{静态刚度标度律}
 \begin{equation}
-\boxed{\;
 \|\mathcal T\|_{\mathrm{ss}}=\frac{\|d_v\|}{k_{p,T}} ,
 \qquad
-\|\mathcal O\|_{\mathrm{ss}}=\frac{2\,\|d_\omega\|}{\lambda(K_{p,O})} ,\;}
+\|\mathcal O\|_{\mathrm{ss}}=\frac{2\,\|d_\omega\|}{\lambda(K_{p,O})} 
 \tag{5.9}\label{eq:5.9}
 \end{equation}
-即稳态残差\textbf{只}由静态刚度决定、与阻尼无关。该折减因子将在 §6 中由独立增益档的扰动反演一致性进行实验确认。极点分配规则：若各分量目标极点为 $\{-a,-b\}$（$a,b>0$），则
+即稳态残差\textbf{只}由静态刚度决定、与阻尼无关。极点分配规则：若各分量目标极点为 $\{-a,-b\}$（$a,b>0$），则
 \begin{equation*}
 K_\omega=K_v=(a+b)I_3,\qquad k_{p,T}=ab,\qquad K_{p,O}=4ab\,I_3 .
 \end{equation*}
-由 \eqref{eq:5.9} 可得两个实验预言：\textbf{(P1)} 刚度提高 $\rho$ 倍，稳态残差降至 $1/\rho$；\textbf{(P2)} 同一物理工况下，不同增益档反演的 $\|d_v\|,\|d_\omega\|$ 应一致。\eqref{eq:5.8}--\eqref{eq:5.9} 为 $\tilde x\to1$ 的局部近似；严格结论以定理 3 为准。预言 (P2) 将在 §6.3.1 中由独立增益档的实验数据进行检验。
+由 \eqref{eq:5.9} 可得两个实验预言：\textbf{(P1)} 刚度提高 $\rho$ 倍，稳态残差降至 $1/\rho$；\textbf{(P2)} 同一物理工况下，不同增益档反演的 $\|d_v\|,\|d_\omega\|$ 应一致。\eqref{eq:5.8}--\eqref{eq:5.9} 为 $\tilde x\to1$ 的局部近似；严格结论以定理 3 为准。预言 (P2) 将在 §6.2.1 中由独立增益档的实验数据进行检验。
