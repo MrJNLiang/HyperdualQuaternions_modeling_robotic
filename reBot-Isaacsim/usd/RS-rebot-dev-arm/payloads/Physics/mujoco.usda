@@ -1,0 +1,29 @@
+#usda 1.0
+(
+    "re-export 2026-07-17b: urdf-usd-converter 0.3.0 @554f3dc, masses PR#3 + inertia rescale"
+    customLayerData = {
+        string creator = "URDF USD Converter v0.3.0"
+    }
+    defaultPrim = "tn__00armrs_asmv3_hJ6D"
+    doc = """Physics=mujoco alias of Physics=physics.
+
+This layer sublayers RS-rebot-dev-arm_physics.usd and currently adds no opinions of its own.
+A payload arc maps only the defaultPrim subtree, so scene-level MuJoCo
+opinions (MjcSceneAPI on /PhysicsScene) cannot vary per variant; MjcSceneAPI
+is applied unconditionally on the scene in the asset root layer instead. The
+variant is kept as a stable selection target for MuJoCo-schema consumers:
+author future mjc:* joint/actuator opinions in this layer, under the
+defaultPrim subtree, where they will compose only for Physics=mujoco.
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @../RS-rebot-dev-arm_physics.usd@
+    ]
+    upAxis = "Z"
+)
+
+over "tn__00armrs_asmv3_hJ6D"
+{
+}
+
