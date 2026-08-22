@@ -279,6 +279,43 @@ def build_setpoint_goto_trajectory():
     return traj, t_move, t_close
 
 
+def build_setpoint_goto_trajectory_pinocchio():
+    """exp1 goto 轨迹（v13：Pinocchio 关节空间样条版，默认路线）。
+
+    与 build_setpoint_goto_trajectory_kinematic（笛卡尔 quintic+slerp，
+    保留作对比）路标/任务几何完全一致，但规划层换成 Pinocchio：
+    全位姿 IK 逐路标求解（热启动延续）-> 关节空间三次 Hermite 样条
+    （中间路标不停走，抓取 dwell 零速）-> pin.rnea 力矩/速度可行性
+    校核（超限等比拉长时长）。运动形态不变：举高 -> 前移 -> 转腕+
+    下降到退避位 -> 沿接近轴斜插 -> 静置闭合 -> 带载提升。
+    TNDQ 仅在适配器边界（simdata.traj_pinocchio.evaluate）把位姿导数
+    表示为控制律输入格式，控制律/误差系统零改动。
+    pinocchio 缺失时降级为 kinematic 路线并打印告警。
+    返回 (traj, t_move, t_close)；时序取校核后的实际值。
+    """
+    chain = B601TCPChain(B601_DH_TABLE)
+    x_init = chain.fkm(Q_INIT)
+    r0 = dq_rotation(x_init)
+    p0 = dq_translation(x_init) + B601_BASE_PREFIX   # -> 世界系（pin FK 帧）
+    legs = [
+        (np.array([p0[0], p0[1], GOTO_TOP_Z]), r0, GOTO_T_LIFT, 0.0),
+        (np.array([GRASP_APPROACH_POS[0], GRASP_APPROACH_POS[1],
+                   GOTO_TOP_Z]), r0, GOTO_T_TRANS, 0.0),
+        (GRASP_APPROACH_POS, R_TOOL_QUAT, GOTO_T_ROTDESC, 0.0),
+        (SETPOINT_POS, R_TOOL_QUAT, GOTO_T_DESC, GOTO_GRASP_DWELL),
+        (LIFT_POS, R_TOOL_QUAT, GOTO_T_LIFTLOAD, 0.0),
+    ]
+    try:
+        from simdata.traj_pinocchio import PinocchioGotoTrajectory
+        traj = PinocchioGotoTrajectory(Q_INIT, legs)
+    except ImportError as exc:
+        print(f"[run_lib] 警告：Pinocchio 轨迹不可用（{exc}），"
+              f"降级为 kinematic 笛卡尔插值路线", flush=True)
+        return build_setpoint_goto_trajectory_kinematic()
+    t_close = traj.t_grasp_arrival + 0.2   # 到位 +0.2 s 即发闭合（同 v9 口径）
+    return traj, traj.t_total, t_close
+
+
 def build_setpoint_goto_trajectory_kinematic():
     """exp1 goto 轨迹（v11：笛卡尔运动学插值版，用户指定路线）。
 
@@ -392,7 +429,8 @@ class ExperimentCSV:
 # ---------------------------------------------------------------------------
 
 def run_tndq_experiment(backend, trajectory, duration, csv_path,
-                        gripper_schedule=None, label="", verbose=True):
+                        gripper_schedule=None, gripper_init=None,
+                        label="", verbose=True):
     """运行一个 TNDQ 力矩级实验并写 CSV，返回摘要 dict。
 
     backend            已 setup() 的物理后端（Isaac 或未来真机）
@@ -402,15 +440,25 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
     duration           实验时长 [s]
     csv_path           输出 CSV 路径
     gripper_schedule   t -> 指间开度目标 [m]；None = 恒 GRIPPER_OPENING
+    gripper_init       reset 时夹爪初始开度 [m]；None = GRIPPER_OPENING
     """
     chain = B601TCPChain(B601_DH_TABLE)
     dyn = B601NominalDynamics()
+    # FK 层快速路径（v14 实时化重构）：pinocchio C++ 后端，与 HDQ 链
+    # 等价自检见 simdata/fk_pinocchio.py；不可用时回退 HDQ 链。
+    try:
+        from simdata.fk_pinocchio import B601PinFk
+        pin_fk = B601PinFk()
+    except Exception as exc:
+        print(f"[run_lib] 警告：pinocchio 快速 FK 不可用（{exc}），"
+              f"回退 HDQ 链 FK", flush=True)
+        pin_fk = None
     gains = GAIN_SETS[DEFAULT_GAIN_SET]
     K_d, k_p = gains["K_d"], gains["k_p"]
     _ctrl_dt = DT * CTRL_EVERY        # 实际控制周期 [s]（状态机时间基准）
 
     n_steps = int(round(duration / DT))
-    backend.reset_to(Q_INIT)
+    backend.reset_to(Q_INIT, gripper_width=gripper_init)
 
     csv = ExperimentCSV(csv_path)
     sat_steps = gov_steps = 0
@@ -451,7 +499,10 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
                 tic = time.perf_counter()
 
                 # [FK 层] 式 (3.4)/(3.5)：q̈=0 链给出 ξ 与 J̇q̇
-                fk = chain.fk_outputs(q, qd, q_ddot=None, with_jacobian=True)
+                # （快速路径：pinocchio C++ 后端；回退：HDQ 链）
+                fk = (pin_fk.fk_outputs(q, qd) if pin_fk is not None
+                      else chain.fk_outputs(q, qd, q_ddot=None,
+                                            with_jacobian=True))
 
                 # [期望] TNDQ 解析轨迹 -> HDQ 截断（命题 2 无损）
                 des = trajectory.evaluate(t)
@@ -465,12 +516,16 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
                 if sig_min < SINGULARITY_TOL:
                     damping = SINGULARITY_DAMPING
 
+                # M 每控制步只算一次（crba），law 与 computed_torque 复用
+                # （v14 实时化：原两处各算一次，重复开销 ~4.6 ms/步）
+                M = dyn.mass_matrix(q)
+
                 # [控制层] 式 (5.2)（6R 非冗余，无零空间项）；力矩级被控
                 # 对象传 M => 动力学一致广义逆（防向轻腕方向泄能）
                 qddot_ref, _ = geometric_computed_torque_law(
                     err, des["xi_d"], des["xi_dot_d"],
                     fk["J"], fk["Jdot_qdot"], K_d, k_p, damping=damping,
-                    M=dyn.mass_matrix(q))
+                    M=M)
 
                 # 指令范数限幅（饱和残差计入 d(t)）
                 qn = float(np.linalg.norm(qddot_ref))
@@ -484,7 +539,7 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
                 # [力矩层] τ = M̂ q̈_ref + Ĉ q̇ + ĝ（§2.4）+ 关节阻尼注入
                 # （-D q̇：耗散项，抑制轻腕关节沿 task 反馈不敏感方向的
                 #   残差漂移；物理对应真机电机阻尼/摩擦）+ 力矩限幅
-                tau = dyn.computed_torque(q, qd, qddot_ref)
+                tau = dyn.computed_torque(q, qd, qddot_ref, M=M)
                 tau = tau - JOINT_DAMPING * qd
                 tau, sat = clip_torque(tau)
                 sat_steps += int(sat)

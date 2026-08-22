@@ -1,18 +1,32 @@
 """
-实验一：定点控制 + 抓取（Setpoint & Grasp）—— B601-DM Isaac Sim 力矩级验证。
+实验一：定点控制 + 无接触基线（Setpoint & Open-Hold Baseline）
+—— B601-DM Isaac Sim 力矩级验证。
 
-任务（用户要求 v7）：机械臂从原生零位出发，举高 -> 前移 -> 下降前段
-腕部转动使夹爪朝下 -> 下降插指 -> 闭合夹住立方体 -> 带载提升保持。
+任务（v14 开指保持模式）：机械臂从原生零位出发，夹爪先从 0 mm
+张开到全开 140 mm（GRIPPER_BASELINE_WIDTH = GRIPPER_OPENING）并
+保持恒开度，全程不接触/不夹住方块，然后执行完整运动流程：举高
+-> 前移 -> 下降前段腕部
+转动使夹爪朝下 -> 沿接近轴斜下插入到抓取位 -> 静置 -> 带载提升
+（无载荷提升，同轨迹）。此模式排除接触干扰，验证轨迹跟踪精度与
+控制稳定性，作为后续接触抓取实验的基线对照（恢复两段式受控
+闭合 schedule 即可回到抓取模式）。
 
-任务几何（config/params.py，v7 顶抓重设计）：
+任务几何（config/params.py，保持不变）：
     - 初始位形 Q_INIT：模型原生形态（USD/URDF 零位）；
     - 立方体置于 6 cm 支柱顶（径向 0.40 m），顶抓抓取位
       SETPOINT_POS = 指尖端探到立方体中心下方 3 cm；
     - 姿态 R_TOOL_QUAT：tilt=170°（夹爪朝下偏外 10°，开合向水平）。
 
-轨迹：v7 分段路标（run_lib.build_setpoint_goto_trajectory，IK 延续
-扫描全链 PASS：worst margin 19~39°、sigma>=0.047）；夹爪在抓取位
-静置段闭合（t_close），提升段带载。
+轨迹：v13 Pinocchio 关节空间规划（默认 --traj pinocchio，
+run_lib.build_setpoint_goto_trajectory_pinocchio：全位姿 IK 链 + 关节
+Hermite 样条 + pin.rnea 力矩校核，中间路标不停走）；另保留 kinematic
+（笛卡尔 quintic+slerp）与 tndq（TNDQ 解析链）两路线作对比。
+
+夹爪：make_gripper_open_hold_schedule —— 0.25 m/s 斜坡 0 -> 140 mm
+（全开）后恒保持；每侧净空 47.5 mm，v9 三跑已实证插入段方块零
+扰动（首二跑 60/100 mm 净空不足，分别撞落/擦碰方块，已修正），
+插入/抓取位/提升全程手指不碰方块侧面。CSV gripper_width 列记录
+全程开度。
 
 运行方式（Isaac 官方运行时）：
     ~/isaacsim/python.sh TNDQ_b601/experiments/exp1_setpoint.py
@@ -25,40 +39,31 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config.params import (
-    GRIPPER_GRASP, GRIPPER_OPENING, SETPOINT_HOLD_TIME,
-)
+from config.params import GRIPPER_BASELINE_WIDTH, SETPOINT_HOLD_TIME
 
 from run_lib import (run_tndq_experiment, build_setpoint_goto_trajectory,
-                     build_setpoint_goto_trajectory_kinematic)
+                     build_setpoint_goto_trajectory_kinematic,
+                     build_setpoint_goto_trajectory_pinocchio)
 
 
-def make_gripper_schedule(t_close):
-    """两段式受控闭合（v12c：实测接触点模型，diag 保持/夹持裁决锤定）。
+def make_gripper_open_hold_schedule(v_open=0.25):
+    """开指保持调度（v14 无接触基线模式）。
 
-    set_gripper(w) 目标 = 2*单指 stroke，真实指间开度 = 2*stroke。
-    实测接触点：方块面深度 x≈-28 mm 处垫/轨内面 ≈ frame-10.7 mm，
-    接触 stroke≈33.2（开度 66 mm）——闭合指令在 stroke 33.8/34.4
-    停驻即夹住。铁律：闭合目标不得越过接触点（旧值 0.040/0.045
-    越过接触点 10+ mm 强闭挤飞方块，是历次推飞根因）。
-    快接近段 250 mm/s 到 0.075（接触开度 66 mm 上方留 9 mm 净空），
-    慢夹段 25 mm/s 到 GRIPPER_GRASP=0.063（接触点过盈 ~1.5 mm/侧，
-    KP*过盈 ≈ 3 N/指 -> 摩擦 2μN ≈ 3.6 N > 自重 0.98 N）。五跑教训
-    保留：不用阶跃闭合（KP=2000 阶跃响应 ~2.7 m/s 撞击动量）。
+    开度从 0 以 v_open 斜坡升到 GRIPPER_BASELINE_WIDTH = 140 mm
+    （全开；斜坡防 KP=2000 位置 drive 阶跃响应冲击；同两段闭合的
+    快接近段速率 0.25 m/s），随后全程恒保持。对 45 mm 方块每侧
+    净空 47.5 mm（首二跑 60 mm 撞落方块、100 mm 插入段 ~8 mm
+    擦碰：插入段跟踪滞后峰值 ~1 cm + 10° 倾角占有效净空 ~5 mm，
+    净空须显著大于二者之和），确保插入/抓取位/提升全程手指不接触
+    方块侧面 —— 排除接触干扰，验证纯轨迹跟踪精度与控制稳定性，
+    作接触抓取实验的基线对照。
     """
-    w_fast, w_slow = 0.075, 0.25         # 快接近目标 [m] / 接近速度 [m/s]
-    v_squeeze = 0.025                    # 慢夹速度 [m/s]
-    t1 = t_close + (GRIPPER_OPENING - w_fast) / w_slow
-    t2 = t1 + (w_fast - GRIPPER_GRASP) / v_squeeze
+    t1 = GRIPPER_BASELINE_WIDTH / v_open     # 斜坡终点时刻 [s]
 
     def schedule(t):
-        if t < t_close:
-            return GRIPPER_OPENING
         if t < t1:
-            return GRIPPER_OPENING - w_slow * (t - t_close)
-        if t < t2:
-            return w_fast - v_squeeze * (t - t1)
-        return GRIPPER_GRASP
+            return v_open * t
+        return GRIPPER_BASELINE_WIDTH
 
     return schedule
 
@@ -75,10 +80,12 @@ def main():
                     help="TGS 位置求解迭代次数（默认 None=资产默认）")
     ap.add_argument("--solver-vel-iter", type=int, default=None,
                     help="TGS 速度求解迭代次数（默认 None=资产默认）")
-    ap.add_argument("--traj", type=str, default="kinematic",
-                    choices=["kinematic", "tndq"],
-                    help="期望轨迹生成：kinematic=笛卡尔 quintic+slerp"
-                         "（默认，v11）；tndq=TNDQ 解析链（对比备份）")
+    ap.add_argument("--traj", type=str, default="pinocchio",
+                    choices=["pinocchio", "kinematic", "tndq"],
+                    help="期望轨迹生成：pinocchio=关节空间 IK+Hermite"
+                         "样条+力矩校核（默认，v13）；kinematic=笛卡尔"
+                         "quintic+slerp（v11 对比）；tndq=TNDQ 解析链"
+                         "（对比备份）")
     args = ap.parse_args()
 
     csv_path = args.csv or os.path.join(
@@ -86,16 +93,20 @@ def main():
         "results", "exp1_setpoint.csv")
 
     # 期望轨迹：从 Q_INIT（原生零位）出发，分段路标（举高/前移/
-    # 转腕下降/插指/静置/带载提升）；默认笛卡尔运动学插值（v11，
-    # --traj tndq 切回 TNDQ 解析链对比）；t_close 后夹爪慢速斜坡闭合
-    if args.traj == "kinematic":
-        traj, t_move, t_close = build_setpoint_goto_trajectory_kinematic()
+    # 转腕下降/插指/静置/提升）；默认 Pinocchio 关节空间规划
+    # （v13；--traj kinematic/tndq 切回对比路线）。开指保持模式下
+    # t_close（闭合时刻）不再使用，仅保留解包。
+    if args.traj == "pinocchio":
+        traj, t_move, _t_close = build_setpoint_goto_trajectory_pinocchio()
+    elif args.traj == "kinematic":
+        traj, t_move, _t_close = build_setpoint_goto_trajectory_kinematic()
     else:
-        traj, t_move, t_close = build_setpoint_goto_trajectory()
+        traj, t_move, _t_close = build_setpoint_goto_trajectory()
     duration = t_move + SETPOINT_HOLD_TIME
 
-    # 夹爪调度：两段式受控闭合（见 make_gripper_schedule 归因注释）
-    gripper_schedule = make_gripper_schedule(t_close)
+    # 夹爪调度：开指保持（斜坡张开到 60 mm 后恒保持，全程不接触
+    # 方块；见 make_gripper_open_hold_schedule）
+    gripper_schedule = make_gripper_open_hold_schedule()
 
     # 延迟 import：SimulationApp 必须先于一切 isaacsim import 创建
     from interfaces.isaac_interface import IsaacB601Backend
@@ -107,7 +118,8 @@ def main():
     try:
         summary = run_tndq_experiment(
             backend, traj, duration, csv_path,
-            gripper_schedule=gripper_schedule,   # t_close 闭合夹持
+            gripper_schedule=gripper_schedule,   # 开指保持（140 mm 全开恒开度）
+            gripper_init=0.0,                    # 从并拢起步，按调度张开
             label="exp1-setpoint")
     finally:
         if args.headless:

@@ -42,8 +42,9 @@ B601-DM（reBot Arm，6 自由度）名义刚体动力学模型 —— 递归牛
 
 自检（TNDQ_b601 目录下）：
     python3 -m config.b601_dynamics            # [1]-[3]（纯 numpy）
-    # [4] Pinocchio 对账需 pinocchio（dq_hinf 环境已装 2.7.0）：
-    /home/liang/miniconda3/envs/dq_hinf/bin/python -m config.b601_dynamics
+    # [4]/[5] Pinocchio 对账与快速后端自检需 pinocchio（Isaac 运行时或
+    # dq_hinf 环境已装 2.7.0）：
+    ~/isaacsim/python.sh -m config.b601_dynamics
 """
 
 import numpy as np
@@ -107,6 +108,45 @@ GRAVITY = np.array([0.0, 0.0, -9.81])   # 基座系重力加速度 [m/s^2]
 _EZ = np.array([0.0, 0.0, 1.0])         # 标准 DH 关节轴（z_{i-1}）
 
 
+# ---------------------------------------------------------------------------
+# Pinocchio 快速后端（v14 实时化重构：换数值后端，数学不变）
+#
+# 剖面实测（isaac_check/diag_ctrl_profile.py）：Python RNEA 列向量法
+# mass_matrix ~4.6 ms/步，控制链单步 ~16 ms，远超实机 5~10 ms 预算。
+# pin.crba/rnea（C++）与自写 RNEA 参数表数学等价（pinocchio_cross_check
+# 对账残差 ~2e-6 N*m，为 DH vs URDF 文本几何的固有表示差），故名义
+# 参数下切换快速后端；mismatch/参数注入实验回退 Python RNEA 保证缩放
+# 严格沿本模块参数表传播。
+# ---------------------------------------------------------------------------
+
+def _import_pinocchio():
+    """导入 pinocchio（含 Isaac pip_prebundle 的 cmeel 前缀引导）。"""
+    try:
+        import pinocchio as pin
+        return pin
+    except ImportError:
+        try:
+            import cmeel_pth  # noqa: F401  Isaac cmeel 布局 .pth 引导
+            import pinocchio as pin
+            return pin
+        except ImportError:
+            return None
+
+
+def _build_pin_nominal():
+    """构建 pinocchio 快速后端（URDF 直接建模，手指锁定于 q=0，与
+    pinocchio_cross_check 同款 reduced 模型）。返回 (model, data, pin)；
+    pinocchio 缺失返回 None（调用方自动回退 Python RNEA）。"""
+    pin = _import_pinocchio()
+    if pin is None:
+        return None
+    from config.params import B601_URDF
+    model = pin.buildModelFromUrdf(B601_URDF)
+    jids = [model.getJointId(nm) for nm in ("gripper_joint1", "gripper_joint2")]
+    red = pin.buildReducedModel(model, jids, pin.neutral(model))
+    return red, red.createData(), pin
+
+
 def _dh_transform(a, alpha, d, theta):
     """标准 DH 齐次变换 A_i = Rz(theta) Tz(d) Tx(a) Rx(alpha)
     （与 core/kinematics.py::tndq_joint_factor_dh 一致）。"""
@@ -154,6 +194,12 @@ class B601NominalDynamics:
         base_B = (B601_MOTOR_INERTIA if motor_inertia is None
                   else np.asarray(motor_inertia, float))
         self.B = base_B.reshape(self.n) * s
+        # 名义参数（无失配、无注入）时启用 pinocchio C++ 快速后端；
+        # 任一参数被改动（mismatch 实验）则回退 Python RNEA，保证失配
+        # 严格沿本模块参数表传播。
+        nominal = (s == 1.0 and mass is None and com is None
+                   and inertia is None and motor_inertia is None)
+        self._pin = _build_pin_nominal() if nominal else None
 
     # -- 内部：逐关节变换 -----------------------------------------------------
 
@@ -236,17 +282,33 @@ class B601NominalDynamics:
     # -- 动力学量装配 -----------------------------------------------------------
 
     def gravity_vector(self, q):
-        """ghat(q) = RNEA(q, 0, 0)。"""
+        """ghat(q) = RNEA(q, 0, 0)（pin 后端：pin.rnea）。"""
+        if self._pin is not None:
+            model, data, pin = self._pin
+            return np.asarray(pin.rnea(
+                model, data, np.asarray(q, dtype=float), np.zeros(self.n),
+                np.zeros(self.n)))
         zeros = np.zeros(self.n)
         return self.rnea(q, zeros, zeros, gravity=True)
 
     def coriolis_plus_gravity(self, q, q_dot):
-        """Chat(q,qd)qd + ghat(q) = RNEA(q, qd, 0)（计算力矩接口只需此组合项）。"""
+        """Chat(q,qd)qd + ghat(q) = RNEA(q, qd, 0)（计算力矩接口只需此组合项；
+        pin 后端：pin.rnea）。"""
+        if self._pin is not None:
+            model, data, pin = self._pin
+            return np.asarray(pin.rnea(
+                model, data, np.asarray(q, dtype=float),
+                np.asarray(q_dot, dtype=float), np.zeros(self.n)))
         return self.rnea(q, q_dot, np.zeros(self.n), gravity=True)
 
     def mass_matrix(self, q):
-        """Mhat(q)：单位加速度列向量法，M[:,k] = RNEA(q,0,e_k)|_{无重力}。
+        """Mhat(q)。快速后端：pin.crba（仅填上三角，对称化还原）；
+        回退：单位加速度列向量法 M[:,k] = RNEA(q,0,e_k)|_{无重力}。
         性质 P1：对称正定（模块自检中核验）。"""
+        if self._pin is not None:
+            model, data, pin = self._pin
+            M = np.asarray(pin.crba(model, data, np.asarray(q, dtype=float)))
+            return np.triu(M) + np.triu(M, 1).T
         zeros = np.zeros(self.n)
         M = np.empty((self.n, self.n))
         for k in range(self.n):
@@ -255,10 +317,14 @@ class B601NominalDynamics:
             M[:, k] = self.rnea(q, zeros, e, gravity=False)
         return 0.5 * (M + M.T)   # 数值对称化
 
-    def computed_torque(self, q, q_dot, qddot_ref):
+    def computed_torque(self, q, q_dot, qddot_ref, M=None):
         """名义计算力矩接口：tau = Mhat qdd_ref + Chat qd + ghat。
+        M 可由调用方传入（同一控制步内 law 与 computed_torque 复用一次
+        crba，v14 实时化重构）；None = 内部计算。
         所有对比控制器共用的力矩出口（公平性约束）。"""
-        return self.mass_matrix(q) @ np.asarray(qddot_ref, dtype=float) \
+        if M is None:
+            M = self.mass_matrix(q)
+        return M @ np.asarray(qddot_ref, dtype=float) \
             + self.coriolis_plus_gravity(q, q_dot)
 
     def forward_dynamics(self, q, q_dot, tau):
@@ -351,6 +417,9 @@ if __name__ == "__main__":
     from config.params import Q_INIT
 
     dyn = B601NominalDynamics()
+    # [1]-[3] 核验自写 RNEA 代数本身，固定纯 Python 路径（不受 pin
+    # 快速后端影响；pin 后端等价性由 [5] 单独核验）
+    dyn._pin = None
     rng = np.random.default_rng(0)
     q = Q_INIT + 0.3 * rng.standard_normal(dyn.n)
     qd = rng.standard_normal(dyn.n)
@@ -393,3 +462,34 @@ if __name__ == "__main__":
     # [4] Pinocchio 交叉对账（URDF 黄金参考）
     print("[4] Pinocchio 交叉对账:")
     pinocchio_cross_check(dyn)
+
+    # [5] pin 快速后端等价自检 + 计时（名义参数才有快速后端）
+    print("[5] pin 快速后端等价 + 计时:")
+    dyn._pin = _build_pin_nominal()      # [1]-[3] 后重新启用
+    if dyn._pin is None:
+        print("    [SKIP] pinocchio 不可用（回退 Python RNEA）")
+    else:
+        dyn_py = B601NominalDynamics()
+        dyn_py._pin = None                       # 强制 Python RNEA 路径
+        eM = float(np.abs(dyn.mass_matrix(q)
+                          - dyn_py.mass_matrix(q)).max())
+        eh = float(np.abs(dyn.coriolis_plus_gravity(q, qd)
+                          - dyn_py.coriolis_plus_gravity(q, qd)).max())
+        eg = float(np.abs(dyn.gravity_vector(q)
+                          - dyn_py.gravity_vector(q)).max())
+        e5 = max(eM, eh, eg)
+        print(f"    |M_pin-M_py|={eM:.3e}  |C+g|={eh:.3e}  |g|={eg:.3e}  "
+              f"[{'PASS' if e5 < 1e-5 else 'FAIL'}]（阈值 1e-5 N*m，"
+              f"含 DH vs URDF 表示差 ~2e-6）")
+        import time
+        N = 50
+        t0 = time.perf_counter()
+        for _ in range(N):
+            dyn.mass_matrix(q)
+        t_pin = (time.perf_counter() - t0) / N * 1e3
+        t0 = time.perf_counter()
+        for _ in range(N):
+            dyn_py.mass_matrix(q)
+        t_py = (time.perf_counter() - t0) / N * 1e3
+        print(f"    mass_matrix: pin {t_pin:.3f} ms vs Python {t_py:.3f} ms"
+              f"（加速 {t_py / max(t_pin, 1e-9):.1f}x）")

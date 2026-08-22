@@ -104,6 +104,10 @@ class IsaacB601Backend:
         self.headless = bool(headless)
         self.physics_dt = ISAAC_PHYSICS_DT if physics_dt is None else float(physics_dt)
         self.render_dt = ISAAC_RENDER_DT if render_dt is None else float(render_dt)
+        # GUI 渲染与物理解耦：物理恒走 render=False 精确单步，渲染按
+        # render_dt 节奏独立调 world.render()（见 step() 注释）
+        self._render_every = max(1, int(round(self.render_dt / self.physics_dt)))
+        self._phys_step_count = 0
         # articulation 自碰撞开关（USD 资产未 authored，PhysX 默认开）；
         # 诊断/缓解 exp1 伸展构型冻结时可关闭，见 _set_arm_self_collision_usd
         self.arm_self_collision = bool(arm_self_collision)
@@ -144,6 +148,10 @@ class IsaacB601Backend:
                 "    ~/isaacsim/python.sh <script>.py") from exc
 
         self.sim_app = SimulationApp({"headless": self.headless})
+
+        # 场景去重：清理 stage 上残留的立方体/支柱 prim（GUI 挂载模式
+        # 下 stage 在多次运行间不重建，重复运行会叠加出"两个立方体"）
+        self._remove_leftover_scene_prims()
 
         from isaacsim.core.api import World
         from isaacsim.core.api.materials.physics_material import PhysicsMaterial
@@ -229,6 +237,35 @@ class IsaacB601Backend:
         print(f"[isaac] 场景就绪：USD={ISAAC_ROBOT_USD}\n"
               f"[isaac]           prim={ISAAC_ROBOT_PRIM}  "
               f"dt={self.physics_dt:.4f}s  立方体={np.round(CUBE_POS, 4).tolist()}")
+
+    def _remove_leftover_scene_prims(self):
+        """清理 stage 残留的场景立方体（保证全场景恰有一个抓取目标）。
+
+        根因：GUI 挂载模式（gui_runner / run_in_gui）下 stage 不在运行
+        间重建，重复执行实验会在同一位点叠加 /World/GraspCube（含
+        Kit 自动后缀的 _1/_2 变体），视口内呈现"两个立方体"；默认
+        stage 模板或手工放置的 /World/Cube 同理。本方法在 SimulationApp
+        创建后、World 构建前按名称前缀删除所有残留立方体/支柱 prim。
+        headless 独立模式新建 stage 无残留，本方法为空操作。
+        """
+        from isaacsim.core.utils.stage import get_current_stage
+
+        stage = get_current_stage()
+        prefixes = ("/World/GraspCube", "/World/Pedestal",
+                    "/World/ProbeCube", "/World/Cube")
+        victims = []
+        for prim in stage.Traverse():
+            path = str(prim.GetPath())
+            for pre in prefixes:
+                if path == pre or path.startswith(pre + "_") \
+                        or path.startswith(pre + "/"):
+                    victims.append(path)
+                    break
+        for path in victims:
+            stage.RemovePrim(path)
+        if victims:
+            print(f"[isaac] 已清理 {len(victims)} 个残留场景 prim："
+                  f"{victims}")
 
     def _add_lighting(self):
         """基础灯光（DomeLight + DistantLight，无 Nucleus 依赖）。"""
@@ -500,11 +537,26 @@ class IsaacB601Backend:
         return pos, quat
 
     def step(self, render=None):
-        """一个物理步（self.physics_dt）；render 默认 headless 时 False。"""
+        """一个物理步（self.physics_dt）；GUI 模式按 render_dt 节奏渲帧。
+
+        物理恒走 render=False 路径（每调用精确推进一个物理步）。
+        不能走 render=True：Isaac 6.0 该路径落入 _app.update()
+        （simulation_context.py L740-754），由 Kit 主循环按墙钟配速
+        推进仿真——本调用推进的仿真时间不再恒为 2 ms，控制循环
+        “每调用 = DT” 的时间基准整体失效（实测 GUI 跑起步超限位
+        abort、慢放，headless 同码完好，根因即此）。
+        GUI 渲染改为按 render_dt 节奏独立调 world.render()：其内部
+        暂关 playSimulations 后 _app.update()（L785-787），只渲帧不
+        推物理，渲染墙钟与物理节奏彻底解耦。
+        """
         self._require_setup()
+        self.world.step(render=False)
         if render is None:
             render = not self.headless
-        self.world.step(render=bool(render))
+        if render:
+            self._phys_step_count += 1
+            if self._phys_step_count % self._render_every == 0:
+                self.world.render()
 
     def close(self):
         # GUI 模式（headless=False，Script Editor 内运行时 SimulationApp
