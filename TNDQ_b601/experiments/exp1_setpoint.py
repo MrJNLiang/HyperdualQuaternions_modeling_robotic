@@ -1,15 +1,28 @@
 """
-实验一：定点控制 + 无接触基线（Setpoint & Open-Hold Baseline）
+实验一：定点控制 + 接触抓取（Setpoint & Contact Grasp）
 —— B601-DM Isaac Sim 力矩级验证。
 
-任务（v14 开指保持模式）：机械臂从原生零位出发，夹爪先从 0 mm
-张开到全开 140 mm（GRIPPER_BASELINE_WIDTH = GRIPPER_OPENING）并
-保持恒开度，全程不接触/不夹住方块，然后执行完整运动流程：举高
--> 前移 -> 下降前段腕部
-转动使夹爪朝下 -> 沿接近轴斜下插入到抓取位 -> 静置 -> 带载提升
-（无载荷提升，同轨迹）。此模式排除接触干扰，验证轨迹跟踪精度与
-控制稳定性，作为后续接触抓取实验的基线对照（恢复两段式受控
-闭合 schedule 即可回到抓取模式）。
+任务（v15 接触抓取模式，--mode grasp 默认）：机械臂从原生零位出发，
+夹爪先从 0 mm 张开到全开 140 mm（防 KP 阶跃冲击 + 插入段每侧净空
+47.5 mm 零接触），执行完整运动流程：举高 -> 前移 -> 下降前段腕部
+转动使夹爪朝下 -> 沿接近轴斜下插入到抓取位 -> 到位 +0.2 s 两段式
+受控闭合（快接近 0.25 m/s 到临触 47 mm -> 慢压 0.025 m/s 到
+GRIPPER_GRASP = 43 mm = CUBE_SIZE - 2 mm 过盈，每侧 1 mm，手指压紧
+方块）-> 静置附着 -> 带载提升（沿 -x_g 退 2 cm + 竖直 8 cm），验证
+方块随动被成功夹起。目标：验证 TNDQ 控制器在接触抓取工况下的力矩
+级控制性能与轨迹跟踪精度。
+
+仿真极限注记（v15 裁决）：该夹爪 USD 模型指面视觉平整但碰撞体积
+多出无形部分——45 mm 方块低于最小夹持宽度 ~66 mm（楔形指内面过
+盈闭合时弹出方块），70 mm 方块又因竖直棱投影超指平板带在插入段
+即撞楔形刀片，立方体任何尺寸都无法被仿真平行夹持。控制链本身全
+程健康（无 abort、峰值 pos_err 10 mm）；用户裁决接受仿真极限，
+接触抓取直接上机验证（物理夹爪指面平整可夹）。抓取尝试数据：
+results/exp1_grasp_70mm_attempt.csv。
+
+基线对照（--mode openhold）：开指保持模式——夹爪张开到 140 mm 后恒
+保持、全程不接触方块，排除接触干扰验证纯轨迹跟踪精度，作接触抓取
+的对照组（v14 基线，results/exp1_setpoint.csv 历史数据同口径）。
 
 任务几何（config/params.py，保持不变）：
     - 初始位形 Q_INIT：模型原生形态（USD/URDF 零位）；
@@ -22,11 +35,13 @@ run_lib.build_setpoint_goto_trajectory_pinocchio：全位姿 IK 链 + 关节
 Hermite 样条 + pin.rnea 力矩校核，中间路标不停走）；另保留 kinematic
 （笛卡尔 quintic+slerp）与 tndq（TNDQ 解析链）两路线作对比。
 
-夹爪：make_gripper_open_hold_schedule —— 0.25 m/s 斜坡 0 -> 140 mm
-（全开）后恒保持；每侧净空 47.5 mm，v9 三跑已实证插入段方块零
-扰动（首二跑 60/100 mm 净空不足，分别撞落/擦碰方块，已修正），
-插入/抓取位/提升全程手指不碰方块侧面。CSV gripper_width 列记录
-全程开度。
+夹爪（--mode grasp 默认）：make_gripper_schedule 两段式受控闭合——
+全开 140 mm 插入（每侧净空 47.5 mm；v9 三跑实证零扰动）
+-> 到位 +0.2 s 快接近 0.25 m/s 到临触 47 mm -> 慢压 0.025 m/s 到
+GRIPPER_GRASP = 43 mm 过盈夹持 -> 带载提升验证方块随动（仿真内受
+夹爪 USD 碰撞体积限制无法真正夹住，见文件头注记）。--mode openhold 切回 v14 开指
+保持无接触基线（make_gripper_open_hold_schedule）。CSV gripper_width
+列记录全程开度。
 
 运行方式（Isaac 官方运行时）：
     ~/isaacsim/python.sh TNDQ_b601/experiments/exp1_setpoint.py
@@ -39,11 +54,50 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config.params import GRIPPER_BASELINE_WIDTH, SETPOINT_HOLD_TIME
+from config.params import (CUBE_SIZE, GRIPPER_BASELINE_WIDTH, GRIPPER_GRASP,
+                           GRIPPER_OPENING, SETPOINT_HOLD_TIME)
 
 from run_lib import (run_tndq_experiment, build_setpoint_goto_trajectory,
                      build_setpoint_goto_trajectory_kinematic,
                      build_setpoint_goto_trajectory_pinocchio)
+
+
+def make_gripper_schedule(t_close, v_open=0.25, v_approach=0.25,
+                          v_press=0.025, w_touch=None, w_grasp=None):
+    """两段式受控闭合调度（v15 接触抓取模式）。
+
+    时序：0 -> GRIPPER_OPENING 张开斜坡（v_open，防 KP=2000 位置
+    drive 阶跃冲击）-> 恒全开到 t_close（全开插入，每侧净空 47.5 mm
+    零接触）-> 一段快接近：v_approach 闭合到 w_touch（临触开度
+    CUBE_SIZE + 2 mm，防冲击）-> 二段慢压：v_press 压到 w_grasp =
+    GRIPPER_GRASP = 43 mm（CUBE_SIZE - 2 mm 过盈、每侧 1 mm；接触
+    后位置 drive KP=2000 产生夹持力，压紧方块）-> 恒保持 w_grasp
+    贯穿带载提升。
+
+    时长校核：快接近 (140-47)/0.25 ≈ 0.37 s + 慢压 (47-43)/0.025
+    = 0.16 s，合计 ~0.53 s；t_close = 抓取到位 + 0.2 s（run_lib），
+    闭合完成于到位后 ~0.73 s，落在 3.5 s 静置窗内（v9 教训：接触后
+    再静置附着），带载提升启动时闭合已完成。
+    """
+    w_touch = CUBE_SIZE + 0.002 if w_touch is None else float(w_touch)
+    w_grasp = GRIPPER_GRASP if w_grasp is None else float(w_grasp)
+    t1 = GRIPPER_OPENING / v_open
+    t2 = float(t_close)
+    t3 = t2 + (GRIPPER_OPENING - w_touch) / v_approach
+    t4 = t3 + (w_touch - w_grasp) / v_press
+
+    def schedule(t):
+        if t < t1:
+            return v_open * t
+        if t < t2:
+            return GRIPPER_OPENING
+        if t < t3:
+            return GRIPPER_OPENING - v_approach * (t - t2)
+        if t < t4:
+            return w_touch - v_press * (t - t3)
+        return w_grasp
+
+    return schedule
 
 
 def make_gripper_open_hold_schedule(v_open=0.25):
@@ -86,6 +140,11 @@ def main():
                          "样条+力矩校核（默认，v13）；kinematic=笛卡尔"
                          "quintic+slerp（v11 对比）；tndq=TNDQ 解析链"
                          "（对比备份）")
+    ap.add_argument("--mode", type=str, default="grasp",
+                    choices=["grasp", "openhold"],
+                    help="grasp=接触抓取（默认，v15：两段式受控闭合"
+                         "夹起方块）；openhold=开指保持无接触基线"
+                         "（v14 对照）")
     args = ap.parse_args()
 
     csv_path = args.csv or os.path.join(
@@ -94,19 +153,23 @@ def main():
 
     # 期望轨迹：从 Q_INIT（原生零位）出发，分段路标（举高/前移/
     # 转腕下降/插指/静置/提升）；默认 Pinocchio 关节空间规划
-    # （v13；--traj kinematic/tndq 切回对比路线）。开指保持模式下
-    # t_close（闭合时刻）不再使用，仅保留解包。
+    # （v13；--traj kinematic/tndq 切回对比路线）。t_close = 抓取
+    # 到位 + 0.2 s（两段式闭合指令时刻；openhold 模式不使用）。
     if args.traj == "pinocchio":
-        traj, t_move, _t_close = build_setpoint_goto_trajectory_pinocchio()
+        traj, t_move, t_close = build_setpoint_goto_trajectory_pinocchio()
     elif args.traj == "kinematic":
-        traj, t_move, _t_close = build_setpoint_goto_trajectory_kinematic()
+        traj, t_move, t_close = build_setpoint_goto_trajectory_kinematic()
     else:
-        traj, t_move, _t_close = build_setpoint_goto_trajectory()
+        traj, t_move, t_close = build_setpoint_goto_trajectory()
     duration = t_move + SETPOINT_HOLD_TIME
 
-    # 夹爪调度：开指保持（斜坡张开到 60 mm 后恒保持，全程不接触
-    # 方块；见 make_gripper_open_hold_schedule）
-    gripper_schedule = make_gripper_open_hold_schedule()
+    # 夹爪调度：grasp = 两段式受控闭合（全开插入 -> 快接近 -> 慢压
+    # 43 mm 过盈夹持 -> 带载提升；仿真内受夹爪 USD 碰撞体积限制无法
+    # 真正夹住，见文件头注记）；openhold = 开指保持无接触基线
+    if args.mode == "grasp":
+        gripper_schedule = make_gripper_schedule(t_close)
+    else:
+        gripper_schedule = make_gripper_open_hold_schedule()
 
     # 延迟 import：SimulationApp 必须先于一切 isaacsim import 创建
     from interfaces.isaac_interface import IsaacB601Backend
@@ -118,9 +181,9 @@ def main():
     try:
         summary = run_tndq_experiment(
             backend, traj, duration, csv_path,
-            gripper_schedule=gripper_schedule,   # 开指保持（140 mm 全开恒开度）
+            gripper_schedule=gripper_schedule,   # grasp=两段闭合 / openhold=恒开
             gripper_init=0.0,                    # 从并拢起步，按调度张开
-            label="exp1-setpoint")
+            label=f"exp1-{args.mode}")
     finally:
         if args.headless:
             backend.close()

@@ -444,6 +444,13 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
     """
     chain = B601TCPChain(B601_DH_TABLE)
     dyn = B601NominalDynamics()
+    # 真机后端可选钩子（仿真后端无这些方法时为 None，行为不变）：
+    #   hardware_safety_check —— 每控制步的硬件安全检查（通信超时/
+    #     速度异常/碰撞残差），故障抛 HardwareFault -> 下方捕获 -> 急停；
+    #   update_gravity_snapshot —— 控制步回填 g(q) 快照，供真机总线
+    #     线程使能斜坡/看门狗降级复用（零重复 RNEA）
+    _hw_check = getattr(backend, "hardware_safety_check", None)
+    _g_snap = getattr(backend, "update_gravity_snapshot", None)
     # FK 层快速路径（v14 实时化重构）：pinocchio C++ 后端，与 HDQ 链
     # 等价自检见 simdata/fk_pinocchio.py；不可用时回退 HDQ 链。
     try:
@@ -495,6 +502,12 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
                     aborted = f"t={t:.3f}s 关节 {over} 超限位（安全终止）"
                     break
 
+                # ---- 硬件安全检查（真机后端：通信超时/速度异常/碰撞
+                #      残差 -> 抛 HardwareFault -> 捕获记 abort -> finally
+                #      关闭后端急停断输出；仿真后端钩子为 None 跳过）----
+                if _hw_check is not None:
+                    _hw_check()
+
                 # ---- 控制器（计时段）----
                 tic = time.perf_counter()
 
@@ -543,6 +556,9 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
                 tau = tau - JOINT_DAMPING * qd
                 tau, sat = clip_torque(tau)
                 sat_steps += int(sat)
+                # 真机总线层重力快照回填（仿真后端钩子为 None 跳过）
+                if _g_snap is not None:
+                    _g_snap(dyn.gravity_vector(q))
                 runtime = time.perf_counter() - tic
 
                 # ---- 夹爪目标（仅在变化时下发）----
@@ -712,6 +728,14 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
 
     except KeyboardInterrupt:
         aborted = "用户中断（数据已保存到当前步）"
+    except Exception as exc:
+        # 真机硬件故障（interfaces/real_backend.HardwareFault：通信超时/
+        # 速度异常/碰撞残差/控制超时）：记录 abort 原因，经 finally 关闭
+        # 后端（急停断输出），数据保存到当前步。按类名识别避免反向依赖
+        # （run_lib 不 import 真机层）；其余异常原样上抛，仿真行为不变。
+        if type(exc).__name__ != "HardwareFault":
+            raise
+        aborted = f"硬件故障安全终止: {exc}"
     finally:
         csv.close()
 
