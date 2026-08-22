@@ -37,7 +37,7 @@ import numpy as np
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
-DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
+DEFAULT_SIM_HOST = "127.0.0.1"   #isaacsim端（本机双终端模式，wiki 指引）
 DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_SEGMENT_SECONDS = 3.0

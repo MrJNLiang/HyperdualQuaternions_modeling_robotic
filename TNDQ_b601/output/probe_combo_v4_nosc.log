@@ -1,0 +1,9 @@
+solver iter: pos=None vel=None self_collide=False
+  TAU_NET        -> |dq|max=0.0094 rad
+  j2(-1.61)      -> |dq|max=0.2229
+  j3(+0.72)      -> |dq|max=0.1540
+  j4(+0.27)      -> |dq|max=0.2371
+  j2+j3             -> |dq|max=0.2509
+  j2+j4             -> |dq|max=0.1594
+  j3+j4             -> |dq|max=0.1980
+  5*TAU_NET      -> |dq|max=0.3060 rad

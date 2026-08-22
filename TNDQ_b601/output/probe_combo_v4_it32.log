@@ -1,0 +1,9 @@
+solver iter: pos=32 vel=16
+  TAU_NET        -> |dq|max=0.0104 rad
+  j2(-1.61)      -> |dq|max=0.2188
+  j3(+0.72)      -> |dq|max=0.1567
+  j4(+0.27)      -> |dq|max=0.2625
+  j2+j3             -> |dq|max=0.2415
+  j2+j4             -> |dq|max=0.1609
+  j3+j4             -> |dq|max=0.1908
+  5*TAU_NET      -> |dq|max=0.3157 rad
