@@ -6,19 +6,20 @@
 夹爪调度；唯一差异是物理后端：
     IsaacB601Backend（仿真力矩直驱）-> RealB601Backend（MIT 力矩直驱）
 
-运行前置（按序完成，见部署指南第 4.3 节）：
+运行前置（按序完成，见 README.md 第 4 节）：
     [1] config/transforms.py 标定回填（符号/零位/力矩标度/夹爪换算）；
     [2] 就位（独立进程，POS_VEL 位置模式把臂摆到 Q_INIT；闭环无 teleport）：
-        cd TNDQ_real && uv run python -c "import sys; sys.path[:0] = ['.']; \
+        cd TNDQ_real && uv run --project vendor/reBotArm_control_py python -c \
+            "import sys; sys.path[:0] = ['.']; \
             import config.paths, importlib.util as u; \
             m = u.spec_from_file_location('rb', 'interfaces/real_backend.py'); \
             rb = u.module_from_spec(m); m.loader.exec_module(rb); \
             from config.params import Q_INIT; rb.posvel_goto(Q_INIT)"
     [3] 串口权限：sudo usermod -aG dialout $USER（或 chmod 666 /dev/ttyACM0）。
 
-运行（uv 环境，motorbridge 原生绑定）：
-    uv run python TNDQ_real/experiments/exp1_real.py --mode openhold  # 空载基线
-    uv run python TNDQ_real/experiments/exp1_real.py --mode grasp     # 接触抓取
+运行（工作目录 = TNDQ_real/，驱动环境经 --project 指定）：
+    uv run --project vendor/reBotArm_control_py python experiments/exp1_real.py --mode openhold  # 空载基线
+    uv run --project vendor/reBotArm_control_py python experiments/exp1_real.py --mode grasp     # 接触抓取
 
 输出：TNDQ_real/results/exp1_real_<mode>.csv（列定义与仿真一致，
 含 meas* 实测力矩列；cube_* 列为 NaN——真机无仿真目标物）。
@@ -30,20 +31,16 @@ import sys
 from pathlib import Path
 
 REAL_ROOT = Path(__file__).resolve().parent.parent
-REPO_ROOT = REAL_ROOT.parent
-B601_ROOT = REPO_ROOT / "TNDQ_b601"
-DRIVER_ROOT = (REPO_ROOT / "reBot-Isaacsim" / "third_party"
-               / "reBotArm_control_py")
-for _p in (str(REAL_ROOT), str(B601_ROOT), str(DRIVER_ROOT)):
+VENDOR_ROOT = REAL_ROOT / "vendor" / "reBotArm_control_py"
+for _p in (str(REAL_ROOT), str(VENDOR_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
 # --- 导入顺序铁律 ---
 # [1] params_real 先行：monkey-patch config.params 到真机口径（DT=10 ms、
 #     CTRL_EVERY=1、small_arm 增益组），必须发生在 run_lib 导入之前；
-# [2] run_lib / real_backend 经 importlib 显式按文件路径加载：
-#     TNDQ_b601 与 TNDQ_real 存在同名顶层包（config/interfaces/
-#     experiments），显式加载规避常规包遮蔽歧义，两侧模块各自成立。
+# [2] run_lib / real_backend 经 importlib 显式按文件路径加载（本包自包含
+#     副本；按路径加载避免与任意同名顶层包的解析歧义）。
 import config.params_real  # noqa: F401,E402
 
 
@@ -57,7 +54,7 @@ def _load(name, path):
 
 real_backend = _load("real_backend",
                      REAL_ROOT / "interfaces" / "real_backend.py")
-run_lib = _load("run_lib", B601_ROOT / "experiments" / "run_lib.py")
+run_lib = _load("run_lib", REAL_ROOT / "experiments" / "run_lib.py")
 
 from config.params import (CUBE_SIZE, GRIPPER_BASELINE_WIDTH, GRIPPER_GRASP,  # noqa: E402
                            GRIPPER_OPENING, SETPOINT_HOLD_TIME)

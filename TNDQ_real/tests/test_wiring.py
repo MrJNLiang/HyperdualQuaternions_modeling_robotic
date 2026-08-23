@@ -2,8 +2,7 @@
 TNDQ_real 接线冒烟测试 —— 无硬件、无 Isaac 可运行（开发机/Jetson 通用）。
 
 验证内容：
-  [1] 命名空间包合并：config.params（TNDQ_b601）与 config.params_real
-      （TNDQ_real）共存可导入；
+  [1] 自包含包导入：config.params / config.params_real 均可从本包导入；
   [2] params_real 覆写生效：DT=CTRL_DT=10 ms、CTRL_EVERY=1、
       DEFAULT_GAIN_SET="small_arm"（run_lib 导入前 patch 语义）；
   [3] run_lib 真机钩子接线：mock 后端的 hardware_safety_check /
@@ -11,7 +10,8 @@ TNDQ_real 接线冒烟测试 —— 无硬件、无 Isaac 可运行（开发机/
       触发 abort 且数据保存；
   [4] 主循环在真机时间基准（DT=10 ms）下正常推进并写 CSV。
 
-运行：python3 TNDQ_real/tests/test_wiring.py
+运行：python3 TNDQ_real/tests/test_wiring.py（包内自洽，不依赖
+TNDQ_b601 / Isaac Sim / 硬件）
 """
 import importlib.util
 import os
@@ -22,11 +22,8 @@ from pathlib import Path
 import numpy as np
 
 REAL_ROOT = Path(__file__).resolve().parent.parent
-REPO_ROOT = REAL_ROOT.parent
-B601_ROOT = REPO_ROOT / "TNDQ_b601"
-for _p in (str(REAL_ROOT), str(B601_ROOT)):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+if str(REAL_ROOT) not in sys.path:
+    sys.path.insert(0, str(REAL_ROOT))
 
 import config.params_real  # noqa: F401,E402  （先于 run_lib：真机口径 patch）
 
@@ -49,7 +46,7 @@ def main():
     assert cp.ENABLE_DITHER is False
     print("[wiring][1][2] 参数覆写 OK：DT=10ms CTRL_EVERY=1 增益组=small_arm")
 
-    run_lib = _load("run_lib", B601_ROOT / "experiments" / "run_lib.py")
+    run_lib = _load("run_lib", REAL_ROOT / "experiments" / "run_lib.py")
 
     # [3][4] mock 后端（同签名契约 + 真机钩子）
     class MockBackend:
