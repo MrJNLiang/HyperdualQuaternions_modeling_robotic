@@ -1,0 +1,33 @@
+# tndq_controller ROS 参数
+#
+# 安全数值（看门狗/保持期配方/斜坡/斜率/速度异常阈值等）不在此重复定义，
+# 以 TNDQ_real/config/params_real.py 为单一真相源；本文件只放 ROS 通道
+# 与任务选择参数。
+tndq_controller:
+  ros__parameters:
+    # ---- 官方 rebotarmcontroller 通道 ----
+    arm_namespace: "rebotarm"          # 官方包 arm_namespace 参数
+    joint_names:                       # 必须与官方包关节表一致
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+    send_rate_hz: 200.0                # MIT 命令发送线程频率（DDS 上限裕量充足；
+                                       #   直连版总线 500 Hz，此层 200 Hz 足够
+                                       #   100 Hz 控制律 + 30 ms 看门狗分辨率）
+    fb_stale_timeout: 0.05             # 反馈停更急停阈值 [s]（官方 joint_state_rate
+                                       #   100 Hz -> 数据龄最大 ~10 ms + DDS 抖动；
+                                       #   建议官方包把 joint_state_rate 调到 200）
+
+    # ---- 任务 ----
+    task: "hold"                       # hold（定点保持）| short（j1 短行程）|
+                                       #   goto（斜下抓取全程）
+    duration: 30.0                     # 实验时长 [s]（goto 轨迹全程 ~28.5s，
+                                       #   short ~11s，按需覆盖）
+    traj_backend: "pinocchio"          # goto 轨迹路线（pinocchio 缺失自动降级）
+    csv_dir: "~/tndq_ros2_results"
+
+    # ---- 遥测 ----
+    telemetry_rate: 20.0               # ~/state 发布频率 [Hz]

@@ -28,6 +28,7 @@ import argparse
 import importlib.util
 import os
 import sys
+import time
 from pathlib import Path
 
 REAL_ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +58,7 @@ real_backend = _load("real_backend",
 run_lib = _load("run_lib", REAL_ROOT / "experiments" / "run_lib.py")
 
 from config.params import (CUBE_SIZE, GRIPPER_BASELINE_WIDTH, GRIPPER_GRASP,  # noqa: E402
-                           GRIPPER_OPENING, SETPOINT_HOLD_TIME)
+                           GRIPPER_OPENING, Q_INIT, SETPOINT_HOLD_TIME)
 
 
 # ---------------------------------------------------------------------------
@@ -106,21 +107,34 @@ def main():
     ap = argparse.ArgumentParser(description="B601 实机实验一：定点控制")
     ap.add_argument("--csv", type=str, default=None, help="CSV 输出路径")
     ap.add_argument("--traj", type=str, default="pinocchio",
-                    choices=["pinocchio", "kinematic", "tndq"],
+                    choices=["pinocchio", "kinematic", "tndq", "short"],
                     help="期望轨迹生成（与仿真同选项；pinocchio 缺失时"
-                         "run_lib 自动降级 kinematic）")
+                         "run_lib 自动降级 kinematic；short=v5 首跑"
+                         "安全短行程：j1 +0.12 rad 往返 ≈11 s）")
     ap.add_argument("--mode", type=str, default="openhold",
                     choices=["openhold", "grasp"],
                     help="openhold=开指保持无接触基线（真机首跑默认，"
                          "安全）；grasp=接触抓取（完成空载验证后启用）")
+    ap.add_argument("--no-dwell", action="store_true",
+                    help="实验结束不驻留，直接安全关闭后端（默认驻留："
+                         "切 POS_VEL 位置保持一直工作，固件自持；"
+                         "Ctrl+C 才关闭后端）")
     args = ap.parse_args()
 
+    suffix = "" if args.traj == "pinocchio" else f"_{args.traj}"
     csv_path = args.csv or str(REAL_ROOT / "results"
-                               / f"exp1_real_{args.mode}.csv")
+                               / f"exp1_real_{args.mode}{suffix}.csv")
     os.makedirs(os.path.dirname(csv_path), exist_ok=True)
 
     # 期望轨迹：与仿真完全相同的任务几何与路标（params.py）
-    if args.traj == "pinocchio":
+    if args.traj == "short":
+        traj, t_move, t_close = run_lib.build_short_trajectory()
+        if args.mode == "grasp":
+            print("[exp1-real] short 无闭合时序，强制 openhold"
+                  "（另：夹爪静默期 GRIPPER_ACTIVE=False 调度本就被后端"
+                  "忽略）")
+            args.mode = "openhold"
+    elif args.traj == "pinocchio":
         traj, t_move, t_close = \
             run_lib.build_setpoint_goto_trajectory_pinocchio()
     elif args.traj == "kinematic":
@@ -141,6 +155,11 @@ def main():
 
     backend = real_backend.RealB601Backend()
     backend.setup()
+    if args.traj == "short":
+        # 锚定兕底（官方 gravity comp 同思想）：short 只动 j1，j2-j6
+        # 控制期叠 kp=ANCHOR_KP 弹簧锚 Q_INIT，抗 kp=0 纯力矩对模型
+        # 误差/摩擦的零刚度垂移（2026-08-29 实测斜坡期臂垂 0.085 rad）
+        backend.apply_anchor(Q_INIT, [0, 1, 1, 1, 1, 1])
     try:
         summary = run_lib.run_tndq_experiment(
             backend, traj, duration, csv_path,
@@ -148,9 +167,22 @@ def main():
             gripper_init=0.0,                    # 从并拢起步，按调度张开
             label=f"exp1-real-{args.mode}")
     finally:
-        # 正常结束 / KeyboardInterrupt / HardwareFault 统一走安全关闭：
-        # 重力补偿收尾 -> 停总线 -> disable_all 断力矩 -> 断串口
-        backend.close()
+        # 正常结束 / KeyboardInterrupt / HardwareFault 统一进入驻留
+        # （v6.1）：切 POS_VEL 位置保持——目标锁存驱动器固件位置环
+        # 自持，通道中断免疫（保持期 MIT 配方依赖持续发帧，通道死
+        # = 失联失能，2026-08-29 事故机理）；总线线程转纯监视（遥测
+        # 继续），Ctrl+C 才真正关闭（close 幂等：逐关节再切 PV ->
+        # 断串口，不失能）。--no-dwell 走原安全关闭
+        if args.no_dwell:
+            backend.close()
+        else:
+            backend.dwell_hold(f"{args.traj} 结束")
+            try:
+                while True:
+                    time.sleep(1.0)      # 驻留：Ctrl+C 退出
+            except (KeyboardInterrupt, SystemExit):
+                print("\n[exp1-real] 收到退出，安全关闭后端…")
+            backend.close()
     return summary
 
 

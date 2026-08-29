@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
@@ -73,6 +74,7 @@ class JointCfg:
     feedback_id: int
     model: str
     vendor: str = "damiao"
+    state_source: str = "frame"   # frame=反馈帧；register=xout(0x51) 寄存器读回
     kp: float = 0.0
     kd: float = 0.0
     vel_kp: float = 0.0
@@ -98,6 +100,7 @@ def load_cfg(hw_yaml: str | None = None) -> dict:
             feedback_id=int(j["feedback_id"]),
             model=str(j.get("model", "4340P")),
             vendor=str(j.get("vendor", "damiao")).lower(),
+            state_source=str(j.get("state_source", "frame")).lower(),
             kp=float(mc.get("kp", 0.0)),
             kd=float(mc.get("kd", 0.0)),
             vel_kp=float(pc.get("vel_kp", 0.0)),
@@ -411,6 +414,15 @@ class JointGroup:
         out: list[float] = []
         for jc in self._jcfgs:
             m = self._mm[jc.name]
+            if jc.state_source == "register":
+                # 新批次 DM-J4310 固件废弃请求-应答反馈（motorbridge 0.5.1
+                # 解不出状态帧）；据达妙新协议文档 rid 0x51 (xout 输出轴
+                # 位置, RO float) 为活状态寄存器，直接读回（低频路径适用）。
+                try:
+                    out.append(float(m.get_register_f32(0x51, 60)))
+                    continue
+                except CallError:
+                    pass
             if jc.vendor == "robstride":
                 # RobStride firmware streams compact type-0x18 report frames
                 # that get_state() never decodes, so the cached state freezes
@@ -487,6 +499,15 @@ class RebotArm:
         self._ctrl_rate: float = self._rate
         self._connected: bool = False
 
+        # ---- 寄存器状态源（新批次 DM-J4310：xout 0x51 读回）----
+        # connect 时由 _probe_state_sources 甄别后填充
+        self._reg_names: List[str] = []
+        self._reg_state: Dict[str, tuple] = {}
+        self._reg_hist: Dict[str, deque] = {}
+        self._reg_lock = threading.Lock()
+        self._reg_running = False
+        self._reg_thread: Optional[threading.Thread] = None
+
         self._build_groups()
 
     def connect(self) -> None:
@@ -494,7 +515,51 @@ class RebotArm:
         if self._connected:
             return
         self._setup_motors()
+        self._probe_state_sources()
+        self._reg_names = [j.name for j in self._all_joints
+                           if j.state_source == "register"]
+        now = time.perf_counter()
+        self._reg_state = {n: (0.0, 0.0, now) for n in self._reg_names}
+        self._reg_hist = {n: deque(maxlen=256) for n in self._reg_names}
+        if self._reg_names:
+            self._reg_running = True
+            self._reg_thread = threading.Thread(
+                target=self._reg_loop, daemon=True)
+            self._reg_thread.start()
+            # 等首拍读回落地（最多 0.5 s），避免上层首读拿到 0
+            t_wait = time.perf_counter()
+            while self.reg_state_age() > 0.05 and \
+                    time.perf_counter() - t_wait < 0.5:
+                time.sleep(0.01)
         self._connected = True
+
+    def _probe_state_sources(self, probe_s: float = 0.6) -> None:
+        """state_source=auto 的关节：探针 0.6 s 反馈帧；
+        有帧 -> frame（旧批次），无帧 -> register（新批次 DM-J4310）。"""
+        auto = [jc for jc in self._all_joints if jc.state_source == "auto"]
+        if not auto:
+            return
+        hit = {jc.name: False for jc in auto}
+        t0 = time.perf_counter()
+        while time.perf_counter() - t0 < probe_s:
+            for jc in auto:
+                try:
+                    self._motor_map[jc.name].request_feedback()
+                except Exception:
+                    pass
+            for ctrl in self._ctrl_map.values():
+                try:
+                    ctrl.poll_feedback_once()
+                except Exception:
+                    pass
+            for jc in auto:
+                if not hit[jc.name] and \
+                        self._motor_map[jc.name].get_state() is not None:
+                    hit[jc.name] = True
+            time.sleep(0.02)
+        for jc in auto:
+            jc.state_source = "frame" if hit[jc.name] else "register"
+            print(f"[rebotarm] {jc.name}: 状态源甄别 -> {jc.state_source}")
 
     def _make_controller(self, vendor: str) -> Controller:
         if self._channel.startswith("/dev/tty"):
@@ -643,7 +708,14 @@ class RebotArm:
             except Exception:
                 pass
         pos, vel, torq = [], [], []
+        now = time.perf_counter()
         for jc in self._all_joints:
+            if jc.state_source == "register":
+                p, v = self._reg_get(jc.name, now)
+                pos.append(p)
+                vel.append(v)
+                torq.append(0.0)   # 新批次无力矩测量通道
+                continue
             st = self._motor_map[jc.name].get_state()
             if st is not None:
                 pos.append(st.pos)
@@ -668,12 +740,65 @@ class RebotArm:
     def get_torques(self) -> np.ndarray:
         return self.get_state()[2]
 
+    # ── 寄存器状态源线程（xout 0x51 轮询读回 + 窗差分速度）──────────
+
+    def _reg_loop(self) -> None:
+        """后台轮询新批次电机的 xout(0x51)；~2 ms/次，三关节各约 140 Hz。
+        速度取 150 ms 窗首末差分（滤除单拍量化噪声）。"""
+        while self._reg_running:
+            for name in self._reg_names:
+                if not self._reg_running:
+                    break
+                m = self._motor_map.get(name)
+                if m is None:
+                    continue
+                try:
+                    v = float(m.get_register_f32(0x51, 60))
+                except Exception:
+                    continue
+                now = time.perf_counter()
+                h = self._reg_hist[name]
+                h.append((now, v))
+                while h and now - h[0][0] > 0.15:
+                    h.popleft()
+                vel = 0.0
+                if len(h) >= 2 and now - h[0][0] > 0.02:
+                    vel = (v - h[0][1]) / (now - h[0][0])
+                with self._reg_lock:
+                    self._reg_state[name] = (v, vel, now)
+
+    def _reg_get(self, name: str, now: float) -> tuple[float, float]:
+        """取寄存器状态缓存；超 0.25 s 未更新视为通信失效，返回 0。"""
+        with self._reg_lock:
+            p, v, t = self._reg_state[name]
+        if now - t > 0.25:
+            return 0.0, 0.0
+        return p, v
+
+    def reg_state_age(self) -> float:
+        """新批次状态缓存的最大年龄 [s]（供上层通信超时检查）。"""
+        if not self._reg_names:
+            return 0.0
+        now = time.perf_counter()
+        with self._reg_lock:
+            return max(now - self._reg_state[n][2] for n in self._reg_names)
+
+    def reg_arm_indices(self) -> List[int]:
+        """arm 前六关节中走寄存器状态源的下标（无力矩测量，供上层
+        碰撞残差检查跳过）。"""
+        return [i for i, jc in enumerate(self._all_joints[:6])
+                if jc.state_source == "register"]
+
     # ── 生命周期 ────────────────────────────────────────────────────────
 
     def disconnect(self) -> None:
         if not self._connected:
             return
         self.stop_control_loop()
+        self._reg_running = False
+        if self._reg_thread is not None:
+            self._reg_thread.join(timeout=1.0)
+            self._reg_thread = None
         self.disable_all()
         time.sleep(0.5)
         for ctrl in self._ctrl_map.values():

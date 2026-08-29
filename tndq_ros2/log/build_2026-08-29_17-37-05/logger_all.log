@@ -1,0 +1,136 @@
+[0.487s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--symlink-install']
+[0.488s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=True, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=8, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7599e16d40e0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7599e169f650>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7599e169f650>>, mixin_verb=('build',))
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.617s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.617s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2'
+[0.617s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.618s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.682s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[0.683s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['ignore', 'ignore_ament_install']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'ignore'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'ignore_ament_install'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['colcon_pkg']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'colcon_pkg'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['colcon_meta']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'colcon_meta'
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['ros']
+[0.684s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'ros'
+[0.693s] DEBUG:colcon.colcon_core.package_identification:Found ROS schema reference in package manifest in 'src/tndq_controller'
+[0.693s] WARNING:colcon.colcon_core.package_identification:Failed to parse ROS package manifest in 'src/tndq_controller': Error(s) in package 'src/tndq_controller/package.xml':
+Invalid email "ljn@localhost" for person "ljn"
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['cmake', 'python']
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'cmake'
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'python'
+[0.693s] DEBUG:colcon.colcon_core.package_identification:Python package in 'src/tndq_controller' passes arguments to the setup() function which requires a different identification extension than 'python'
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extensions ['python_setup_py']
+[0.693s] Level 1:colcon.colcon_core.package_identification:_identify(src/tndq_controller) by extension 'python_setup_py'
+[0.997s] DEBUG:colcon.colcon_core.package_identification:Package 'src/tndq_controller' with type 'python' and name 'tndq_controller'
+[0.998s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.998s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.998s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.998s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.998s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.051s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.051s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.061s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 7 installed packages in /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/Borot-Arm_Mujoco/install
+[1.062s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 343 installed packages in /opt/ros/jazzy
+[1.066s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_args' from command line to 'None'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_target' from command line to 'None'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_clean_cache' from command line to 'False'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_clean_first' from command line to 'False'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'cmake_force_configure' from command line to 'False'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'ament_cmake_args' from command line to 'None'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'catkin_cmake_args' from command line to 'None'
+[1.137s] Level 5:colcon.colcon_core.verb:set package 'tndq_controller' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.137s] DEBUG:colcon.colcon_core.verb:Building package 'tndq_controller' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller', 'merge_install': False, 'path': '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/src/tndq_controller', 'symlink_install': True, 'test_result_base': None}
+[1.137s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.139s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.139s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/src/tndq_controller'
+[1.150s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.150s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.150s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.849s] DEBUG:colcon.colcon_core.task.python.build:Available setuptools commands: editable_wheel, build_clib, update_catalog, install_headers, rotate, bdist_egg, saveopts, setopt, install, easy_install, build_py, extract_messages, install_egg_info, sdist, alias, test, install_scripts, dist_info, build, clean, install_data, init_catalog, symlink_data, upload_docs, build_scripts, install_lib, bdist, egg_info, bdist_rpm, compile_catalog, build_ext, register, bdist_wheel, bdist_dumb, develop, upload, check
+[3.479s] DEBUG:colcon.colcon_core.task.python.build:Available setuptools 'develop' options: --egg-path, --uninstall, --help, --script-dir, --always-unzip, --always-copy, --build-directory, --zip-ok, --no-user-cfg, --allow-hosts, --dry-run, --no-deps, --user, --site-dirs, --record, --optimize, --install-layout, --no-find-links, --multi-version, --editable, --find-links, --local-snapshots-ok, --version, --force-installation-into-system-dir, --verbose, --upgrade, --quiet, --index-url, --prefix, --install-dir, --exclude-scripts
+[3.485s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller': PYTHONPATH=/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/build --no-deps symlink_data
+[4.701s] Level 1:colcon.colcon_core.shell:create_environment_hook('tndq_controller', 'pythonpath_develop')
+[4.702s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/share/tndq_controller/hook/pythonpath_develop.ps1'
+[4.702s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller' returned '0': PYTHONPATH=/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/build --no-deps symlink_data
+[4.707s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/share/tndq_controller/hook/pythonpath_develop.dsv'
+[4.710s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/share/tndq_controller/hook/pythonpath_develop.sh'
+[4.722s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller' for CMake module files
+[4.724s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller' for CMake config files
+[4.725s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib'
+[4.725s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/bin'
+[4.725s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/pkgconfig/tndq_controller.pc'
+[4.726s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages'
+[4.726s] Level 1:colcon.colcon_core.shell:create_environment_hook('tndq_controller', 'pythonpath')
+[4.726s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/hook/pythonpath.ps1'
+[4.732s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/hook/pythonpath.dsv'
+[4.733s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/hook/pythonpath.sh'
+[4.734s] Level 1:colcon.colcon_core.environment:checking '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/bin'
+[4.734s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(tndq_controller)
+[4.734s] INFO:colcon.colcon_core.shell:Creating package script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/package.ps1'
+[4.736s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/package.dsv'
+[4.736s] INFO:colcon.colcon_core.shell:Creating package script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/package.sh'
+[4.737s] INFO:colcon.colcon_core.shell:Creating package script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/package.bash'
+[4.739s] INFO:colcon.colcon_core.shell:Creating package script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/tndq_controller/package.zsh'
+[4.742s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/share/colcon-core/packages/tndq_controller)
+[4.748s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[4.750s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[4.751s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[4.752s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[4.780s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[4.780s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[4.780s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[4.870s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files
+[4.877s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[4.879s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/local_setup.ps1'
+[4.890s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/_local_setup_util_ps1.py'
+[4.892s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/setup.ps1'
+[4.896s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/local_setup.sh'
+[4.909s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/_local_setup_util_sh.py'
+[4.911s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/setup.sh'
+[4.915s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/local_setup.bash'
+[4.922s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/setup.bash'
+[4.935s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/local_setup.zsh'
+[4.936s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/setup.zsh'

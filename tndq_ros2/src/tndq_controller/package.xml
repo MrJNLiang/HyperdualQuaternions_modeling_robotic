@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>tndq_controller</name>
+  <version>0.1.0</version>
+  <description>
+    TNDQ 力矩级反馈控制律 ROS2 节点：反馈与 MIT 力矩命令全部走官方
+    rebotarmcontroller 透传通道（/rebotarm/joints/*/state、
+    /rebotarm/joints/*/cmd、/rebotarm/set_mode），算法层复用
+    TNDQ_real 同源副本（core/control/config/experiments.run_lib）。
+  </description>
+  <maintainer email="ljn@example.com">ljn</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_srvs</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>rebotarm_msgs</depend>
+
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

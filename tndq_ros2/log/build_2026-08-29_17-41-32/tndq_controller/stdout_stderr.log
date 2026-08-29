@@ -1,0 +1,15 @@
+running develop
+running egg_info
+writing tndq_controller.egg-info/PKG-INFO
+writing dependency_links to tndq_controller.egg-info/dependency_links.txt
+writing entry points to tndq_controller.egg-info/entry_points.txt
+writing requirements to tndq_controller.egg-info/requires.txt
+writing top-level names to tndq_controller.egg-info/top_level.txt
+reading manifest file 'tndq_controller.egg-info/SOURCES.txt'
+writing manifest file 'tndq_controller.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages/tndq-controller.egg-link (link to .)
+Installing tndq_controller script to /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/tndq_controller
+
+Installed /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller
+running symlink_data

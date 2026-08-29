@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: tndq-controller
+Version: 0.1.0
+Summary: TNDQ torque-level feedback control over the official rebotarm ROS2 passthrough channel
+Maintainer: ljn
+Maintainer-email: ljn@localhost
+License: MIT

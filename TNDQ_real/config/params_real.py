@@ -60,17 +60,64 @@ TORQUE_RAMP_TIME = 0.5         # 使能后力矩混入斜坡 [s]：g(q) -> 全�
                                #   防使能瞬间力矩阶跃甩臂
 TORQUE_SLEW_MAX = 200.0        # 力矩斜率限制 [N*m/s]（500 Hz 下每拍 0.4 N*m；
                                #   保护 M6≈4e-4 kg*m^2 的轻腕关节）
-WATCHDOG_TIMEOUT = 0.05        # 控制线程心跳超时 [s]：超期总线层自动降级
-                               #   纯重力补偿（比保持失控力矩安全）
+WATCHDOG_TIMEOUT = 0.03        # 控制线程心跳超时 [s]（v5：0.05 -> 0.03）
+                               #   超期总线层自动切保持期配方（kp=7 弹簧
+                               #   + 重力补偿）。下限论证：控制周期 10 ms，
+                               #   单步计算偶发抖动 15~20 ms（pinocchio
+                               #   FK/crba、GC、页缺失）属正常，留 2 步
+                               #   抖动余量 => 3 周期 30 ms；再短会把
+                               #   正常抖动误判为心跳丢失，弹簧对抗
+                               #   控制律导致实验报废。已无法更快：
+                               #   进程崩溃时总线线程同死，任何软件
+                               #   看门狗失效——那一层的毫秒级保护靠
+                               #   _send_mit 末帧阻尼网（vel_d=0）在
+                               #   固件内持续生效，见其注释
 CONTACT_RESID_TAU = 8.0        # |tau_meas - tau_cmd| 碰撞/卡滞残差阈值 [N*m]
 CONTACT_RESID_COUNT = 50       # 残差连续超阈拍数（控制步）才触发急停
                                #   （100 Hz 下 0.5 s，滤除接触瞬态尖峰）
 VEL_SPIKE_MAX = 6.0            # 关节速度异常阈值 [rad/s]（> 2*QDOT_MAX 首跑值，
                                #   编码器跳变/失控征兆 -> 急停）
-Q_BRINGUP_TOL = 0.02           # reset_to 构型校验容差 [rad]（真机无 teleport，
-                               #   须先由 POS_VEL 就位脚本摆到 Q_INIT）
+Q_BRINGUP_TOL = 0.15           # reset_to 构型校验容差 [rad]（真机无 teleport，
+                               #   须先由 POS_VEL 就位脚本摆到 Q_INIT。
+                               #   v4：0.02 -> 0.15——保持期为 kp=7 弹簧 +
+                               #   前馈（建模残差厘米级回差），0.02 闸门把
+                               #   正常就位误判为就位失效；仅放宽起步位姿
+                               #   闸门，关节硬限位 check_joint_limits 的
+                               #   margin 不动）
 
-# MIT 模式安全网增益（下发层）：kp=0 纯力矩前馈；kd 留小阻尼兜底，
-# 叠加在驱动器电流环之上，等效加深 JOINT_DAMPING 但不经控制律
+# MIT 模式增益（下发层，分相）：
+#   控制期：kp=0 纯力矩前馈（控制律为唯一外环，位置弹簧会与力矩
+#     控制律打架）；kd 留小阻尼兜底，叠加在电流环之上，等效加深
+#     JOINT_DAMPING 但不经控制律。
+#   保持期（启动/看门狗降级/收尾）：HOLD_* 配方——1:1 复刻
+#     02_gravity_hold v3 / Borot hardware_manager 实机跑通配方
+#     （kp=7 弹簧锚定冻结目标 + tau_g 前馈 + 积分器）。kp=0 纯前馈
+#     在建模残差下托不住臂（"就位后垮"根因）；v3 实测 kp=7 配方
+#     漂移仅 0.002~0.005 rad。
 MIT_KP = np.zeros(6)
 MIT_KD = np.array([0.5, 0.5, 0.5, 0.1, 0.1, 0.1])
+HOLD_KP = 7.0                  # 保持期位置弹簧 [MIT kp]（锚定冻结目标）
+HOLD_KD = 0.8                  # 保持期阻尼 [MIT kd]
+HOLD_RATE_HZ = 50.0            # 保持期配方刷新频率 [Hz]（02/Borot 同款，
+                               #   总线 500 Hz 下每 10 拍重算一次 tau_g）
+HOLD_INTEG_GAIN = 1.0          # 积分增益（位置误差 -> 力矩，吃模型残差）
+HOLD_INTEG_MAX = 0.5           # 积分器限幅 [N*m]
+HOLD_VEL_TH = 0.05             # 运动检测阈值 [rad/s]（手掰/外力扰动时
+                               #   目标跟随实测 + 积分衰减，02 v3 同款）
+GRIPPER_ACTIVE = False         # 电机 7（夹爪）总开关：False = 全程完全
+                               #   静默——不发模式切换/使能/任何命令帧
+                               #   （硬件问题期间，real_backend 与 02 的
+                               #   夹爪触点全部短路）；修复后改 True 恢复
+                               #   MIT 位置保持
+TWIN_UDP_PORT = 47470          # 数字孪生遥测 UDP 端口（127.0.0.1，0=关闭）。
+                               #   总线线程每 TWIN_RATE_HZ 把实测 q 打包发
+                               #   localhost，scripts/ros_twin_bridge.py 转
+                               #   发 /rebotarm/joint_states 供 web 镜像；
+                               #   单向只读，异常静默不影响控制
+TWIN_RATE_HZ = 50.0            # 遥测频率 [Hz]（总线 500 Hz 下每 10 拍一包）
+ANCHOR_KP = 7.0                # 控制期锚定兕底弹簧 [N*m/rad]（官方 gravity
+                               #   comp 的 _GC_KP 同值，hardware_manager.py）。
+                               #   低自由度验证（short）对不动关节叠加 kp
+                               #   弹簧锚 Q_INIT：kp=0 纯力矩对模型误差/
+                               #   摩擦零刚度，2026-08-29 实测斜坡期臂垂
+                               #   0.085 rad——官方从不跑 kp=0 纯力矩

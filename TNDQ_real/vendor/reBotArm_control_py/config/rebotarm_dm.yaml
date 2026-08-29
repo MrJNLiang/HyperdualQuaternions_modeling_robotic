@@ -84,6 +84,9 @@ joints:
     feedback_id: 0x15
     model: "4310"
     vendor: "damiao"
+    # 状态源自动甄别：connect 时探针 0.6 s，有反馈帧=frame，
+    # 无帧（新批次 DM-J4310）自动落 register（xout 0x51 读回）
+    state_source: auto
     MIT:
       kp: 18.0
       kd: 2.0
@@ -99,6 +102,7 @@ joints:
     feedback_id: 0x16
     model: "4310"
     vendor: "damiao"
+    state_source: auto
     MIT:
       kp: 18.0
       kd: 2.0
@@ -114,6 +118,7 @@ joints:
     feedback_id: 0x17
     model: "4310"
     vendor: "damiao"
+    state_source: auto
     MIT:
       kp: 8.0
       kd: 1.0

@@ -1,0 +1,17 @@
+[1.734s] Invoking command in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller': PYTHONPATH=/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/build --no-deps symlink_data
+[2.213s] running develop
+[2.477s] running egg_info
+[2.500s] writing tndq_controller.egg-info/PKG-INFO
+[2.501s] writing dependency_links to tndq_controller.egg-info/dependency_links.txt
+[2.501s] writing entry points to tndq_controller.egg-info/entry_points.txt
+[2.501s] writing requirements to tndq_controller.egg-info/requires.txt
+[2.501s] writing top-level names to tndq_controller.egg-info/top_level.txt
+[2.546s] reading manifest file 'tndq_controller.egg-info/SOURCES.txt'
+[2.547s] writing manifest file 'tndq_controller.egg-info/SOURCES.txt'
+[2.581s] running build_ext
+[2.581s] Creating /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages/tndq-controller.egg-link (link to .)
+[2.581s] Installing tndq_controller script to /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/tndq_controller
+[2.582s] 
+[2.582s] Installed /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller
+[2.582s] running symlink_data
+[2.651s] Invoked command in '/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller' returned '0': PYTHONPATH=/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/install/tndq_controller/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/ljn/Projects/HyperdualQuaternions_modeling_robotic/tndq_ros2/build/tndq_controller/build --no-deps symlink_data

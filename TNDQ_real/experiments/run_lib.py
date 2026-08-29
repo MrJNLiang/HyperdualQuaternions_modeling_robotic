@@ -35,7 +35,8 @@ from config.params import (
     JOINT_LOWER, JOINT_UPPER, JOINT_DAMPING,
     R_TOOL_QUAT, SETPOINT_POS, GRASP_APPROACH_POS, LIFT_POS,
     GOTO_TOP_Z, GOTO_T_LIFT, GOTO_T_TRANS, GOTO_T_ROTDESC, GOTO_T_DESC,
-    GOTO_GRASP_DWELL, GOTO_T_LIFTLOAD,
+    GOTO_GRASP_DWELL, GOTO_T_LIFTLOAD, GOTO_RETURN_DWELL,
+    SHORT_SWING_RAD, SHORT_T_GO, SHORT_T_BACK,
 )
 from config.b601_dynamics import (
     B601NominalDynamics, check_joint_limits, clip_torque,
@@ -170,6 +171,11 @@ DITHER_MAX_RUN = 2.0     # v3.4：单次推送最长时长 [s]，到期强制退
 DITHER_PROBE_STEPS = 50    # 微分探针时长 [步]（0.1 s/关节，单位力矩）
 DITHER_PROBE_DELTA_MIN = 0.002   # 探针改善下限 [m]（低于则退回反馈主分量）
 
+MONITOR_DT = 0.2           # 终端力矩监视打印间隔 [s]（v4 需求①）：
+                           #   cmd = 本步实际下发（经使能斜坡/斜率限制），
+                           #   meas = 上步读取反馈；CSV tau*/meas* 列
+                           #   为逐拍完整版，终端行供实时调试记录
+
 
 def _comb_err(fk_x, des_x):
     """组合任务误差 e_comb = ‖p_d-p‖ + ORI_WEIGHT*ori_err [m]。"""
@@ -250,7 +256,8 @@ def build_setpoint_goto_trajectory():
     零位（恒等姿态）-> 举高 0.28 m -> 恒等前移到接近退避位正上方 ->
     转腕+下降到退避位（斜上方外侧，沿接近轴 -x_g 距抓取位 8 cm）->
     沿接近轴斜下插入到抓取位（夹爪朝下对准方块）-> 静置（闭合夹持）
-    -> 带载提升（沿 -x_g 退 2 cm + 竖直 8 cm）。
+    -> 带载提升（沿 -x_g 退 2 cm + 竖直 8 cm）-> 回零（水平移回起点
+    上方 -> 落回零位静稳，v4 尾段）。
     几何依据：接触包络物理测绘（原点=指尖端，指垫在原点后侧
     15 mm）；diag_v9_grasp 功能验证 kinematic 逼近全程方块移位
     ≤1 mm（零碰撞）。
@@ -271,6 +278,11 @@ def build_setpoint_goto_trajectory():
         (w2dh(GRASP_APPROACH_POS), R_TOOL_QUAT, GOTO_T_ROTDESC, 0.0),
         (w2dh(SETPOINT_POS), R_TOOL_QUAT, GOTO_T_DESC, GOTO_GRASP_DWELL),
         (w2dh(LIFT_POS), R_TOOL_QUAT, GOTO_T_LIFTLOAD, 0.0),
+        # 回零尾段（v4）：水平移回起点上方 -> 落回起点位姿（Q_INIT
+        # 邻域）——实验结束臂静稳停放在零位，不再悬空；t_close 在
+        # 尾段之前，闭合时序不受影响
+        (top0, r0, GOTO_T_TRANS, 0.0),
+        (p0, r0, GOTO_T_LIFT, GOTO_RETURN_DWELL),
     ]
     traj, t_move = waypoint_sequence_trajectory(x_init, legs)
     # v9 四跑归因：抓取位深折叠构型存在 ~1 cm/s 慢漂（重力残差），
@@ -287,7 +299,8 @@ def build_setpoint_goto_trajectory_pinocchio():
     全位姿 IK 逐路标求解（热启动延续）-> 关节空间三次 Hermite 样条
     （中间路标不停走，抓取 dwell 零速）-> pin.rnea 力矩/速度可行性
     校核（超限等比拉长时长）。运动形态不变：举高 -> 前移 -> 转腕+
-    下降到退避位 -> 沿接近轴斜插 -> 静置闭合 -> 带载提升。
+    下降到退避位 -> 沿接近轴斜插 -> 静置闭合 -> 带载提升 -> 回零
+    （移回起点上方落回零位静稳，v4 尾段）。
     TNDQ 仅在适配器边界（simdata.traj_pinocchio.evaluate）把位姿导数
     表示为控制律输入格式，控制律/误差系统零改动。
     pinocchio 缺失时降级为 kinematic 路线并打印告警。
@@ -304,6 +317,10 @@ def build_setpoint_goto_trajectory_pinocchio():
         (GRASP_APPROACH_POS, R_TOOL_QUAT, GOTO_T_ROTDESC, 0.0),
         (SETPOINT_POS, R_TOOL_QUAT, GOTO_T_DESC, GOTO_GRASP_DWELL),
         (LIFT_POS, R_TOOL_QUAT, GOTO_T_LIFTLOAD, 0.0),
+        # 回零尾段（v4）：世界系路标，同 TNDQ 版——结束停 Q_INIT 邻域
+        # 静稳；PinocchioGotoTrajectory 的可行性校核含尾段
+        (np.array([p0[0], p0[1], GOTO_TOP_Z]), r0, GOTO_T_TRANS, 0.0),
+        (p0, r0, GOTO_T_LIFT, GOTO_RETURN_DWELL),
     ]
     try:
         from simdata.traj_pinocchio import PinocchioGotoTrajectory
@@ -324,7 +341,8 @@ def build_setpoint_goto_trajectory_kinematic():
     （simdata.traj_kinematic：位置 quintic 样条 + 姿态 slerp，纯
     numpy，不依赖 TNDQ 代数构造）；TNDQ 仅在适配器边界把位姿导数
     表示为控制律输入格式。运动形态不变：举高 -> 前移 -> 转腕+下降
-    到退避位 -> 沿接近轴插入抓取位 -> 静置闭合 -> 带载提升。
+    到退避位 -> 沿接近轴插入抓取位 -> 静置闭合 -> 带载提升 -> 回零
+    （移回起点上方落回零位静稳，v4 尾段）。
     返回 (traj, t_move, t_close)。
     """
     from simdata.traj_kinematic import (CartesianWaypointTrajectory,
@@ -342,12 +360,48 @@ def build_setpoint_goto_trajectory_kinematic():
         (w2dh(GRASP_APPROACH_POS), R_TOOL_QUAT, GOTO_T_ROTDESC, 0.0),
         (w2dh(SETPOINT_POS), R_TOOL_QUAT, GOTO_T_DESC, GOTO_GRASP_DWELL),
         (w2dh(LIFT_POS), R_TOOL_QUAT, GOTO_T_LIFTLOAD, 0.0),
+        # 回零尾段（v4）：同 TNDQ 版，结束停 Q_INIT 邻域静稳
+        (top0, r0, GOTO_T_TRANS, 0.0),
+        (p0, r0, GOTO_T_LIFT, GOTO_RETURN_DWELL),
     ]
     wp = CartesianWaypointTrajectory((p0, r0), legs)
     traj = KinematicTrajectoryAdapter(wp)
     t_move = wp.t_total
     t_close = GOTO_T_LIFT + GOTO_T_TRANS + GOTO_T_ROTDESC + GOTO_T_DESC + 0.2
     return traj, t_move, t_close
+
+
+def build_short_trajectory():
+    """exp1 短行程验证轨迹（--traj short，v5 首跑安全阀）。
+
+    Q_INIT -> j1（竖直底座轴）+SHORT_SWING_RAD -> 原路缓回 Q_INIT。
+    选 j1 的理由：竖直轴旋转不改变臂部各关节的重力载荷分布（重力矩
+    与 j1 无关），全程重心高度不变，是力矩链路最小风险的行程验证；
+    TCP 走 ~4 cm 圆弧，quintic 峰值关节速度 ≈0.045 rad/s，远低于
+    QDOT_MAX。复用 kinematic 笛卡尔插值（quintic + slerp），期望
+    轨迹接口与其余构建器完全一致（evaluate(t) -> dict）。
+    时长：SHORT_T_GO + SHORT_T_BACK + GOTO_RETURN_DWELL ≈ 11 s
+    （对照抓放轨迹 t_move=28.5 s）。配 openhold 使用；t_close 无
+    闭合语义，取 t_move 占位。
+    返回 (traj, t_move, t_close)。
+    """
+    from simdata.traj_kinematic import (CartesianWaypointTrajectory,
+                                        KinematicTrajectoryAdapter)
+    chain = B601TCPChain(B601_DH_TABLE)
+    x_init = chain.fkm(Q_INIT)
+    r0 = dq_rotation(x_init)
+    p0 = dq_translation(x_init)
+    q_mid = Q_INIT.copy()
+    q_mid[0] += SHORT_SWING_RAD             # j1 小幅转位（唯一自由度变化）
+    x_mid = chain.fkm(q_mid)
+    legs = [
+        (dq_translation(x_mid), dq_rotation(x_mid), SHORT_T_GO, 0.0),
+        (p0, r0, SHORT_T_BACK, GOTO_RETURN_DWELL),
+    ]
+    wp = CartesianWaypointTrajectory((p0, r0), legs)
+    traj = KinematicTrajectoryAdapter(wp)
+    t_move = wp.t_total
+    return traj, t_move, t_move
 
 
 def joint_safety_governor(q, q_dot, qddot_ref):
@@ -678,6 +732,24 @@ def run_tndq_experiment(backend, trajectory, duration, csv_path,
             # ---- 下发 + 物理步进（中间步保持上一控制周期力矩）----
             backend.apply_arm_torques(tau)
             backend.step()
+
+            # ---- 0.2 s 终端监视（v4 需求①）：本步输入力矩 vs 上步
+            #      读取力矩。cmd 取 _tau_sent 真值（经使能斜坡/斜率限
+            #      制），与 meas 同通道对账；无该接口的后端退化为 tau
+            #      原始值/NaN（仿真后端无影响）----
+            if verbose and k % int(round(MONITOR_DT / DT)) == 0:
+                _cmd = (backend.get_commanded_joint_efforts()
+                        if hasattr(backend, "get_commanded_joint_efforts")
+                        else tau)
+                _mon_meas = (backend.get_measured_joint_efforts()
+                             if hasattr(backend,
+                                        "get_measured_joint_efforts")
+                             else np.full(6, np.nan))
+                print(f"[{label}] t={t:6.2f}s tau_cmd="
+                      f"[{' '.join(f'{v:+.2f}' for v in _cmd)}]  "
+                      f"tau_meas=[{' '.join(f'{v:+.2f}' for v in _mon_meas)}]"
+                      f"  |e|max={float(np.max(np.abs(_mon_meas - _cmd))):.2f}",
+                      flush=True)
 
             # ---- 记录（LOG_EVERY 步一行）----
             if k % LOG_EVERY == 0:

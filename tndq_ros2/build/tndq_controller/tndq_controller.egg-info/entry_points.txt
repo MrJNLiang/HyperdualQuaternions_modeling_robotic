@@ -1,0 +1,2 @@
+[console_scripts]
+tndq_controller = tndq_controller.control_node:main

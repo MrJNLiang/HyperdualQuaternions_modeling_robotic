@@ -32,15 +32,25 @@ TNDQ_real 坐标/力矩标定常量 —— 电机系 <-> URDF/DH 系变换。
 """
 import numpy as np
 
-# --- arm 六关节标定常量（默认值 = 恒等变换，未标定状态）---
-JOINT_SIGN = np.ones(6)                 # 电机系 -> URDF 系符号（逐关节 ±1）
-JOINT_OFFSET = np.zeros(6)              # 零位偏差 [rad]（URDF = SIGN*motor + OFFSET）
-TAU_SCALE = np.ones(6)                  # 力矩标度（URDF 系 N*m / 电机系 N*m）
+# --- arm 六关节标定常量（恒等变换；2026-08-28 由 Borot-Arm_Mujoco 实机
+#     运行证据回填，依据链见下）---
+# 依据：Borot-Arm_Mujoco（DM 版，reBotArmController）在本机以恒等变换实机
+#   跑通（位置控制/轨迹/网页模型显示均正确），且：
+#   [1] 其 reBot-DevArm_fixend.urdf 与本包所用 reBot_B601_DM.urdf 六关节的
+#       轴/原点/rpy/限位逐一对齐（仅 joint6 原点 x 差 4 mm，属末端帧定义）；
+#   [2] 厂商 SDK 反馈链路无任何符号翻转（驱动源码全查）；
+#   [3] Borot 硬件配置 joint_direction/tau_scale 均为默认恒等。
+# 即：本机 电机系 == URDF 系。此前 [1,1,-1,-1,1,1] 结论（受被污染标定流程
+#   影响）作废，勿再引用。
+JOINT_SIGN = np.ones(6)                 # 恒等（Borot 实机证明）
+JOINT_OFFSET = np.zeros(6)              # 恒等（Borot IK/轨迹定位正确 => 零位对齐）
+TAU_SCALE = np.ones(6)                  # 先取 1；由 02_gravity_hold 漂移整定
+                                        #   （下垂 => /=1.2，上漂 => *=1.2）
 
 # --- 夹爪标定常量 ---
-GRIPPER_M_PER_RAD = 0.0073              # 指间开度换算 [m/rad]（厂商 gravity
-                                        #   sender 值；实测回归后回填）
-GRIPPER_SIGN = -1.0                     # 厂商下发约定：目标 = -1*gripper_q
-                                        #   （gravity_joint_sender.py L141）
+# 依据：Borot DATA_FLOW_ZH.md 夹爪链路表——全开 0.09 m 对应电机约 -5 rad，
+#   闭合 0.00 m 对应 0 rad（rebotarm_hardware.yaml: open=-5.0, close=0.0）。
+GRIPPER_M_PER_RAD = 0.018               # 0.09 m / 5 rad（Borot 实机口径）
+GRIPPER_SIGN = -1.0                     # 开度增大对应电机负方向
 GRIPPER_WIDTH_MAX = 0.14                # 指间开度上限 [m]（与仿真 GRIPPER_OPENING
                                         #   全开口径一致；物理行程实测后收紧）

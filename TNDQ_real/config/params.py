@@ -321,7 +321,17 @@ GOTO_GRASP_DWELL = 3.5                     # 抓取位静置 [s]（v9 三跑教�
                                             #   改为到位即快速闭合，接触后再
                                             #   静置附着）
 GOTO_T_LIFTLOAD = 3.0                      # 带载提升段时长 [s]
+GOTO_RETURN_DWELL = 1.0                    # 回零落位静稳时长 [s]（v4：轨迹
+                                           #   追加回零尾段，结束停 Q_INIT 邻域
+                                           #   静稳，不再悬空）
 GOTO_LIFTLOAD_H = 0.08                     # （保留常量名；提升位直接用 LIFT_POS）
+
+# --- 短行程验证轨迹（--traj short，v5 首跑安全阀）---
+SHORT_SWING_RAD = 0.12                     # j1（竖直底座轴）摆幅 [rad]：不改变
+                                           #   各关节重力载荷分布，最小风险
+SHORT_T_GO = 5.0                           # 去程时长 [s]（quintic 峰值速度
+                                           #   1.875*0.12/5 ≈ 0.045 rad/s，极慢）
+SHORT_T_BACK = 5.0                         # 回程时长 [s]（原路缓回 Q_INIT）
 
 # ---------------------------------------------------------------------------
 # Isaac Sim 场景（interfaces/isaac_interface.py）
