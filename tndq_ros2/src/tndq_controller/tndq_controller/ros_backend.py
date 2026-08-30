@@ -14,7 +14,8 @@ RealB601Backend **方法签名一致**，experiments/run_lib 主循环零改动�
 安全架构 1:1 镜像直连版（RealB601Backend），语义逐条对应：
     [分相]   保持期（启动/心跳超时/收尾）v3 实证配方：kp=HOLD_KP 弹簧
              锚定冻结目标 + tau_g 前馈 + 积分器（HOLD_RATE_HZ 刷新）；
-             控制期 kp=MIT_KP=0 纯力矩直驱（斜率限制 -> 使能斜坡）。
+             控制期 kp=ANCHOR_KP 弹簧锚定最新实测位置 + 论文力矩律
+             前馈（斜率限制 -> 使能斜坡），保证末帧失联仍有托臂能力。
     [看门狗] 控制线程心跳 apply_arm_torques 超时 WATCHDOG_TIMEOUT ->
              发送线程自动降级保持配方（进程内共享时钟，不经 DDS）。
              进程崩溃时发送线程同死、软件看门狗失效——与直连版相同，
@@ -56,8 +57,8 @@ from rebotarm_msgs.srv import SetMode
 # 以下 import 依赖 tndq_controller.paths.bootstrap() 已执行（见模块尾注）
 from config.params import DT, GRIPPER_OPENING, TAU_MAX
 from config.params_real import (
-    GRIPPER_ACTIVE, HOLD_INTEG_GAIN, HOLD_INTEG_MAX, HOLD_KP, HOLD_KD,
-    HOLD_RATE_HZ, HOLD_VEL_TH, MIT_KD, MIT_KP, Q_BRINGUP_TOL,
+    ANCHOR_KP, GRIPPER_ACTIVE, HOLD_INTEG_GAIN, HOLD_INTEG_MAX, HOLD_KP,
+    HOLD_KD, HOLD_RATE_HZ, HOLD_VEL_TH, MIT_KD, Q_BRINGUP_TOL,
     TORQUE_RAMP_TIME, TORQUE_SLEW_MAX, VEL_SPIKE_MAX, WATCHDOG_TIMEOUT,
 )
 from config.transforms import (
@@ -118,7 +119,11 @@ class RosChannelBackend:
         self._closing = False                  # close() 收尾（强制保持配方）
         self._send_stop = threading.Event()
         self._send_thread: threading.Thread | None = None
-        self._t_next = None                    # step() 墙钟基准
+        self._t_next = None                    # step() 墙钟基准（reset_to 初始化）
+        self._lag_resync = 0                   # step() 跳拍重置计数（诊断）
+        self._vel_spike_run = 0                # 速度超阈连续拍数（去抖）
+        self._ctrl_kp = np.full(self._n, ANCHOR_KP)  # 控制期锚定弹簧
+                                               # （安全不变量：任何一帧都托得住臂）
         self._stop_requested = False           # ROS 服务请求急停（step 抛 KI）
         self._dyn_hold = B601NominalDynamics()  # 保持期 g(q)（与 run_lib 实例分离）
         self._gripper_cmd_width: float | None = None
@@ -176,8 +181,15 @@ class RosChannelBackend:
                 self._fb_time_max = now
         return _cb
 
-    def _call_set_mode(self, mode: str, timeout: float = 5.0) -> bool:
-        """同步调用官方 /rebotarm/set_mode（响应由 executor 其他线程完成）"""
+    def _call_set_mode(
+        self, mode: str, timeout: float = 20.0, pump_executor: bool = False,
+    ) -> bool:
+        """同步调用官方 /rebotarm/set_mode。
+
+        正常服务回调中由 MultiThreadedExecutor 的其他线程处理响应；
+        主执行器退出后的 SIGINT 收尾则必须临时泵送 future，否则 close()
+        会一直等到超时，MIT 模式无法交回官方 POS_VEL 托臂。
+        """
         if not self._mode_client.wait_for_service(timeout_sec=timeout):
             raise RuntimeError(
                 f"/{self._ns}/set_mode 服务不可用——官方 rebotarmcontroller"
@@ -186,10 +198,19 @@ class RosChannelBackend:
         req.mode = mode
         future = self._mode_client.call_async(req)
         t0 = time.monotonic()
-        while not future.done():
-            if time.monotonic() - t0 > timeout:
-                raise RuntimeError(f"set_mode({mode!r}) 响应超时")
-            time.sleep(0.005)
+        if pump_executor:
+            import rclpy
+            remaining = max(0.0, timeout - (time.monotonic() - t0))
+            rclpy.spin_until_future_complete(
+                self._node, future, timeout_sec=remaining,
+            )
+        else:
+            while not future.done():
+                if time.monotonic() - t0 > timeout:
+                    raise RuntimeError(f"set_mode({mode!r}) 响应超时")
+                time.sleep(0.005)
+        if not future.done():
+            raise RuntimeError(f"set_mode({mode!r}) 响应超时")
         resp = future.result()
         if not resp.success:
             raise RuntimeError(f"set_mode({mode!r}) 被官方包拒绝: {resp.message}")
@@ -291,11 +312,12 @@ class RosChannelBackend:
             "检查 ros2 topic hz /rebotarm/joints/joint1/state，并确认臂已"
             "由 bringup 就位静稳")
 
-    def close(self):
+    def close(self, pump_executor: bool = False):
         """安全收尾（镜像直连版 Borot 式，全程不失能）：保持配方稳定
         0.3 s -> 停发送线程（末帧 = 保持帧，固件持续执行托臂）->
         set_mode("pos_vel")（官方包冻结当前位置、启动 SDK 位置环接力）。
         急停路径（HardwareFault / KeyboardInterrupt / SIGINT）同样走这里。
+        ``pump_executor=True`` 用于主执行器已停止后的 SIGINT 收尾。
         """
         if not self._mit_active:
             return
@@ -308,7 +330,7 @@ class RosChannelBackend:
         try:
             # 停发帧 -> 组级切 pos_vel（官方 _start_pos_vel_loop 冻结当前
             # 位置托臂）；切换窗口内末帧 MIT 弹簧仍在固件内生效
-            self._call_set_mode("pos_vel")
+            self._call_set_mode("pos_vel", pump_executor=pump_executor)
         except Exception as exc:                 # noqa: BLE001
             self._node.get_logger().error(
                 f"set_mode(pos_vel) 收尾失败（末帧保持仍在托臂，请人工"
@@ -385,10 +407,17 @@ class RosChannelBackend:
         if alpha < 1.0:
             tau = tau * alpha + self._g_snap * (1.0 - alpha)
 
-        # [3] MIT 下发（URDF 系 -> 电机系逆变换；vel_d=0 阻尼网随 kd）
+        # [3] MIT 下发（URDF 系 -> 电机系逆变换）。
+        #
+        # 安全不变量（v2）：控制期帧 kp=ANCHOR_KP(7)、pos_d=最新实测
+        # 位置——正常运行时弹簧项 kp*(q_send-q) 仅为"反馈龄 x 速度"
+        # 量级（10 ms x 0.3 rad/s -> ~0.02 N*m，微弱附加阻尼，按论文
+        # 诚实条款计入 d(t)）；而进程/通道死亡时固件锁存的末帧是
+        # "kp=7 弹簧锚死点 + 末次力矩前馈"，臂被托住不塌（对比旧版
+        # kp=0 纯力矩：末帧零刚度，崩溃即塌臂）。kd=MIT_KD 阻尼网同前。
         tau_motor = JOINT_SIGN * tau / TAU_SCALE
         self._publish_mit(q_m, self._vel_zero,
-                          np.full(self._n, MIT_KP), MIT_KD, tau_motor)
+                          self._ctrl_kp, MIT_KD, tau_motor)
 
     def _hold_refresh(self, q_m: np.ndarray) -> None:
         """保持期配方慢速刷新（HOLD_RATE_HZ 口径；镜像 _hold_cycle）。"""
@@ -458,7 +487,8 @@ class RosChannelBackend:
 
     def reset_to(self, q_init, gripper_width=None):
         """真机无 teleport：校验当前构型已在目标附近（bringup 就位后
-        必过），否则拒绝起步。"""
+        必过），否则拒绝起步。顺带初始化 step() 墙钟基准（直连版同款；
+        v2 修复：旧版漏初始化，首次 step() 即 TypeError 杀死实验线程）。"""
         q, _ = self.get_joint_state()
         dq = np.abs(q - np.asarray(q_init, dtype=float))
         if float(np.max(dq)) > Q_BRINGUP_TOL:
@@ -466,6 +496,8 @@ class RosChannelBackend:
                 f"当前构型距目标 max|dq|={np.max(dq):.3f} rad > 容差 "
                 f"{Q_BRINGUP_TOL}：先调用 bringup 服务慢速就位（或检查"
                 f"臂是否被外力移动）")
+        self._t_next = time.perf_counter()
+        self._lag_resync = 0
         if gripper_width is not None:
             self.set_gripper(gripper_width)
 
@@ -514,20 +546,38 @@ class RosChannelBackend:
         return np.full(3, np.nan), np.full(4, np.nan)
 
     def step(self, render=None):
-        """墙钟配速：推进一个 DT = 睡到下一拍边界；落后 > 2 拍抛
-        HardwareFault（时间基准失效）；stop 服务请求经 KeyboardInterrupt
-        优雅终止（run_lib 保存 CSV 后收尾）。"""
+        """墙钟配速：推进一个 DT = 睡到下一拍边界。
+
+        v2 去过敏（WSL2 + DDS 非实时环境，毫秒级尖峰是常态）：落后
+        不再直接抛 HardwareFault 终止——落后 > 2 拍时跳拍重置基准并
+        计数（缺拍期间发送线程末帧力矩由固件持续执行，且控制期帧
+        自带 kp=7 弹簧安全网，物理层无危险）；仅当单次落后超过
+        WATCHDOG_TIMEOUT（发送线程已降级保持期，实验时间基准与
+        物理脱节）才终止。stop 服务请求经 KeyboardInterrupt 优雅
+        终止（run_lib 保存 CSV 后收尾）。"""
         if self._stop_requested:
             self._stop_requested = False
             raise KeyboardInterrupt("stop 服务请求终止")
+        if self._t_next is None:                 # reset_to 未走到（防御）
+            self._t_next = time.perf_counter()
         self._t_next += DT
         sleep_t = self._t_next - time.perf_counter()
         if sleep_t > 0.0:
             time.sleep(sleep_t)
-        elif sleep_t < -2.0 * DT:
+            return
+        lag = -sleep_t
+        if lag > WATCHDOG_TIMEOUT:
             raise HardwareFault(
-                f"控制循环墙钟落后 {-sleep_t * 1000:.1f} ms（> 2 拍），"
+                f"控制循环墙钟落后 {lag * 1000:.1f} ms（> 看门狗阈值 "
+                f"{WATCHDOG_TIMEOUT * 1000:.0f} ms，发送线程已降级保持期），"
                 "时间基准失效，安全终止")
+        if lag > 2.0 * DT:                       # 跳拍重置：不终止，只记账
+            self._t_next = time.perf_counter()
+            self._lag_resync += 1
+            if self._lag_resync <= 5 or self._lag_resync % 50 == 0:
+                self._node.get_logger().warn(
+                    f"控制循环落后 {lag * 1000:.1f} ms，跳拍重置基准"
+                    f"（累计 {self._lag_resync} 次；计入实现层扰动）")
 
     def request_stop(self):
         """线程安全请求终止当前实验（下次 step() 触发 KeyboardInterrupt）。"""
@@ -539,7 +589,11 @@ class RosChannelBackend:
 
     def hardware_safety_check(self):
         """反馈停更 / 速度异常两重检查（直连版残差检查因通道无法甄别
-        无力矩测量关节而不移植，见模块 docstring）。"""
+        无力矩测量关节而不移植，见模块 docstring）。
+
+        v2 去抖：速度超阈需连续 3 个控制步（30 ms）才判故障——旧版
+        单拍即停，DDS 乱序/差分毛刺会误杀实验；30 ms 内发送线程斜率
+        限制 + 固件 kd 阻尼网仍在物理层兜底。"""
         now = time.perf_counter()
         with self._lock:
             fb_age = now - float(np.min(self._fb_time))
@@ -549,7 +603,13 @@ class RosChannelBackend:
                 f"反馈停更：最旧关节 {fb_age * 1000:.0f} ms 未更新"
                 f"（阈值 {self._fb_stale_timeout * 1000:.0f} ms）")
         if vmax > VEL_SPIKE_MAX:
-            raise HardwareFault(f"关节速度异常 {vmax:.2f} rad/s")
+            self._vel_spike_run += 1
+            if self._vel_spike_run >= 3:
+                raise HardwareFault(
+                    f"关节速度异常 {vmax:.2f} rad/s（连续 "
+                    f"{self._vel_spike_run} 拍 > {VEL_SPIKE_MAX}）")
+        else:
+            self._vel_spike_run = 0
 
     # ------------------------------------------------------------------
     # 诊断快照（节点遥测用）

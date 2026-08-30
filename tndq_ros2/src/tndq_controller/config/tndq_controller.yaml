@@ -14,12 +14,10 @@ tndq_controller:
       - joint4
       - joint5
       - joint6
-    send_rate_hz: 200.0                # MIT 命令发送线程频率（DDS 上限裕量充足；
-                                       #   直连版总线 500 Hz，此层 200 Hz 足够
-                                       #   100 Hz 控制律 + 30 ms 看门狗分辨率）
-    fb_stale_timeout: 0.05             # 反馈停更急停阈值 [s]（官方 joint_state_rate
-                                       #   100 Hz -> 数据龄最大 ~10 ms + DDS 抖动；
-                                       #   建议官方包把 joint_state_rate 调到 200）
+    send_rate_hz: 100.0                # MIT 命令发送线程频率；与 100 Hz 控制律
+                                       #   对齐，避免透传回调和状态轮询争抢串口
+    fb_stale_timeout: 0.12             # 反馈停更急停阈值 [s]；官方状态发布 100 Hz，
+                                       #   给 WSL2/USB 转发保留有限抖动余量
 
     # ---- 任务 ----
     task: "hold"                       # hold（定点保持）| short（j1 短行程）|

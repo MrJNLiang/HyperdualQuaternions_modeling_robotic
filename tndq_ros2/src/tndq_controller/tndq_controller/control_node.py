@@ -57,8 +57,8 @@ class TNDQControllerNode(Node):
         self.declare_parameter(
             "joint_names",
             [f"joint{i}" for i in range(1, 7)])
-        self.declare_parameter("send_rate_hz", 200.0)
-        self.declare_parameter("fb_stale_timeout", 0.05)
+        self.declare_parameter("send_rate_hz", 100.0)
+        self.declare_parameter("fb_stale_timeout", 0.12)
         self.declare_parameter("task", "hold")          # hold|short|goto
         self.declare_parameter("duration", 30.0)
         self.declare_parameter("traj_backend", "pinocchio")  # goto 用
@@ -237,7 +237,16 @@ class TNDQControllerNode(Node):
             self._exp_error = str(exc)
             self.get_logger().error(f"实验线程异常: {exc}")
         finally:
-            self.get_logger().info("实验线程退出（发送线程保持期托臂）")
+            # 正常结束或非 HardwareFault 异常都交回官方 POS_VEL；
+            # 不把“实验线程退出但 MIT 仍保持”留给人工处理。
+            if backend._mit_active:
+                try:
+                    backend.close()
+                except Exception as exc:  # noqa: BLE001
+                    self.get_logger().error(
+                        f"实验线程收尾失败（官方 watchdog 仍会兜底）: {exc}"
+                    )
+            self.get_logger().info("实验线程退出（官方 POS_VEL 位置保持接管）")
 
     def _on_stop(self, _req, resp):
         if not self._experiment_alive():
@@ -299,16 +308,21 @@ class TNDQControllerNode(Node):
     # 生命周期
     # ------------------------------------------------------------------
 
-    def shutdown(self) -> None:
-        """SIGINT 等价 ~/shutdown：优雅终止实验 -> 后端收尾（不失能）。"""
+    def shutdown(self, pump_executor: bool = False) -> None:
+        """SIGINT 等价 ~/shutdown：优雅终止实验 -> 后端收尾（不失能）。
+
+        主执行器停止后由 ``main()`` 传入 ``pump_executor=True``，让
+        ``set_mode(pos_vel)`` 的 ROS future 仍能被临时执行器处理。
+        """
         try:
             if self._experiment_alive():
                 self.backend.request_stop()
                 self._exp_thread.join(timeout=5.0)
             if self.backend._mit_active:
-                self.backend.close()
-        except Exception as exc:                 # noqa: BLE001
+                self.backend.close(pump_executor=pump_executor)
+        except Exception as exc:
             self.get_logger().error(f"shutdown 异常: {exc}")
+
 
 
 def main(args=None) -> None:
@@ -321,10 +335,14 @@ def main(args=None) -> None:
     except KeyboardInterrupt:
         pass
     finally:
-        node.shutdown()
+        # 先停止普通回调，再从 executor 移除节点；close() 内部临时
+        # spin_until_future_complete 负责完成官方 set_mode(pos_vel)。
+        executor.remove_node(node)
+        node.shutdown(pump_executor=True)
         executor.shutdown()
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
