@@ -12,7 +12,7 @@ $\boldsymbol\tau=\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+\hat C\dot{\boldsymbo
 \ddot{\boldsymbol q}=M^{-1}\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+M^{-1}\bigl(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr),
 \qquad M^{-1}\hat M=I+M^{-1}\Delta M ,
 \end{equation*}
-即 \eqref{eq:5.1}。$\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 \eqref{eq:5.2} 完全由当前可测量 $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出、不依赖 $\ddot{\boldsymbol q}$，故 \eqref{eq:5.1} 对 $\ddot{\boldsymbol q}$ 是显式赋值，不存在隐式代数环。
+即 \eqref{eq:5.1}。$\ddot{\boldsymbol q}_{\mathrm{ref}}$ 由 \eqref{eq:5.2} 完全由当前可测量 $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ 给出、不依赖 $\ddot{\boldsymbol q}$，故 \eqref{eq:5.1} 对 $\ddot{\boldsymbol q}$ 是显式赋值。
 
 $\alpha<1/\mathrm{cond}_2(K_d)$（\eqref{eq:5.1f}）并非适定性条件，而是保证有效阻尼正定：由 $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ 得 $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$，其正性即 \eqref{eq:5.1f}。$\alpha$ 过大时闭环仍定义良好，但 Lyapunov 证书失效。
 
@@ -42,13 +42,13 @@ B^\top B=(\tilde\eta I-[\mathcal O]_\times)(\tilde\eta I+[\mathcal O]_\times)=\t
 \begin{equation*}
 \sigma_{\min}(A)=\frac1{\|A^{-1}\|_2}\;\ge\;\Bigl[\frac{2(1+\|\mathcal T\|)}{\tilde\eta}+1\Bigr]^{-1} .
 \end{equation*}
-在 $\Omega_c$ 内 $\tilde\eta\ge\eta_0$（\eqref{eq:5.5c}）且 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$，故 $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ 一致成立，C.6 第 4 步中由 $A^\top K_pe_z\equiv0$ 即推出 $e_z\equiv0$。
+在 $\Omega_c$ 内 $\tilde\eta\ge\eta_0$（\eqref{eq:5.5c}）且 $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$，故 $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ 一致成立。
 
 \subsection*{C.3 定理 3(c-2) 拆分条件的细节}
 
 拆分依赖两条恒等式：(i) $(A^\top e_z)_\omega$ 中 $[\mathcal T]_\times\mathcal T=0$；(ii) $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中 $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$。二者为代数恒等式，不依赖工作域，故 (c-2) 与 (c-1) 同为全局结论；$K_d$ 非块对角时 $-e_\xi^\top K_de_\xi$ 含 $\tilde\omega^\top K_{\omega v}\tilde v$ 交叉项，两分量能量不再分离，退回 (c-1)。
 
-$K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处恒零均失效——(i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$，而 $[\mathcal T]_\times K_{p,T}\mathcal T\ne0$ 除非 $\mathcal T$ 为 $K_{p,T}$ 的特征向量；(ii) $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$ 的导数含耦合项 $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$，仅当 $K_{p,T}=k_{p,T}I_3$ 时为零。残留耦合使 $V_\omega,V_v$ 不再各自闭合，退回 (c-1)。
+$K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处恒零均失效：(i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$，而 $[\mathcal T]_\times K_{p,T}\mathcal T\ne0$ 除非 $\mathcal T$ 为 $K_{p,T}$ 的特征向量；(ii) $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$ 的导数含耦合项 $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$，仅当 $K_{p,T}=k_{p,T}I_3$ 时为零。残留耦合使 $V_\omega,V_v$ 不再各自闭合。
 
 \subsection*{C.4 strictification 与局部 ISS（未来工作）}
 
@@ -80,7 +80,7 @@ $K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处�
   \begin{equation*}
   F=\begin{bmatrix}0_6 & A_0\\ -A_0^\top K_p & -K_d\end{bmatrix}.
   \end{equation*}
-  对该 LTI 系统同一 $V$ 给出 $\dot V\le0$，$A_0$ 可逆，重复第 4 步得 $F$ Hurwitz；由 Lyapunov 线化定理（\cite{Kha02} Thm 4.7）得局部指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，极点由 \eqref{eq:5.8} 显式给出。
+  对该 LTI 系统同一 $V$ 给出 $\dot V\le0$，$A_0$ 可逆，重复第 4 步得 $F$ Hurwitz；由 Lyapunov 线化定理（\cite{Kha02} Thm 4.7）得局部指数稳定。块对角 $K_d,K_p$ 下 $F$ 逐分量解耦，两通道极点即 $\{-a,-b\}$。
 \end{enumerate}
 
 \subsection*{C.7 定理 3(c) 的完整证明}
@@ -98,9 +98,7 @@ $K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处�
 \end{equation*}
 即 $M\succeq0$。右下块 $\tfrac{\gamma_a^2}2I\succ0$，取 Schur 补得 $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$，即 \eqref{eq:5.6a}。
 
-\textbf{第三步（全局存在性）}：由 $M\succeq0$ 得 $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$，故 $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$，$(e_z,e_\xi)$ 一致有界，解在 $[0,\infty)$ 上存在（无有限时间逃逸）。
-
-\textbf{第四步（积分）}：在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 \eqref{eq:5.6}。
+\textbf{第四步（积分）}：由 $M\succeq0$ 知 $V$ 一致有界、解在 $[0,\infty)$ 上存在，故可在 $[0,T]$ 上积分 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$，弃去 $V(T)\ge0$，令 $T\to\infty$（单调收敛）即得 \eqref{eq:5.6}。
 
 \textbf{第五步（(c-2) 分量解耦）}：由 \eqref{eq:4.5}，$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$（$\mathcal T\times\mathcal T=0$）、$(A^\top K_pe_z)_v=k_{p,T}\mathcal T$，且 $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ 中 $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$，故两分量内位姿交叉项分别精确相消，
 \begin{equation*}
@@ -135,3 +133,19 @@ $K_{p,T}$ 各向同性的必要性：取一般对称正定 $K_{p,T}$ 时两处�
   \end{equation*}
   两端除以 $\tfrac{\lambda_{\mathrm{eff}}}2T$ 即 \eqref{eq:5.7c}；令 $T\to\infty$ 得 \eqref{eq:5.7}。$\alpha\to0$ 时 $D\to D_{\mathrm{ex}}$、$\lambda_{\mathrm{eff}}\to\lambda_{\min}(K_d)$，退化为经典形式。
 \end{enumerate}
+
+\subsection*{C.9 紧性：认证增益与线性化真实增益相等}
+
+定理 3(c′) 的认证值是否保守，由上、下两个方向夹逼回答。
+
+上界来自证书 \eqref{eq:5.6c}：任意 $L_2$ 扰动，其能量至多按 $1/\lambda_{\min}(K_d)$ 透入误差。
+
+下界来自线性化的频率响应。将闭环 \eqref{eq:5.5} 在 $\tilde x\to1$ 处线性化，两通道方程为 $\ddot{\mathcal O}+K_\omega\dot{\mathcal O}+\tfrac14K_{p,O}\,\mathcal O=-\tfrac12\,d_\omega$ 与 $\ddot{\mathcal T}+K_v\dot{\mathcal T}+k_{p,T}\,\mathcal T=+\,d_v$，其 $d\to e_\xi$ 传递函数均为二阶环节 $G(s)=\dfrac{s}{s^2+bs+c}$：旋转通道由 $\dot e_{z,O}=-\tfrac12\tilde\omega$ 得 $\tilde\omega=-2\dot{\mathcal O}$，化简得 $b=\lambda(K_\omega)$、$c=p_O/4$；平移通道 $\tilde v=\dot{\mathcal T}$，$b=\lambda(K_v)$、$c=k_{p,T}$。对 $G$ 有
+\begin{equation}
+|G(j\omega)|^2=\frac{u}{(c-u)^2+b^2u},\quad u=\omega^2,\qquad
+\frac{\mathrm{d}}{\mathrm{d}u}\,[\,\cdot\,]\propto(c-u)(c+u),
+\tag{5.10}\label{eq:5.10}
+\end{equation}
+故 $|G|$ 于 $u=c$ 取全局最大值 $1/b$，即扰动频率等于通道自然频率 $\sqrt c$ 时（与阻尼大小无关）达到峰值。于是块对角 $K_d$ 下线性化的真实 $H_\infty$ 增益为 $\max\bigl(1/\lambda(K_\omega),\,1/\lambda(K_v)\bigr)=1/\lambda_{\min}(K_d)$。
+
+由非线性闭环的局部 $L_2$ 增益不低于其线性化 $H_\infty$ 范数的标准结论（零初值小信号意义 \cite{VdS00}），结合证书给出的匹配上界，闭环 \eqref{eq:5.5} 的局部 $L_2$ 增益恰为 $1/\lambda_{\min}(K_d)$。附带实验预言：最坏扰动频率为通道自然频率 $\sqrt c$（实机 G4 档即 $6\,\mathrm{rad/s}$）。

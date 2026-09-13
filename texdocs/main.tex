@@ -7,25 +7,44 @@
 
 \usepackage{tndq-style}
 
-\title{Third-Order Dual Quaternion (TODQ) Kinematics with Geometrically
-       Consistent Error Systems:\\
-       A Computed Torque Approach to $H_\infty$/ISS Control}
+% 浮动体参数：允许图表与文字紧凑共页，避免删减内容后出现整段留白
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\bottomfraction}{0.62}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{4}
+\setcounter{dbltopnumber}{3}
+\setcounter{totalnumber}{6}
+\usepackage[section]{placeins}   % 浮动图/表不跨节（图 2/3 曾漂入结论章）
+\usepackage{float}               % [H] 精确就位
+
+\title{基于三阶对偶四元数的机械臂几何一致误差体系\\
+       与 H∞ 计算力矩控制}
 \author{（作者姓名）\\（单位，城市，国家）}
 \date{}
 
 \begin{document}
 
-\maketitle
 \thispagestyle{fancy}
+
+\begin{center}
+  {\LARGE 基于三阶对偶四元数的机械臂几何一致误差体系\\[0.35em]
+          与 H∞ 计算力矩控制\par}
+  \vspace{0.9em}
+  {(作者姓名)\par}
+  {(单位，城市，国家)\par}
+  \vspace{0.9em}
+\end{center}
 
 % ================================ 摘要 ================================
 \begin{abstract}
 \noindent
-对偶四元数（DQ）为机械臂位姿提供全局无奇异参数化，但现有框架仅携带零阶信息，向动力学接口延伸时存在位姿/速度误差分离、加速度扰动无入口、偏差型不确定性不满足 $L_2$ 假设三个结构性缺口。本文引入\textbf{三阶对偶四元数}（TODQ）代数 $\mathcal A_2$ \cite{Con25}，使正运动学一次连乘同时输出位姿、twist 与任务空间加速度；误差体系定义在两项 HDQ 元素上，一次乘法同时生成右不变位姿误差与几何一致 twist 误差（定理 1），并闭合为严格级联误差运动学（定理 2）。几何一致计算力矩律使闭环满足精确耗散等式，据此给出无扰时的水平集不变性与渐近收敛、$L_2$ 扰动下 H∞ 增益的 Schur 补判据、$L_\infty$ 扰动下 twist 误差的均方极限界（定理 3）。7 自由度机械臂力矩模式仿真验证了静态刚度标度律与上述性能保证。
+针对对偶四元数误差体系仅覆盖位姿与速度两层、难以接入加速度级动力学控制的问题，提出一种基于三阶对偶四元数（TODQ）\cite{Con25} 的机械臂几何一致误差体系与 H∞ 计算力矩控制方法：正运动学一次连乘同时输出位姿、速度与任务空间加速度；在两项 HDQ 元素上建立的误差体系经一次乘法同时给出右不变位姿误差与几何一致 twist 误差，且闭环误差动力学为严格级联标准形。据此构造几何一致计算力矩律，闭环满足精确耗散等式，从而同时获得无扰收敛、$L_2$ 扰动衰减的充要判据与偏差型扰动的均方界。其中 $L_2$ 增益可显式最优化：认证值恰为最小阻尼的倒数，且与线性化闭环的真实 H∞ 范数相等，扰动衰减指标因此可直接换算为阻尼增益下界。六自由度机械臂的 33 次实机运行显示，四种控制律在相同增益预算下跟踪精度重合，而仅本文控制律的衰减证书全程成立，认证增益可由 $1/6\,\mathrm{s}$ 定量收紧至 $1/15\,\mathrm{s}$。
 \end{abstract}
 
 \medskip
-\noindent\textbf{关键词}：对偶四元数；超对偶四元数；三阶对偶四元数；多项式代数；几何一致误差；H∞ 控制；输入-状态稳定
+\noindent\textbf{关键词}：对偶四元数；超对偶四元数；三阶对偶四元数；多项式代数；几何一致误差；H∞ 控制；扰动衰减；机械臂控制
 
 \bigskip
 
@@ -35,7 +54,7 @@
 \input{sections/sec3-todq}
 \input{sections/sec4-error}
 \input{sections/sec5-control}
-\input{sections/sec6-simulation}
+\input{sections/sec7-hardware}
 \input{sections/sec7-conclusion}
 
 % ================================ 附录 ================================
@@ -68,6 +87,10 @@ IEEE J. Robotics and Automation 3(1), 1987.
 \bibitem[Spo92]{Spo92}
 M.W. Spong, \emph{On the robust control of robot manipulators},
 IEEE Trans. Automatic Control 37(11), 1992.
+
+\bibitem[Wie89]{Wie89}
+B. Wie, H. Weiss, A. Arapostathis, \emph{Quaternion feedback regulator for spacecraft eigenaxis rotations},
+J. Guidance, Control, and Dynamics 12(3), 1989.
 
 \bibitem[Kha02]{Kha02}
 H.K. Khalil, \emph{Nonlinear Systems}, 3rd ed., Prentice Hall, 2002.
@@ -106,6 +129,9 @@ ASME J. Dynamic Systems, Measurement, and Control 108(3), 1986.
 \bibitem[Nak08]{Nak08}
 J. Nakanishi, R. Cory, M. Mistry, J. Peters, S. Schaal, \emph{Operational space control: A theoretical and empirical comparison},
 International Journal of Robotics Research 27(6), 2008.
+
+\bibitem[VdS00]{VdS00}
+A.J. van der Schaft, \emph{$L_2$-Gain and Passivity Techniques in Nonlinear Control}, 2nd ed., Springer, London, 2000.
 
 \bibitem[Ber93]{Ber93}
 H. Berghuis, H. Nijmeijer, \emph{A passivity approach to controller--observer design for robots},
