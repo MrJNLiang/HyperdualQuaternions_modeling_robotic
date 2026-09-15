@@ -1,0 +1,94 @@
+% ---------------------------------------------------------------------
+% 第 6 章 仿真验证
+% ---------------------------------------------------------------------
+\section{仿真验证}
+
+\subsection{平台与任务}
+
+在 CoppeliaSim 中以 7-DoF KUKA LBR4+ 力矩模式仿真（控制周期 5 ms），名义动力学取自 \cite{Gaz14}。任务为抓取--搬运--水平圆周跟踪（圆周半径 0.06 m，标准角速度 1.0 rad/s）；$t=2.5\,\text{s}$ 时 0.25 kg 未建模负载刚性附着于末端，构成持续偏差型扰动 $d_{\mathrm{ex}}$。对比三种控制器：\textbf{C1}（本文，式 \eqref{eq:5.2}）、\textbf{C2}（\cite{Ch20}，twist 误差与本文相同、位姿反馈取螺旋对数）、\textbf{C3}（\cite{P2} 经速度伺服桥接至加速度级）。三律共享轨迹、初始条件与名义模型，DC 刚度均配平至 80（闭环极点 $\{-4,-20\}$），以隔离结构差异。为核验标度律 \eqref{eq:5.9}，C1 另设 tuned/fast 两个独立增益档（未补偿 1/4 折减的 base 档作对照）；另设高速（$\omega=2.5$ rad/s）与编码器测量噪声两个应力工况，以暴露前馈结构差异。
+
+\subsection{结果}
+
+\subsubsection{静态刚度标度律与扰动反演}
+
+图~\ref{fig:sec6-err-ts} 给出带载标准工况下三种控制律的误差全程时序：$t=2.5\,\text{s}$ 负载附着引起的瞬态跳变在约 $1.5\,\text{s}$ 内回落，圆周稳态窗口（$t\ge 12.5\,\text{s}$，图中阴影区）内三律曲线几乎重合。该窗口内的定量残差如下：
+
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=0.80\textwidth]{../TNDQ_sim/results/sec6_errors_timeseries_load.pdf}
+\caption{带载（0.25 kg 未建模负载）标准工况下三种控制律的误差时序：(a) 位置误差 $\|\mathcal T\|$；(b) 姿态误差 $\|\mathcal O\|$；(c) twist 误差 $\|e_\xi\|$。竖点线为杯附着时刻 $t=2.5\,\text{s}$，阴影区为圆周稳态窗口 $t\ge 12.5\,\text{s}$；(c) 内注为该窗口内的 twist 误差 RMS。}
+\label{fig:sec6-err-ts}
+\end{figure}
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+档位 & $K_p=\mathrm{diag}(p_O I_3, p_T I_3)$ & $\|\mathcal T\|_{\mathrm{rms}}$ (m) & $\|\mathcal O\|_{\mathrm{rms}}$ \\
+\midrule
+tuned & $(320, 80)$ & $4.86\times10^{-3}$ & $4.27\times10^{-3}$ \\
+fast  & $(720, 180)$ & $2.20\times10^{-3}$ & $1.93\times10^{-3}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+图~\ref{fig:sec6-gain-tiers} 给出两档的误差时序与稳态 RMS 对比：平移/旋转刚度同步提高 $2.25$ 倍，稳态残差同步压缩约 $2.21$ 倍——正是标度律 \eqref{eq:5.9} 的线性预测。由 \eqref{eq:5.9} 反演等效扰动：
+
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=0.88\textwidth]{../TNDQ_sim/results/sec6_c1_gain_tiers_load.pdf}
+\caption{C1 两种增益档的稳态残差对比（带载标准工况）：(a)(b) 位置/姿态误差时序；(c)(d) 圆周稳态窗口内的 RMS。刚度提高 $2.25$ 倍使稳态残差降低约 $2.21$ 倍，符合标度律 \eqref{eq:5.9} 的线性预测。}
+\label{fig:sec6-gain-tiers}
+\end{figure}
+\begin{equation*}
+\|d_v\| = k_{p,T}\|\mathcal T\|_{\mathrm{ss}}, \qquad \|d_\omega\| = \tfrac12\lambda(K_{p,O})\|\mathcal O\|_{\mathrm{ss}}.
+\end{equation*}
+得 tuned 档 $(\|d_v\|, \|d_\omega\|) = (0.389, 0.683)$，fast 档 $(0.396, 0.696)$，两档一致至 \textbf{1.93\%}（图~\ref{fig:sec6-v1-inversion}）——两个独立增益档反演出同一物理扰动，确认定理 3(d) 扰动模型与 1/4 折减补偿的结构正确性。
+
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=\textwidth]{../TNDQ_sim/results/sec6_v1_inversion_load.pdf}
+\caption{静态刚度标度律 \eqref{eq:5.9} 的扰动反演一致性：(a) 三个独立增益档反演同一物理扰动 $d_{\mathrm{ex}}$ 的幅值；(b) 相对 tuned--fast 均值的偏差——tuned/fast 一致至 $\pm 1\%$ 以内，未补偿 1/4 旋转折减的 base 档偏离 $-35.5\%$/$-39.0\%$，标度律失效。}
+\label{fig:sec6-v1-inversion}
+\end{figure}
+
+作为对照，base 档（$K_p=16I_6$，未补偿 1/4 折减，有效旋转刚度仅 4）姿态误差放大至 tuned 档的 12.3 倍，反演偏离 35\%--38\%（图~\ref{fig:sec6-v1-inversion}(b)），从反面确认折减补偿的必要性。
+
+\subsubsection{极限工况下的控制器分化}
+
+标准工况下，三律位置级残差差异 $<0.1\%$（静态刚度锁定），速度级 $\|e_\xi\|_{\mathrm{rms}}$（$\times10^{-3}$）如下：
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+工况 & C1 & C2 & C3 \\
+\midrule
+标准 & 0.940 & 0.940 & 0.955 \\
+高速 ($\omega=2.5$) & 2.314 & 2.314 & 2.361 \\
+噪声 & 3.164 & 3.165 & 3.234 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+三工况的分组对比与相对 C1 的偏差见图~\ref{fig:sec6-v2-divergence}。
+
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=\textwidth]{../TNDQ_sim/results/sec6_v2_certificate_divergence_load.pdf}
+\caption{极限工况下的控制器分化：(a) 标准/高速/噪声三工况的稳态 twist 误差 RMS；(b) 相对 C1 的偏差——C2 与 C1 数值等价（$\le 0.05\%$），C3 系统性劣化（噪声下 $+2.2\%$、高速下 $+2.0\%$），与桥接差分和前馈结构缺陷的机制一致。}
+\label{fig:sec6-v2-divergence}
+\end{figure}
+
+C1 与 C2 在全部工况下数值等价（相对差 $\le 0.05\%$），确认二者共享同一信息集（解析前馈与 $\mathrm{Ad}$-搬运 twist 误差）；位姿反馈整形（$A^\top$ vs 螺旋对数）的差异在近恒等域为高阶项。这一等价表明，C1 相对 C2 的优势不在精度而在证书：定理 3 的耗散等式、水平集不变性与均方界对 $A^\top$ 整形成立，对螺旋对数不成立。C3 则在应力工况下系统性劣化：噪声下 $+2.2\%$ 与其桥接差分 $\Delta\dot q_{\mathrm{cmd}}/\Delta t$ 的噪声放大一致，高速下 $+2.0\%$ 源于一阶前馈无法解析补偿向心加速度的 $\omega^2$ 项；C1/C2 的解析前馈避免了数值差分，故保持紧致。
+
+\subsubsection{水平集余度}
+
+存储函数时序与定理 3(b) 水平集阈值的关系见图~\ref{fig:sec6-v3-levelset}。杯附着后负载突变瞬间，$V^{\mathrm{base}}$ 峰值 $2.47\times10^{-2}$，在 $1.50\,\text{s}$ 内回落至 $3.36\times10^{-4}$；换算至 tuned 档权重后 $V^{\mathrm{tuned}}_{\mathrm{peak}}\le 0.494$，距定理 3(b) 水平集阈值 $c^*=160$ 余度约 \textbf{2.5 个数量级}。这表明定理 3(b) 的局部结论在实际运行中具有充足的工程裕度，并非仅存在于任意小邻域的理论陈述。
+
+\begin{figure}[!tbp]
+\centering
+\includegraphics[width=\textwidth]{../TNDQ_sim/results/sec6_v3_level_set_margin_load.pdf}
+\caption{水平集工程余度：精确 tuned 权重下的存储函数 $V(t)$ 及保守上界（$20\times$base 权重换算）相对定理 3(b) 阈值 $c^*=160$ 的关系；插图为负载附着瞬态放大。保守界峰值 $0.494$，距阈值余度约 $2.5$ 个数量级（精确值 $3.7$ 个数量级）。}
+\label{fig:sec6-v3-levelset}
+\end{figure}
+
+需要指出，每组结果为单次运行，1.5\%--2\% 量级的相对差异不具备统计显著性；真机实验与更大负载范围留作后续工作。

@@ -1,0 +1,69 @@
+% ---------------------------------------------------------------------
+% Section 4: Geometrically consistent error system
+% ---------------------------------------------------------------------
+\section{Geometrically Consistent Error System}
+
+\subsection{Which orders the error needs}
+
+The feedback part of the computed-torque law (\S5) is $-K_de_\xi-A^\top K_pe_z$ and uses only the pose and velocity levels: the reference acceleration is fed forward (a known quantity determined by the desired trajectory), and acceleration-level uncertainty is assigned to the disturbance $d(t)$ entering the $\dot e_\xi$ equation (\S5.2). Including an acceleration error would only inject the poorly conditioned differentiated acceleration estimate (variance $\propto\Delta t^{-4}$) into the feedback and add one dimension of dynamics. For this reason, \textbf{the forward kinematics and the desired trajectory are modeled in TODQ (the feedforward needs the $\sigma^2$ term), while the error system is defined on HDQ}.
+
+\subsection{Theorem 1: HDQ representation of the error}
+
+The measured chain takes the HDQ representation $\breve x=\hat{\underline x}+\varepsilon^*\dot{\hat{\underline x}}$, and the desired chain $\breve x_d=\hat{\underline x}_d+\varepsilon^*\dot{\hat{\underline x}}_d$.
+
+\begin{theorem}[HDQ lift of the error]\label{thm:1}
+Define the HDQ error element
+\begin{equation}
+\breve{\tilde x}\triangleq \breve x\cdot\bigl(\breve x_d\bigr)^{*} .
+\tag{4.1}\label{eq:4.1}
+\end{equation}
+Then
+\begin{equation}
+\breve{\tilde x}=\tilde x+\varepsilon^*\dot{\tilde x},\qquad
+\tilde x=\hat{\underline x}\hat{\underline x}_d^{\,*},\quad
+\dot{\tilde x}=\dot{\hat{\underline x}}\hat{\underline x}_d^{\,*}+\hat{\underline x}\dot{\hat{\underline x}}_d^{\,*},
+\tag{4.2}\label{eq:4.2}
+\end{equation}
+so a single HDQ multiplication (three DQ multiplications) delivers the pose error $\tilde x$ and its derivative simultaneously; the order-zero term is exactly the $\tilde x$ of \cite{P2}. Define further the \textbf{geometrically consistent twist error}
+\begin{equation}
+\tilde{\boldsymbol\xi}\triangleq 2\dot{\tilde x}\tilde x^{*},\qquad
+e_\xi\triangleq\mathrm{vec}_6\tilde{\boldsymbol\xi}.
+\tag{4.3}\label{eq:4.3}
+\end{equation}
+Then: (i) $\tilde{\boldsymbol\xi}$ is a pure DQ and is invariant under the unwinding flip $\tilde x\to-\tilde x$; (ii) the error satisfies left-multiplied kinematics of the same form as the original system, $\dot{\tilde x}=\tfrac12\tilde{\boldsymbol\xi}\tilde x$; (iii) in the disturbance-free case,
+\begin{equation}
+\tilde{\boldsymbol\xi}=\boldsymbol\xi-\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d ,
+\tag{4.4}\label{eq:4.4}
+\end{equation}
+that is, the actual twist minus the desired twist \textbf{transported to the current pose}.
+\end{theorem}
+
+\begin{proof}
+For \eqref{eq:4.2}, apply \eqref{eq:2.3} with $\hat{\underline a}_0=\hat{\underline x},\hat{\underline a}_1=\dot{\hat{\underline x}},\hat{\underline b}_0=\hat{\underline x}_d^{\,*},\hat{\underline b}_1=\dot{\hat{\underline x}}_d^{\,*}$ (conjugation commuting with differentiation ensures that the $\varepsilon^{*}$ term of $(\breve x_d)^*$ is $\dot{\hat{\underline x}}_d^{\,*}$); the $\varepsilon^{*}$ term is the Leibniz expansion of $\frac{d}{dt}(\hat{\underline x}\hat{\underline x}_d^{\,*})$. (i) follows from $2(-\dot{\tilde x})(-\tilde x^*)=2\dot{\tilde x}\tilde x^*$; (ii) from right-multiplying \eqref{eq:4.3} by $\tilde x$; (iii): $\dot{\tilde x}=\dot{\hat{\underline x}}\hat{\underline x}_d^{\,*}+\hat{\underline x}\dot{\hat{\underline x}}_d^{\,*}=\tfrac12\boldsymbol\xi\tilde x-\tfrac12\tilde x\boldsymbol\xi_d$ (using $\dot{\hat{\underline x}}_d^{\,*}=-\tfrac12\hat{\underline x}_d^{\,*}\boldsymbol\xi_d$), and right-multiplication by $2\tilde x^*$ yields \eqref{eq:4.4}.
+\end{proof}
+
+\subsection{Theorem 2: cascade kinematics of the output error}
+
+Following \cite{P2}, the output is $e_z=[\mathcal O;\mathcal T]\in\mathbb R^6$ with $\mathcal O=-\mathrm{Im}\,\tilde r$ and $\mathcal T=\tilde p$ ($\tilde r,\tilde p$ the rotation/translation components of $\tilde x$, $\tilde r=\tilde\eta+\tilde\mu$).
+
+\begin{theorem}[Closed-form output-error kinematics]\label{thm:2}
+Writing $\tilde{\boldsymbol\xi}=\tilde\omega+\varepsilon\tilde v$, one has
+\begin{equation}
+\dot e_z=A(\tilde x)\,e_\xi,
+\qquad
+A(\tilde x)=
+\begin{bmatrix}
+-\tfrac12\bigl(\tilde\eta I_3+[\mathcal O]_\times\bigr) & 0_3\\[2pt]
+-[\mathcal T]_\times & I_3
+\end{bmatrix},
+\tag{4.5}\label{eq:4.5}
+\end{equation}
+and as $\tilde x\to1$, $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$ with $\sigma_{\min}(A_0)=\tfrac12$.
+\end{theorem}
+
+\begin{proof}
+Rotation: by $\dot{\tilde r}=\tfrac12\tilde\omega\tilde r$ (quaternion part of Theorem~1(ii)),
+$\dot{\mathcal O}=-\mathrm{Im}(\tfrac12\tilde\omega\tilde r)=-\tfrac12(\tilde\eta I_3+[\mathcal O]_\times)\tilde\omega$ (using $\tilde\omega\times\tilde\mu=[\mathcal O]_\times\tilde\omega$). Translation: the twist convention $\tilde v=\dot{\tilde p}+\tilde p\times\tilde\omega$ gives $\dot{\mathcal T}=\tilde v-[\mathcal T]_\times\tilde\omega$.
+\end{proof}
+
+Theorems 1 and 2 give a strict two-layer cascade: $e_z\xrightarrow{A}e_\xi$ with $\dot e_z=Ae_\xi$, while $\dot e_\xi$ is governed by the control law and the disturbance (\S5). The error state is 12-dimensional and contains no acceleration layer---the structural choice argued in \S4.1.

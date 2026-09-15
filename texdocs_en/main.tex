@@ -1,0 +1,150 @@
+% !TeX program = xelatex
+% ------------------------------------------------------------------------
+% main.tex --- English version of the TODQ paper (Automatica / IEEE style)
+% Compile: xelatex main.tex (twice, for cross-references)
+% ------------------------------------------------------------------------
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+% ---------------- theorem environments ----------------
+\newtheoremstyle{tndqplain}
+  {6pt}{6pt}
+  {\normalfont}
+  {}
+  {\bfseries}
+  {}
+  {5pt plus 1pt minus 1pt}
+  {}
+\newtheoremstyle{tndqremark}
+  {6pt}{6pt}
+  {\normalfont}
+  {}
+  {\bfseries}
+  {}
+  {5pt plus 1pt minus 1pt}
+  {}
+\theoremstyle{tndqplain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\theoremstyle{tndqremark}
+\newtheorem{remark}{Remark}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+% ---------------- headers ----------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape TODQ Kinematics with Certified $H_\infty$ Disturbance Attenuation}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\title{Third-Order Dual Quaternion (TODQ) Kinematics and Geometrically
+       Consistent Error Systems:\\
+       A Computed Torque Approach with Certified $H_\infty$ Disturbance Attenuation}
+\author{(Author names)\\(Affiliation, City, Country)}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{fancy}
+
+% ================================ Abstract ================================
+\begin{abstract}
+\noindent
+Unit dual quaternions provide a globally singularity-free parametrization of rigid-body pose, but their error formulations cover only the pose and velocity levels and therefore do not interface with acceleration-level dynamics. This paper introduces the third-order dual quaternion (TODQ), with which a single product of kinematic elements yields the pose, the twist, and the task-space acceleration of a serial chain. On two hyper-dual quaternion (HDQ) elements we then build an error system that generates a right-invariant pose error and a geometrically consistent twist error in one multiplication, and we show that the resulting error dynamics is a strict cascade. The proposed geometrically consistent computed-torque law endows the closed-loop storage function with an exact dissipation identity, from which nominal convergence, a necessary-and-sufficient condition for $L_2$ disturbance attenuation, and a mean-square bound for bias-type disturbances follow simultaneously. The $L_2$ gain can be optimized in closed form: the certified value equals the reciprocal of the smallest damping and coincides with the true $H_\infty$ norm of the linearized loop, so a desired attenuation level converts into a damping lower bound by one division. Thirty-three runs on a six-degree-of-freedom robot arm show that four control laws match each other in tracking accuracy under an equal gain budget, while only the proposed law's attenuation certificate holds throughout, with the certified gain tightened from $1/6\,\mathrm{s}$ to $1/15\,\mathrm{s}$.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Keywords}: dual quaternion; hyper-dual quaternion; third-order dual quaternion; polynomial algebra; geometrically consistent error; $H_\infty$ control; disturbance attenuation; robot manipulators
+
+\bigskip
+
+% ================================ Body ================================
+\input{sections/sec1-introduction}
+\input{sections/sec2-preliminaries}
+\input{sections/sec3-todq}
+\input{sections/sec4-error}
+\input{sections/sec5-control}
+\input{sections/sec6-hardware}
+\input{sections/sec7-conclusion}
+
+% ================================ Appendix ================================
+\input{sections/appendix}
+
+% ================================ References ================================
+\begin{thebibliography}{18}
+\raggedright
+
+\bibitem[P1]{P1}
+A.~Cohen, M.~Shoham, \emph{Hyper Dual Quaternions representation of rigid bodies kinematics},
+Mechanism and Machine Theory 150 (2020) 103861.
+
+\bibitem[P2]{P2}
+L.F.C. Figueredo, B.V. Adorno, J.Y. Ishihara, \emph{Robust H$\infty$ kinematic control of manipulator robots using dual quaternion algebra},
+Automatica 132 (2021) 109817.
+
+\bibitem[3]{Fike11}
+J.A. Fike, J.J. Alonso, \emph{The Development of Hyper-Dual Numbers for Exact Second-Derivative Calculations}, AIAA 2011-886.
+
+\bibitem[4]{Lynch17}
+K.M. Lynch, F.C. Park, \emph{Modern Robotics: Mechanics, Planning, and Control}, Cambridge University Press, 2017.
+
+\bibitem[5]{Khatib87}
+O. Khatib, \emph{A unified approach to motion and force control of robot manipulators: The operational space formulation},
+IEEE J. Robotics and Automation 3(1), 1987.
+
+\bibitem[Spo92]{Spo92}
+M.W. Spong, \emph{On the robust control of robot manipulators},
+IEEE Trans. Automatic Control 37(11), 1992.
+
+\bibitem[Kha02]{Kha02}
+H.K. Khalil, \emph{Nonlinear Systems}, 3rd ed., Prentice Hall, 2002.
+
+\bibitem[Ber93]{Ber93}
+H. Berghuis, H. Nijmeijer, \emph{A passivity approach to controller--observer design for robots},
+IEEE Trans. Robotics and Automation 9(6), 1993.
+
+\bibitem[Ch20]{Ch20}
+A. Chandra, J.A. Corrales-Ramon, Y. Mezouar, \emph{Resolved-acceleration control of serial robotic manipulators using unit dual quaternions},
+IFAC-PapersOnLine 53(2) (2020) 8500--8505.
+
+\bibitem[Gaz14]{Gaz14}
+C. Gaz, F. Flacco, A. De Luca, \emph{Identifying the dynamic model used by the KUKA LWR: A reverse engineering approach},
+Proc. IEEE Int. Conf. Robotics and Automation (ICRA), 2014, 1386--1392.
+
+\bibitem[LWP80]{LWP80}
+J.Y.S. Luh, M.W. Walker, R.P.C. Paul, \emph{Resolved-acceleration control of mechanical manipulators},
+IEEE Trans. Automatic Control 25(3), 1980.
+
+\bibitem[ZDG96]{ZDG96}
+K. Zhou, J.C. Doyle, K. Glover, \emph{Robust and Optimal Control}, Prentice Hall, 1996.
+
+\bibitem[Nak86]{Nak86}
+Y. Nakamura, H. Hanafusa, \emph{Inverse kinematic solutions with singularity robustness for robot manipulator control},
+ASME J. Dynamic Systems, Measurement, and Control 108(3), 1986.
+
+\bibitem[Nak08]{Nak08}
+J. Nakanishi, R. Cory, M. Mistry, J. Peters, S. Schaal, \emph{Operational space control: A theoretical and empirical comparison},
+International Journal of Robotics Research 27(6), 2008.
+
+\bibitem[VdS00]{VdS00}
+A.J. van der Schaft, \emph{$L_2$-Gain and Passivity Techniques in Nonlinear Control}, 2nd ed., Springer, London, 2000.
+
+\bibitem[Con25]{Con25}
+D. Condurache, \emph{An overview of higher-order kinematics of rigid body and multibody systems with nilpotent algebra},
+Mechanism and Machine Theory 209 (2025) 105959.
+
+\end{thebibliography}
+
+\end{document}

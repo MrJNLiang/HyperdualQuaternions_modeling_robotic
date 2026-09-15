@@ -29,7 +29,7 @@ $\tilde{(\cdot)}$ & 误差量 \\
 \hat{\underline x}=\hat r+\varepsilon\tfrac12\,p\,\hat r,\qquad \hat r\in\mathrm{Spin}(3),\ p\in\mathbb H_p\ (\text{纯四元数}\cong\mathbb R^3)
 \tag{2.1}\label{eq:2.1}
 \end{equation}
-表示位姿（旋转 $\hat r$ + 平移 $p$），满足 $\hat{\underline x}\hat{\underline x}^*=1$；单位 DQ 全体构成群 $\mathrm{Spin}(3)\ltimes\mathbb R^3$，双覆盖 $SE(3)$，乘法即位姿复合。DQ 共轭 $\hat{\underline x}^*=\hat r^*+\varepsilon\tfrac12\hat r^*p^*$ 逐分量遵循四元数共轭。\textbf{纯 DQ}（标量部与对偶标量部为零者）构成 6 维实空间，记 $\mathrm{vec}_6$ 为取其两个向量部的坐标同构，$\overline{\mathrm{vec}}_6$ 为逆。
+表示位姿（旋转 $\hat r$ + 平移 $p$），满足 $\hat{\underline x}\hat{\underline x}^*=1$；单位 DQ 全体构成群 $\mathrm{Spin}(3)\ltimes\mathbb R^3$，双覆盖 $SE(3)$，乘法即位姿复合。DQ 共轭 $\hat{\underline x}^*=\hat r^*+\varepsilon\tfrac12\hat r^*p^*$ 对四元数系数逐项取共轭，并反转乘积次序。\textbf{纯 DQ}（标量部与对偶标量部为零者）构成 6 维实空间，记 $\mathrm{vec}_6$ 为取其两个向量部的坐标同构，$\overline{\mathrm{vec}}_6$ 为逆。
 
 \subsection{twist 与运动学}
 
@@ -50,7 +50,7 @@ HDQ 元素形如 $\breve a=\hat{\underline a}_0+\varepsilon^*\hat{\underline a}_
 \tag{2.3}\label{eq:2.3}
 \end{equation}
 
-\textbf{HDQ 共轭}（定理 1 中 $(\breve x_d)^*$ 的含义）定义为\textbf{逐项的 DQ 共轭}：
+\textbf{HDQ 共轭}（定理 1 中 $(\breve x_d)^*$ 的含义）定义为本文采用的逐项 DQ 共轭反自同构：
 \begin{equation}
 \breve a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\varepsilon^*\hat{\underline a}_1^{\,*}.
 \tag{2.4}\label{eq:2.4}

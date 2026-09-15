@@ -1,0 +1,149 @@
+% ---------------------------------------------------------------------
+% Appendix C: supplementary derivations for the control layer
+% ---------------------------------------------------------------------
+\section*{Appendix C. Supplementary derivations for the control layer}
+
+\subsection*{C.1 Explicitness of the disturbance and the role of the $\alpha$ condition}
+
+Substituting $\boldsymbol\tau=\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+\hat C\dot{\boldsymbol q}+\hat g$ into the true dynamics $M\ddot{\boldsymbol q}+C\dot{\boldsymbol q}+\boldsymbol g=\boldsymbol\tau+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}$ and solving for $\ddot{\boldsymbol q}$:
+\begin{equation*}
+\ddot{\boldsymbol q}=M^{-1}\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+M^{-1}\bigl(\Delta C\dot{\boldsymbol q}+\Delta\boldsymbol g+\delta\boldsymbol\tau+\boldsymbol\tau_{\mathrm{ext}}\bigr),
+\qquad M^{-1}\hat M=I+M^{-1}\Delta M ,
+\end{equation*}
+which is \eqref{eq:5.1}. By \eqref{eq:5.2}, $\ddot{\boldsymbol q}_{\mathrm{ref}}$ is given entirely by the measurable quantities $(\boldsymbol q,\dot{\boldsymbol q},\hat{\underline x}_d,\boldsymbol\xi_d,\dot{\boldsymbol\xi}_d)$ and does not depend on $\ddot{\boldsymbol q}$; \eqref{eq:5.1} is therefore an explicit assignment for $\ddot{\boldsymbol q}$, with no implicit algebraic loop.
+
+The condition $\alpha<1/\mathrm{cond}_2(K_d)$ in \eqref{eq:5.1f} is not a well-posedness condition; it ensures a positive effective damping. From $|e_\xi^\top\Theta(-K_de_\xi)|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ we get $\lambda_{\mathrm{eff}}=\lambda_{\min}(K_d)-\alpha\lambda_{\max}(K_d)$, whose positivity is exactly \eqref{eq:5.1f}. For larger $\alpha$ the closed loop remains well defined, but the Lyapunov certificate fails.
+
+\subsection*{C.2 Theorem 3(b): singular-value lower bound for $A$}
+
+Step 4 of C.6 requires $A$ to be uniformly invertible on the working set; this is quantified here.
+
+By \eqref{eq:4.5}, $A=\begin{bmatrix}A_{11}&0\\ -[\mathcal T]_\times& I_3\end{bmatrix}$ with $A_{11}=-\tfrac12(\tilde\eta I+[\mathcal O]_\times)$. Its inverse is
+\begin{equation*}
+\begin{gathered}
+A^{-1}=\begin{bmatrix}A_{11}^{-1}&0\\ [\mathcal T]_\times A_{11}^{-1}& I_3\end{bmatrix},\\[2pt]
+A_{11}^{-1}=-2\,\frac{\tilde\eta^2I+\tilde\eta[\mathcal O]_\times^{\top}+\mathcal O\mathcal O^\top}{\tilde\eta(\tilde\eta^2+\|\mathcal O\|^2)}
+=-\frac2{\tilde\eta}\bigl(\tilde\eta^2I-\tilde\eta[\mathcal O]_\times+\mathcal O\mathcal O^\top\bigr),
+\end{gathered}
+\end{equation*}
+using $\tilde\eta^2+\|\mathcal O\|^2=1$. Let $B\triangleq\tilde\eta I+[\mathcal O]_\times$ (so $A_{11}=-\tfrac12B$); then
+\begin{equation*}
+B^\top B=(\tilde\eta I-[\mathcal O]_\times)(\tilde\eta I+[\mathcal O]_\times)=\tilde\eta^2I-[\mathcal O]_\times^2=(\tilde\eta^2+\|\mathcal O\|^2)I-\mathcal O\mathcal O^\top=I-\mathcal O\mathcal O^\top ,
+\end{equation*}
+with eigenvalues $\{\tilde\eta^2,1,1\}$, so the singular values of $B$ are $\{\tilde\eta,1,1\}$ and
+\begin{equation*}
+\|A_{11}\|_2=\tfrac12\sigma_{\max}(B)=\tfrac12 ,
+\quad
+\|A_{11}^{-1}\|_2=\frac2{\sigma_{\min}(B)}=\frac2{\tilde\eta} .
+\end{equation*}
+By the block lower-triangular structure, $\|A^{-1}\|_2\le(1+\|\mathcal T\|)\|A_{11}^{-1}\|_2+1$, hence
+\begin{equation*}
+\sigma_{\min}(A)=\frac1{\|A^{-1}\|_2}\;\ge\;\Bigl[\frac{2(1+\|\mathcal T\|)}{\tilde\eta}+1\Bigr]^{-1} .
+\end{equation*}
+On $\Omega_c$, $\tilde\eta\ge\eta_0$ (\eqref{eq:5.5c}) and $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$, so $\sigma_{\min}(A)\ge c_A(\eta_0,c)>0$ uniformly, and in step 4 of C.6, $A^\top K_pe_z\equiv0$ implies $e_z\equiv0$.
+
+\subsection*{C.3 Details of the split condition in Theorem 3(c-2)}
+
+The split rests on two identities: (i) in $(A^\top e_z)_\omega$ the term $[\mathcal T]_\times\mathcal T=0$; (ii) in $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ the term $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$. Both are algebraic identities independent of the working set, so (c-2) is as global as (c-1); if $K_d$ is not block diagonal, $-e_\xi^\top K_de_\xi$ contains the cross term $\tilde\omega^\top K_{\omega v}\tilde v$ and the two channel energies no longer separate---one falls back to (c-1).
+
+Necessity of the isotropy of $K_{p,T}$: for a general symmetric positive definite $K_{p,T}$ both identities fail. (i) $(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+[\mathcal T]_\times K_{p,T}\mathcal T$, and $[\mathcal T]_\times K_{p,T}\mathcal T\ne0$ unless $\mathcal T$ is an eigenvector of $K_{p,T}$; (ii) the derivative of $\tfrac12\mathcal T^\top K_{p,T}\mathcal T$ contains the coupling term $-\mathcal T^\top K_{p,T}[\mathcal T]_\times\tilde\omega$, which vanishes only for $K_{p,T}=k_{p,T}I_3$. The residual coupling prevents $V_\omega,V_v$ from closing individually and one falls back to (c-1).
+
+\subsection*{C.4 Strictification and local ISS (future work)}
+
+The gap in Theorem~3(d) stems from the absence of a $-\|e_z\|^2$ term in $\dot V$. The standard remedy is strictification: take $W=V+\epsilon e_z^\top K_pA(\tilde x)e_\xi$; for small enough $\epsilon$, $W$ is equivalent to $V$ on $\Omega_c$, and its derivative adds $-\epsilon e_z^\top K_pAA^\top K_pe_z$, negative in the $e_z$ direction. If the remaining cross terms (including the $\dot A$ term) can be absorbed by the two negative terms, then $\dot W\le-c_1\|(e_z,e_\xi)\|^2+c_2\|d\|\cdot\|(e_z,e_\xi)\|$, i.e., a local ISS-Lyapunov function. This verification (a uniform bound on the $\dot A$ term and nonemptiness of the feasible interval for $\epsilon$) is not completed in this paper and is listed among the limitations of \S7.
+
+\subsection*{C.6 Complete proof of Theorem 3(b)}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Exact cross-term cancellation}: along \eqref{eq:5.5} with $d\equiv0$,
+  \begin{equation*}
+  \dot V=e_\xi^\top\dot e_\xi+e_z^\top K_p\dot e_z
+  =e_\xi^\top\bigl(-K_de_\xi-A^\top K_pe_z\bigr)+e_z^\top K_pAe_\xi
+  =-e_\xi^\top K_de_\xi ,
+  \end{equation*}
+  since $e_z^\top K_pAe_\xi=(A^\top K_pe_z)^\top e_\xi$ (only symmetry of $K_p$ is used). Hence $\dot V\le0$ and $\Omega_c$ is forward invariant; $V\le c$ gives $\|e_\xi\|\le\sqrt{2c}$ and $\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$, so $\Omega_c$ is compact.
+
+  \item \textbf{Sign preservation \eqref{eq:5.5c}}: $V\le c$ implies $\tfrac12\mathcal O^\top K_{p,O}\mathcal O\le c$, i.e., $\|\mathcal O\|^2\le2c/\lambda_{\min}(K_{p,O})<1$ (by $c<c^{*}$). From $\mathcal O=-\mathrm{Im}\,\tilde r$ and $\|\tilde r\|=1$ we have $\tilde\eta^2+\|\mathcal O\|^2=1$, hence $|\tilde\eta|\ge\eta_0>0$; since $\tilde\eta(t)$ is continuous and never zero, $\tilde\eta(0)>0$ gives \eqref{eq:5.5c}.
+
+  \item \textbf{Determinant of $A$}: $A$ is block lower triangular (\eqref{eq:4.5}), so
+  \begin{equation*}
+  \det A=\det\bigl(-\tfrac12(\tilde\eta I_3+[\mathcal O]_\times)\bigr)\cdot\det I_3
+  =\bigl(-\tfrac12\bigr)^3\tilde\eta\bigl(\tilde\eta^2+\|\mathcal O\|^2\bigr)=-\tfrac18\tilde\eta ,
+  \end{equation*}
+  using $\det(aI_3+[b]_\times)=a(a^2+\|b\|^2)$ and $\tilde\eta^2+\|\mathcal O\|^2=1$. The quantitative singular-value bound $\sigma_{\min}(A)\ge\bigl[2(1+\|\mathcal T\|)/\tilde\eta+1\bigr]^{-1}$ is derived in C.2.
+
+  \item \textbf{LaSalle}: $\Omega_c$ is compact and invariant, and $E\triangleq\{\dot V=0\}\cap\Omega_c=\{e_\xi=0\}\cap\Omega_c$. If a trajectory stays in $E$ forever: $e_\xi\equiv0\Rightarrow\dot e_\xi\equiv0\Rightarrow A^\top K_pe_z\equiv0$; by step 3 ($A$ invertible) and $K_p\succ0$, $e_z\equiv0$. Hence the largest invariant set in $E$ is $\{(0,0)\}$, and LaSalle's invariance principle (\cite{Kha02}, Thm~4.4) gives (iii).
+
+  \item \textbf{Local exponential stability}: at $(0,0)$ we have $\tilde x\to1$ and $A\to A_0=\mathrm{diag}(-\tfrac12I_3,I_3)$; the Jacobian of \eqref{eq:5.5} is
+  \begin{equation*}
+  F=\begin{bmatrix}0_6 & A_0\\ -A_0^\top K_p & -K_d\end{bmatrix}.
+  \end{equation*}
+  For this LTI system the same $V$ gives $\dot V\le0$, $A_0$ is invertible, and repeating step 4 shows $F$ is Hurwitz; the linearization theorem (\cite{Kha02}, Thm~4.7) yields local exponential stability. For block-diagonal $K_d,K_p$, $F$ decouples per channel and the poles are given explicitly by \eqref{eq:5.8}.
+\end{enumerate}
+
+\subsection*{C.7 Complete proof of Theorem 3(c)}
+
+\textbf{Step 1 (exact expression for $\dot V$)}: with disturbances, the cross terms cancel as before, independently of $d$:
+$\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$ holds exactly.
+
+\textbf{Step 2 (equivalence in (c-1))}: the performance target is
+$-e_\xi^\top K_de_\xi+e_\xi^\top d+\tfrac1{2\kappa}\|e_\xi\|^2-\tfrac{\gamma_a^2}2\|d\|^2\le0$,
+equivalently the quadratic inequality
+\begin{equation*}
+\begin{bmatrix}e_\xi\\ d\end{bmatrix}^{\!\top}\!M\!
+\begin{bmatrix}e_\xi\\ d\end{bmatrix}\ge0\quad\forall(e_\xi,d)\in\mathbb R^{12},
+\end{equation*}
+i.e., $M\succeq0$. Since the lower-right block $\tfrac{\gamma_a^2}2I\succ0$, the Schur complement gives $K_d-\tfrac1{2\kappa}I-\tfrac1{2\gamma_a^2}I\succeq0$, which is \eqref{eq:5.6a}.
+
+\textbf{Step 3 (global existence)}: from $M\succeq0$, $\dot V\le\tfrac{\gamma_a^2}2\|d\|^2$, so $V(t)\le V(0)+\tfrac{\gamma_a^2}2\|d_{L_2}\|_{L_2}^2<\infty$; $(e_z,e_\xi)$ is uniformly bounded and the solution exists on $[0,\infty)$ (no finite-time escape).
+
+\textbf{Step 4 (integration)}: integrating $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$ over $[0,T]$, dropping $V(T)\ge0$, and letting $T\to\infty$ (monotone convergence) gives \eqref{eq:5.6}.
+
+\textbf{Step 5 (per-channel decoupling in (c-2))}: by \eqref{eq:4.5},
+$(A^\top K_pe_z)_\omega=A_{11}^\top K_{p,O}\mathcal O+k_{p,T}[\mathcal T]_\times\mathcal T=A_{11}^\top K_{p,O}\mathcal O$ (as $\mathcal T\times\mathcal T=0$) and $(A^\top K_pe_z)_v=k_{p,T}\mathcal T$; moreover, in $\dot{\mathcal T}=-[\mathcal T]_\times\tilde\omega+\tilde v$ we have $\mathcal T^\top(\mathcal T\times\tilde\omega)=0$. Hence the pose cross terms cancel exactly within each channel,
+\begin{equation*}
+\dot V_\omega=-\tilde\omega^\top K_\omega\tilde\omega+\tilde\omega^\top d_\omega,
+\qquad
+\dot V_v=-\tilde v^\top K_v\tilde v+\tilde v^\top d_v ,
+\end{equation*}
+and repeating steps 2--4 for each channel ($I_6\to I_3$) gives \eqref{eq:5.6b}$\Rightarrow$\eqref{eq:5.6p}.
+
+\subsection*{C.8 Complete proof of Theorem 3(d)}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Expansion of the multiplicative term}: $\dot V=-e_\xi^\top K_de_\xi+e_\xi^\top d$ (step 1 of C.7). Substituting \eqref{eq:5.1d} and $u_{\mathrm{fb}}=-K_de_\xi-A^\top K_pe_z$:
+  \begin{equation*}
+  \dot V=-e_\xi^\top K_de_\xi\;\underbrace{-\,e_\xi^\top\Theta K_de_\xi}_{\text{damping-like}}\;\underbrace{-\,e_\xi^\top\Theta A^\top K_pe_z}_{\text{disturbance-like}}\;+\;e_\xi^\top d_{\mathrm{ex}} .
+  \end{equation*}
+
+  \item \textbf{Separate absorption}: $|e_\xi^\top\Theta K_de_\xi|\le\alpha\lambda_{\max}(K_d)\|e_\xi\|^2$ is absorbed into the damping, giving $\lambda_{\mathrm{eff}}>0$ of \eqref{eq:5.7a} by \eqref{eq:5.1f}; and $|e_\xi^\top\Theta A^\top K_pe_z|\le\alpha\|A\|_2\lambda_{\max}(K_p)\|e_z\|\,\|e_\xi\|$ is absorbed into the equivalent disturbance amplitude $D$.
+
+  \item \textbf{Spectral norm of $A$}: $A_{11}^\top A_{11}=\tfrac14(I_3-\mathcal O\mathcal O^\top)$ gives $\|A_{11}\|_2=\tfrac12$ (C.2), and the block lower-triangular structure gives $\|A\|_2\le\max\{\|A_{11}\|_2,1\}+\|[\mathcal T]_\times\|_2=1+\|\mathcal T\|$. On $\Omega_c$, $\|\mathcal T\|\le\sqrt{2c/\lambda_{\min}(K_{p,T})}$ and $\|e_z\|\le\sqrt{2c/\lambda_{\min}(K_p)}$; substituting into step 2 yields \eqref{eq:5.7b} and
+  \begin{equation}
+  \dot V\ \le\ -\lambda_{\mathrm{eff}}\|e_\xi\|^2+D\,\|e_\xi\| .
+  \tag{5.7d}\label{eq:5.7d}
+  \end{equation}
+
+  \item \textbf{Young's inequality and integration}: $D\|e_\xi\|\le\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$, so $\dot V\le-\tfrac{\lambda_{\mathrm{eff}}}2\|e_\xi\|^2+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}$. Integrating over $[0,T]$ and dropping $V(T)\ge0$:
+  \begin{equation*}
+  \tfrac{\lambda_{\mathrm{eff}}}2\int_0^T\|e_\xi\|^2dt
+  \ \le\ V(0)+\tfrac{D^2}{2\lambda_{\mathrm{eff}}}\,T ,
+  \end{equation*}
+  and dividing by $\tfrac{\lambda_{\mathrm{eff}}}2T$ gives \eqref{eq:5.7c}; letting $T\to\infty$ gives \eqref{eq:5.7}. As $\alpha\to0$, $D\to D_{\mathrm{ex}}$ and $\lambda_{\mathrm{eff}}\to\lambda_{\min}(K_d)$, recovering the classical form.
+\end{enumerate}
+
+\subsection*{C.9 Tightness: the certified gain equals the true linearized gain}
+
+Is the certified value of Theorem~3(c$'$) conservative? It is not; the answer is a two-sided squeeze.
+
+The upper bound comes from the certificate \eqref{eq:5.6c}: any $L_2$ disturbance leaks into the error at a rate of at most $1/\lambda_{\min}(K_d)$.
+
+The lower bound comes from the frequency response of the linearization. Linearizing the closed loop \eqref{eq:5.5} as $\tilde x\to1$ (\eqref{eq:5.8}), the $d\to e_\xi$ transfer function of each channel is a second-order element $G(s)=\dfrac{s}{s^2+bs+c}$: for the rotation channel, $\dot e_{z,O}=-\tfrac12\tilde\omega$ gives $\tilde\omega=-2\dot{\mathcal O}$, so $b=\lambda(K_\omega)$ and $c=p_O/4$; for the translation channel $\tilde v=\dot{\mathcal T}$, so $b=\lambda(K_v)$ and $c=k_{p,T}$. For $G$,
+\begin{equation}
+|G(j\omega)|^2=\frac{u}{(c-u)^2+b^2u},\quad u=\omega^2,\qquad
+\frac{\mathrm{d}}{\mathrm{d}u}\,[\,\cdot\,]\propto(c-u)(c+u),
+\tag{5.10}\label{eq:5.10}
+\end{equation}
+so $|G|$ attains its global maximum $1/b$ at $u=c$, i.e., when the disturbance frequency equals the channel natural frequency $\sqrt c$ (independently of the amount of damping). Hence the true $H_\infty$ gain of the linearization with block-diagonal $K_d$ is $\max\bigl(1/\lambda(K_\omega),\,1/\lambda(K_v)\bigr)=1/\lambda_{\min}(K_d)$.
+
+By the standard result that the local $L_2$ gain of a nonlinear closed loop is no smaller than the $H_\infty$ norm of its linearization (zero-initial-state, small-signal sense \cite{VdS00}), together with the matching upper bound from the certificate, the local $L_2$ gain of \eqref{eq:5.5} is exactly $1/\lambda_{\min}(K_d)$: the certificate is free of conservatism, and ``target $\gamma^{*}$ $\Leftrightarrow$ damping $\ge 1/\gamma^{*}$'' is an exact conversion. A testable by-product: the worst-case disturbance frequency is the channel natural frequency $\sqrt c$ ($6\,\mathrm{rad/s}$ for hardware tier G4).

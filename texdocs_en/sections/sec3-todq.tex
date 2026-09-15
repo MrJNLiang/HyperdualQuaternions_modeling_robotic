@@ -1,0 +1,43 @@
+% ---------------------------------------------------------------------
+% Section 3: TODQ --- third-order dual quaternions and kinematics
+% ---------------------------------------------------------------------
+\section{TODQ: Third-Order Dual Quaternions and Kinematic Reconstruction}
+
+\subsection{The algebra}
+
+\begin{definition}[TODQ \cite{Con25}]\label{def:todq}
+A third-order dual quaternion (TODQ) element has the form
+\begin{equation}
+\bar a=\hat{\underline a}_0+\sigma\hat{\underline a}_1+\tfrac12\sigma^2\hat{\underline a}_2,\qquad \hat{\underline a}_0,\hat{\underline a}_1,\hat{\underline a}_2\ \text{all DQs},
+\tag{3.1}\label{eq:3.1}
+\end{equation}
+and the algebra of all TODQ elements is denoted $\mathcal A_2$. The unit $\sigma$ commutes with all quaternion units and satisfies $\sigma^3=0$; distributivity together with $\sigma^3=0$ fixes the product uniquely:
+\begin{equation}
+\bar a\,\bar b=\hat{\underline a}_0\hat{\underline b}_0+\sigma(\hat{\underline a}_0\hat{\underline b}_1+\hat{\underline a}_1\hat{\underline b}_0)+\tfrac12\sigma^2\bigl(\hat{\underline a}_0\hat{\underline b}_2+2\hat{\underline a}_1\hat{\underline b}_1+\hat{\underline a}_2\hat{\underline b}_0\bigr).
+\tag{3.2}\label{eq:3.2}
+\end{equation}
+The \textbf{TODQ conjugate} is the termwise DQ conjugate (same convention as \eqref{eq:2.4}): $\bar a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\sigma\hat{\underline a}_1^{\,*}+\tfrac12\sigma^2\hat{\underline a}_2^{\,*}$, an antiautomorphism of $\mathcal A_2$: $(\bar a\bar b)^*=\bar b^{\,*}\bar a^{\,*}$.
+\end{definition}
+
+In other words, $\mathcal A_2$ is the truncated polynomial algebra that realizes third-order jets: the nilpotent unit $\sigma$ indexes the derivative order, so position-, velocity-, and acceleration-level information coexist in one element and separate cleanly by powers of $\sigma$.
+
+\subsection{Serial-chain kinematics in TODQ form}
+
+Given a smooth unit DQ curve $\hat{\underline x}(t)$, its \textbf{TODQ representation} collects the curve and its first two derivatives into the three coefficients of $\sigma$:
+\begin{equation}
+\bar x\triangleq\hat{\underline x}+\sigma\dot{\hat{\underline x}}+\tfrac12\sigma^2\ddot{\hat{\underline x}}\ \in\mathcal A_2 .
+\tag{3.3a}\label{eq:3.3a}
+\end{equation}
+
+For a serial arm $\hat{\underline x}(\boldsymbol q)=\prod_i\hat{\underline x}_i(q_i(t))$, write first the TODQ representation $\bar x_i$ of each joint factor (a closed form in $q_i,\dot q_i,\ddot q_i$ follows from $\partial\hat{\underline x}_i/\partial q_i=\tfrac12\boldsymbol s_i\hat{\underline x}_i$ and the chain rule), then multiply the factors successively using \eqref{eq:3.2}:
+\begin{equation}
+\bar x=\bar x_1\,\bar x_2\cdots\bar x_n=\prod_{i=1}^{n}\bar x_i .
+\tag{3.4}\label{eq:3.4}
+\end{equation}
+A single $O(n)$ chain product outputs $\hat{\underline x},\dot{\hat{\underline x}},\ddot{\hat{\underline x}}$ simultaneously (the three coefficients of $\bar x$). Derived quantities:
+\begin{equation}
+\boldsymbol\xi=2\dot{\hat{\underline x}}\hat{\underline x}^*,\qquad
+\dot{\boldsymbol\xi}=2\ddot{\hat{\underline x}}\hat{\underline x}^*-\tfrac12\boldsymbol\xi^2\ (\text{pure part}),\qquad
+\mathrm{vec}_6\dot{\boldsymbol\xi}=\dot J\dot{\boldsymbol q}+J\ddot{\boldsymbol q}.
+\tag{3.5}\label{eq:3.5}
+\end{equation}

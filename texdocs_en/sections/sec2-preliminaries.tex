@@ -1,0 +1,58 @@
+% ---------------------------------------------------------------------
+% Section 2: Preliminaries
+% ---------------------------------------------------------------------
+\section{Preliminaries}
+
+\textbf{Notation} (used throughout): a single pose curve is written with one kernel letter (e.g., $x$); the ornament above the letter indicates the algebraic layer:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Symbol & Object \\
+\midrule
+$\hat a$ & quaternion \\
+$\hat{\underline a}$ & dual quaternion \\
+$\breve a$ & HDQ (hyper-dual quaternion) \\
+$\bar a$ & TODQ (third-order dual quaternion) \\
+$\tilde{(\cdot)}$ & error quantity \\
+boldface & pure DQ (twists, etc.), vectors, and matrices \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Quaternions and dual quaternions}
+
+A unit quaternion $\hat r=\cos\frac\phi2+n\sin\frac\phi2$ represents a rotation by the angle $\phi$ about the unit axis $n$.
+
+The dual quaternion (DQ) algebra is $\mathbb H\oplus\varepsilon\mathbb H$ with $\varepsilon^2=0$ ($\varepsilon$ commutes with the quaternion units). A \textbf{unit DQ}
+\begin{equation}
+\hat{\underline x}=\hat r+\varepsilon\tfrac12\,p\,\hat r,\qquad \hat r\in\mathrm{Spin}(3),\ p\in\mathbb H_p\ (\text{pure quaternion}\cong\mathbb R^3)
+\tag{2.1}\label{eq:2.1}
+\end{equation}
+represents a pose (rotation $\hat r$ plus translation $p$) and satisfies $\hat{\underline x}\hat{\underline x}^*=1$; the unit DQs form the group $\mathrm{Spin}(3)\ltimes\mathbb R^3$, which double-covers $SE(3)$, and their product is pose composition. The DQ conjugate $\hat{\underline x}^*=\hat r^*+\varepsilon\tfrac12\hat r^*p^*$ follows the quaternion conjugate componentwise. \textbf{Pure DQs} (vanishing scalar and dual-scalar parts) form a six-dimensional real space; $\mathrm{vec}_6$ denotes the coordinate isomorphism extracting the two vector parts, with inverse $\overline{\mathrm{vec}}_6$.
+
+\subsection{Twists and kinematics}
+
+Along a smooth unit DQ curve $\hat{\underline x}(t)$, the \textbf{spatial twist} is
+\begin{equation}
+\boldsymbol\xi\triangleq 2\dot{\hat{\underline x}}\hat{\underline x}^{*}=\omega+\varepsilon v,\qquad v=\dot p+p\times\omega,
+\tag{2.2}\label{eq:2.2}
+\end{equation}
+with $\omega$ the angular velocity. $\boldsymbol\xi$ is a pure DQ, and \eqref{eq:2.2} is equivalent to the left-multiplied kinematics $\dot{\hat{\underline x}}=\tfrac12\boldsymbol\xi\hat{\underline x}$ (the convention of \cite{P2}, Eq.~(1)). For an $n$-joint serial arm, the forward kinematics is $\hat{\underline x}(\boldsymbol q)=\prod_{i=1}^n\hat{\underline x}_i(q_i)$ (a product of per-joint unit DQs), and differentiation gives $\mathrm{vec}_6\,\boldsymbol\xi=J(\boldsymbol q)\dot{\boldsymbol q}$ with $J\in\mathbb R^{6\times n}$ the geometric Jacobian.
+
+\textbf{Adjoint action and Lie bracket}: $\mathrm{Ad}_{\hat{\underline x}}\boldsymbol a\triangleq\hat{\underline x}\boldsymbol a\hat{\underline x}^*$ transports a twist between frames, and $\mathrm{ad}_{\boldsymbol a}\boldsymbol b\triangleq\tfrac12(\boldsymbol{ab}-\boldsymbol{ba})$ is the DQ form of the Lie bracket; both preserve the pure-DQ structure (see \cite{Lynch17}).
+
+\subsection{Hyper-dual quaternions (HDQ)}
+
+An HDQ element has the form $\breve a=\hat{\underline a}_0+\varepsilon^*\hat{\underline a}_1$, where both terms $\hat{\underline a}_0,\hat{\underline a}_1$ are DQs (\S2.1); $\varepsilon^{*}$ commutes with all quaternion units and $\varepsilon^{*2}=0$, so the product is fixed by distributivity:
+\begin{equation}
+(\hat{\underline a}_0+\varepsilon^*\hat{\underline a}_1)(\hat{\underline b}_0+\varepsilon^*\hat{\underline b}_1)=\hat{\underline a}_0\hat{\underline b}_0+\varepsilon^*(\hat{\underline a}_0\hat{\underline b}_1+\hat{\underline a}_1\hat{\underline b}_0).
+\tag{2.3}\label{eq:2.3}
+\end{equation}
+
+The \textbf{HDQ conjugate} (as used in $(\breve x_d)^*$ of Theorem~1) is the \textbf{termwise DQ conjugate}:
+\begin{equation}
+\breve a^{\,*}\triangleq\hat{\underline a}_0^{\,*}+\varepsilon^*\hat{\underline a}_1^{\,*}.
+\tag{2.4}\label{eq:2.4}
+\end{equation}
+Definition \eqref{eq:2.4} makes the conjugate commute with differentiation ($(\breve x)^*$ is the HDQ representation of the curve $\hat{\underline x}^*(t)$) and remains an antiautomorphism: $(\breve a\breve b)^*=\breve b^{\,*}\breve a^{\,*}$.

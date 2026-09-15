@@ -1,0 +1,25 @@
+% ---------------------------------------------------------------------
+% Section 1: Introduction
+% ---------------------------------------------------------------------
+\section{Introduction}
+
+\subsection{Motivation}
+
+Parametrizing rigid-body pose (orientation plus translation) is the starting point of robot control. The unit dual quaternion packs both into a single eight-dimensional algebraic object whose operations are free of singularities and whose product realizes pose composition directly; on this parametrization, \cite{P2} developed a kinematic tracking controller with an $L_2$ disturbance-attenuation guarantee, which remains the representative result of dual-quaternion control. Cohen and Shoham \cite{P1} introduced the hyper-dual quaternion (HDQ), which adjoins to a DQ a nilpotent unit $\varepsilon^{*}$ ($\varepsilon^{*2}=0$) so that a single HDQ element carries a pose together with its first time derivative and chained multiplications differentiate automatically (the Leibniz rule is internalized in the product); forward kinematics then propagates pose and twist in one pass.
+
+HDQ nevertheless falls one order short of the dynamics. Computed-torque control requires the task-space acceleration $\dot{\boldsymbol\xi}$ and the Jacobian-derivative term $\dot J\dot{\boldsymbol q}$, and in the HDQ structure of \cite{P1} both nilpotent units are already taken ($\varepsilon$ carries translation and $\varepsilon^{*}$ the first derivative), so the $\varepsilon\varepsilon^{*}$ term carries only the first derivative of the translation part and contains no second-order information. The error system poses a more fundamental obstruction: existing DQ error objects have a pose layer only, and the disturbance model assumes velocity-level additive signals in $L_2$. At the dynamics interface three structural gaps therefore appear: the pose error and the velocity error decouple (in laws of the \cite{Ch20} type the pose feedback takes the spiral logarithm, whose derivative map is singular at large errors); acceleration-level disturbances have no entry point; and bias-type uncertainty violates the $L_2$ assumption, so the available certificates cease to apply.
+
+\subsection{Contributions}
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{TODQ kinematics}: based on a three-term polynomial algebra we construct a third-order dual quaternion representation of serial-chain kinematics. It removes the first-derivative ceiling of existing HDQ kinematics: a single $O(n)$ chain product outputs pose, twist, and task-space acceleration simultaneously, supplying the analytic feedforward required by acceleration-level control.
+  \item \textbf{A unified error system}: on two HDQ elements we define an error object that generates a right-invariant pose error and a geometrically consistent twist error in one multiplication, and we prove that the closed-loop error dynamics is a strict cascade.
+  \item \textbf{Control law with exact certificates}: we propose an $A^\top$-shaping computed-torque law for which the closed-loop storage function satisfies an exact dissipation identity. This yields, in one frame, nominal convergence, a necessary-and-sufficient condition for $L_2$ attenuation, and a mean-square bound for bias-type disturbances. Optimizing the $L_2$ gain shows that the certified value equals the reciprocal of the smallest damping and coincides with the true $H_\infty$ norm of the linearized loop, so a desired attenuation level converts into a damping lower bound exactly.
+  \item \textbf{Hardware validation}: thirty-three runs on a six-degree-of-freedom arm---a four-law comparison under an equal gain budget and a $\gamma$ gain ladder---confirm that every certificate holds on hardware, and separate the transient accuracy governed by the task law from the quasi-static residual dominated by the firmware tether spring and friction.
+\end{enumerate}
+
+\subsection{Organization}
+
+Section 2 fixes notation and recalls quaternions, dual quaternions, and HDQ. Section 3 develops TODQ kinematics. Section 4 constructs the error system and proves the cascade property. Section 5 presents the control law and the three performance certificates. Section 6 reports the hardware experiments, and Section 7 concludes. Complete proofs are collected in the Appendix.
+
+% The four contributions correspond to Sections 3, 4, 5, and 6, respectively.
