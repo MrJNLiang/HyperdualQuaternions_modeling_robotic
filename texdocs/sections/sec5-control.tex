@@ -11,7 +11,7 @@
 \tag{5.1}\label{eq:5.1}
 \end{equation}
 
-\textbf{乘性分量与外生分量的分离}。记
+\textbf{反馈乘性项与余项分离}。记
 \[
 u_{\rm ff}\triangleq\mathrm{vec}_6\!\left(\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d+\mathrm{ad}_{\tilde{\boldsymbol\xi}}\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\right),\qquad
 u_{\rm fb}\triangleq-K_de_\xi-A^{\top}(\tilde x)K_pe_z .
@@ -22,11 +22,11 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
 \Theta\triangleq J M^{-1}\Delta M\,J^{+}\in\mathbb R^{6\times6},\;
 \tag{5.1d}\label{eq:5.1d}
 \end{equation}
-其中 $\Theta$ 为乘性分量、$d_{\mathrm{ex}}$ 为外生扰动（附录 C.1）；按时间特性分为 $d_{L_2}$ 和 $d_b$，分别由定理 3(c)、3(d) 处理。
+其中 $\Theta$ 为反馈乘性分量，$d_{\mathrm{ex}}$ 为含状态相关项的余项（附录 C.1）。定理 3(c) 假设总扰动 $d\in L_2$，3(d) 则假设余项有界。
 
-\textbf{假设集}（定理 3 全文沉默使用，在此一次性列出）：
+\textbf{假设集}（各结论按需引用）：
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{(A1) 雅可比正则}：在工作集 $\mathcal Q$ 上 $J(\boldsymbol q)$ 行满秩且 $\sigma_{\min}(J)\ge\underline\sigma>0$，本文取 Moore--Penrose 伪逆 $J^{+}$，因而 $JJ^{+}=I_6$。阻尼伪逆仅作为奇异邻域的实现策略；此时 $JJ^{\#}-I_6$ 产生的状态相关残差需另行建模，本文证书不覆盖该情形。
+  \item \textbf{(A1) 雅可比正则}：在工作集 $\mathcal Q$ 上 $\sigma_{\min}(J)\ge\underline\sigma>0$，理论取 Moore--Penrose 伪逆 $J^{+}$，故 $JJ^{+}=I_6$。阻尼伪逆产生的 $JJ^{\#}-I_6$ 残差不在此精确实现模型内。
   \item \textbf{(A2) 惯量与失配有界}：$M(\boldsymbol q)\succeq \underline m I_n$（$\underline m>0$），且 $\Delta M,\Delta C,\Delta\boldsymbol g,\Delta\boldsymbol f$ 在 $\mathcal Q\times\{\|\dot{\boldsymbol q}\|\le\bar v\}$ 上有界。
   \item \textbf{(A3) 乘性小增益条件}：
   \begin{equation}
@@ -34,8 +34,8 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
   \;<\;\frac{\lambda_{\min}(K_d)}{\lambda_{\max}(K_d)}=\frac1{\mathrm{cond}_2(K_d)}\ \le 1 .
   \tag{5.1f}\label{eq:5.1f}
   \end{equation}
-  各向同性阻尼时退化为经典计算力矩鲁棒性条件 $\alpha<1$ \cite{Spo92}。
-  \item \textbf{(A4) 期望轨迹与外生信号}：$\hat{\underline x}_d(t)$ 为 $C^2$ 且 $\|\boldsymbol\xi_d\|,\|\dot{\boldsymbol\xi}_d\|$ 有界。定理 3(c) 仅要求加性扰动 $d=d_{L_2}\in L_2$；定理 3(d) 另要求偏差型加性扰动 $d=d_b\in L_\infty$。
+  各向同性阻尼时退化为 $\alpha<1$。
+  \item \textbf{(A4) 轨迹与扰动正则性}：$\hat{\underline x}_d(t)$ 为 $C^2$ 且 $\|\boldsymbol\xi_d\|,\|\dot{\boldsymbol\xi}_d\|$ 有界。3(c) 要求总扰动 $d\in L_2$；3(d) 要求 $d_{\mathrm{ex}}\in L_\infty$，二者为不同情形。
 \end{itemize}
 
 \subsection{控制律}
@@ -51,18 +51,18 @@ d=\Theta(\boldsymbol q)\,u_{\mathrm{fb}}+d_{\mathrm{ex}},\qquad
 
 \subsection{主定理}
 
-本节四个结果（定理 3(a)--3(d)）共用假设 (A1)--(A4)（§5.1）、控制律 \eqref{eq:5.2} 与扰动模型 \eqref{eq:5.1}/\eqref{eq:5.1d}；统一存储函数
+以下分析理想连续误差模型。机械臂实现另假设解在所考察时段内存在并留在 (A1)、(A2) 的正则工作集，期望轨迹满足 (A4)；无穷时域结论要求该前提全时成立，不能由任务误差有界推出。四元数采用连续提升，仅在初始时选符号。统一存储函数为
 \begin{equation}
 V(e_z,e_\xi)=\tfrac12\|e_\xi\|^2+\tfrac12\,e_z^{\top}K_pe_z\;\ge0 ,
 \tag{5.4a}\label{eq:5.4a}
 \end{equation}
-$K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|^2$）。受 $\tilde\eta=0$ 处 $A$ 奇异与 $SO(3)$ 双覆盖的拓扑障碍所限，以下收敛声明均为工作域（水平集）内的局部结论。
+$K_p\succ0$ 对称。无扰收敛限于正四元数分支的水平集；耗散不等式不要求 $A$ 可逆。
 
 % ---- 定理 3(a)：手工编号 ----
 \setcounter{theorem}{2}%
 \renewcommand{\thetheorem}{3(a)}%
 \begin{theorem}[闭环误差动态]\label{thm:3a}
-误差坐标 $(e_z,e_\xi)$ 满足级联标准形
+误差坐标 $(e_z,e_\xi)$ 满足二阶系统
 \begin{equation}
 \dot e_z=A(\tilde x)\,e_\xi,\qquad
 \dot e_\xi=-K_d e_\xi-A^{\top}(\tilde x)\,K_p\,e_z+d(t),
@@ -77,7 +77,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \dot{\tilde{\boldsymbol\xi}}=\dot{\boldsymbol\xi}-\mathrm{Ad}_{\tilde x}\dot{\boldsymbol\xi}_d-\mathrm{ad}_{\tilde{\boldsymbol\xi}}\bigl(\mathrm{Ad}_{\tilde x}\boldsymbol\xi_d\bigr)
 \tag{5.5a}\label{eq:5.5a}
 \end{equation}
-（含扰时右端加 $\dot{\boldsymbol v}_w+\dot{\boldsymbol v}_c$）。将 \eqref{eq:5.2} 代入 \eqref{eq:3.5} 所得 $\dot{\boldsymbol\xi}$ 再代入上式，前馈项与期望/输运项精确相消即得 \eqref{eq:5.5}。
+将 \eqref{eq:5.2} 与 $\ddot{\boldsymbol q}=\ddot{\boldsymbol q}_{\mathrm{ref}}+\boldsymbol w_{\mathrm{dyn}}$ 代入 \eqref{eq:3.5}，再代入上式，前馈相消，余下 $d=J\boldsymbol w_{\mathrm{dyn}}$ 即得 \eqref{eq:5.5}。
 \end{proof}
 
 % ---- 定理 3(b) ----
@@ -90,7 +90,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \Omega_c\triangleq\{(e_z,e_\xi):V\le c\}.
 \tag{5.5b}\label{eq:5.5b}
 \end{equation}
-则：\textbf{(i)} $\dot V=-e_\xi^\top K_de_\xi\le0$，故 $\Omega_c$ 紧且正向不变；\textbf{(ii)} 若初值取 $\tilde\eta(0)>0$ 分支，则沿全程
+则：\textbf{(i)} $\dot V=-e_\xi^\top K_de_\xi\le0$，故 $\Omega_c$ 紧且正向不变；\textbf{(ii)} 初值在 $\Omega_c$ 内且 $\tilde\eta(0)>0$ 时，全程有
 \begin{equation}
 \tilde\eta(t)\ \ge\ \eta_0\triangleq\sqrt{1-\frac{2c}{\lambda_{\min}(K_{p,O})}}>0 ,
 \tag{5.5c}\label{eq:5.5c}
@@ -103,7 +103,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \end{proof}
 
 \begin{remark}
-水平集条件 \eqref{eq:5.5b} 已由实机核验：G4 档 $c^{*}=72$，实测 $V$ 峰值约 $0.5$，余量逾两个数量级（§6.1）。$\tilde\eta<0$ 分支可将 HDQ 误差整体翻号，不影响 $\tilde{\boldsymbol\xi}$。$\blacksquare$
+初始 $\tilde\eta<0$ 时可将 HDQ 误差整体翻号，不改变 $\tilde{\boldsymbol\xi}$；上述水平集保证后续无需切换。$\blacksquare$
 \end{remark}
 
 % ---- 定理 3(c) ----
@@ -111,7 +111,7 @@ $K_p\succ0$ 对称（取 $K_p=k_pI_6$ 即回到标量形式 $\tfrac{k_p}2\|e_z\|
 \begin{theorem}[$L_2$ 扰动：H∞ 二次型/Schur 补判据与旋转/平移分量拆分]\label{thm:3c}
 设 $d=d_{L_2}\in L_2$。
 
-\textbf{证书参数}：$\kappa>0$ 为误差罚权的倒数（供给率中 $\|e_\xi\|^2$ 项系数 $\tfrac1{2\kappa}$），$\gamma_a>0$ 为待认证的扰动衰减水平；被认证量是 $d\to e_\xi$ 的 $L_2$ 增益 $\gamma^{*}\triangleq\gamma_a\sqrt\kappa$（量纲 s，零初值下 $\|e_\xi\|_{L_2}\le\gamma^{*}\|d_{L_2}\|_{L_2}$）。二者均为分析参数，不进入控制律 \eqref{eq:5.2}；由定理 3(c$'$) 可反演为整定规则：认证目标 $\gamma^{*}$ 等价于 $K_d\succeq(1/\gamma^{*})I_6$。分量拆分时 $(\kappa_\omega,\gamma_\omega)$、$(\kappa_v,\gamma_v)$ 可独立指定。
+\textbf{证书参数}：$\kappa,\gamma_a>0$ 不进入控制律，认证 $d\to e_\xi$ 的增益 $\gamma^{*}=\gamma_a\sqrt\kappa$（量纲 s）；零初值下 $\|e_\xi\|_{L_2}\le\gamma^{*}\|d\|_{L_2}$。证书族内的阻尼反演见 3(c$'$)。
 
 \textbf{(c-1) 合并判据}（$K_d$ 任意对称正定）：对给定存储函数与供给率，点态耗散不等式 $\dot V\le-\tfrac1{2\kappa}\|e_\xi\|^2+\tfrac{\gamma_a^2}2\|d\|^2$ 对任意 $(e_\xi,d)$ 成立的充要条件为
 \begin{equation}
@@ -141,7 +141,7 @@ K_v\succeq\tfrac12\bigl(\kappa_v^{-1}+\gamma_v^{-2}\bigr)I_3,
 \int_0^\infty\kappa_v^{-1}\|\tilde v\|^2dt\le\gamma_v^2\int_0^\infty\|d_v\|^2dt+2V_v(0),
 \tag{5.6$'$}\label{eq:5.6p}
 \end{equation}
-且逐分量量纲齐次（不再混合 $(\mathrm{rad/s})^2$ 与 $(\mathrm{m/s})^2$），$\kappa_\omega,\gamma_\omega,\kappa_v,\gamma_v$ 可独立指定。
+两组证书参数可独立指定。
 \end{theorem}
 
 \begin{proof}
@@ -159,7 +159,7 @@ K_v\succeq\tfrac12\bigl(\kappa_v^{-1}+\gamma_v^{-2}\bigr)I_3,
 \gamma^{*}_{\mathrm{opt}}\;=\;\min_{(\kappa,\gamma_a)\ \mathrm{feasible}}\gamma_a\sqrt{\kappa}\;=\;\frac{1}{\lambda_{\min}(K_d)} ,
 \tag{5.6c}\label{eq:5.6c}
 \end{equation}
-最优点为 $\kappa=\gamma_a^2=1/\lambda_{\min}(K_d)$（\eqref{eq:5.6a} 取等）。等价的\textbf{反演设计规则}：认证任意目标增益 $\gamma^{*}$ \textbf{当且仅当} $K_d\succeq(1/\gamma^{*})I_6$，此时最省证书点为 $(\kappa,\gamma_a)=(\gamma^{*},\sqrt{\gamma^{*}})$。分量拆分判据 \eqref{eq:5.6b} 同理给出 $\gamma^{*}_\omega=1/\lambda_{\min}(K_\omega)$、$\gamma^{*}_v=1/\lambda_{\min}(K_v)$。
+最优点为 $\kappa=\gamma_a^2=1/\lambda_{\min}(K_d)$。\textbf{在该证书族内}，认证目标 $\gamma^{*}$ 当且仅当 $K_d\succeq(1/\gamma^{*})I_6$，可行点为 $(\kappa,\gamma_a)=(\gamma^{*},\sqrt{\gamma^{*}})$。式 \eqref{eq:5.6b} 同理给出最优分量界 $\gamma^{*}_\omega=1/\lambda_{\min}(K_\omega)$、$\gamma^{*}_v=1/\lambda_{\min}(K_v)$。
 \end{theorem}
 
 \begin{proof}
@@ -169,18 +169,18 @@ K_v\succeq\tfrac12\bigl(\kappa_v^{-1}+\gamma_v^{-2}\bigr)I_3,
 \end{proof}
 
 \begin{remark}
-证书参数 $(\kappa,\gamma_a)$ 由此压缩为一条换算：认证增益的最优值为 $1/\lambda_{\min}(K_d)$。整定入口即阻尼：给定目标衰减，反演得 $K_d$ 下界；极点配置下 $\gamma^{*}=1/(a+b)$。在各向同性或可同时对角化增益下，该认证值与线性化闭环的真实 $H_\infty$ 增益一致；一般 SPD 增益下本文仅给出上界（见附录 C.7）。$\blacksquare$
+当 $K_p=\mathrm{diag}(p_OI_3,p_TI_3)$、$K_d=\mathrm{diag}(K_\omega,K_v)$ 时，认证值等于线性化 $H_\infty$ 范数；一般 SPD 增益下仅为上界（附录 C.7）。$\blacksquare$
 \end{remark}
 
 % ---- 定理 3(d) ----
 \renewcommand{\thetheorem}{3(d)}%
 \begin{theorem}[$L_\infty$ 扰动：乘性分量分离与 twist 误差的均方极限界]\label{thm:3d}
-设 (A1)--(A3) 成立，扰动项按 \eqref{eq:5.1d} 分解为 $d=\Theta u_{\mathrm{fb}}+d_{\mathrm{ex}}$，$\alpha\triangleq\sup_t\|\Theta\|_2$ 满足小增益条件 \eqref{eq:5.1f}，$D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。记\textbf{有效阻尼}
+设 $K_p=\mathrm{diag}(K_{p,O},K_{p,T})\succ0$，(A3) 成立，扰动按 \eqref{eq:5.1d} 分解，$D_{\mathrm{ex}}\triangleq\|d_{\mathrm{ex}}\|_{L_\infty}<\infty$。记\textbf{有效阻尼}
 \begin{equation}
 \lambda_{\mathrm{eff}}\triangleq\lambda_{\min}(K_d)-\alpha\,\lambda_{\max}(K_d)\;>\;0
 \tag{5.7a}\label{eq:5.7a}
 \end{equation}
-（正性由 \eqref{eq:5.1f} 保证）。设轨迹在所考察时段内留在水平集 $\Omega_c$ 内（\eqref{eq:5.5b}；该前提仅用于界定 $\|e_z\|$，需事后数值核验，见下方注记），并记\textbf{等效扰动幅值}
+设轨迹在 $[0,T_\Omega]$ 内留在 $\Omega_c$（\eqref{eq:5.5b}），记\textbf{等效扰动幅值}
 \begin{equation}
 D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{\lambda_{\min}(K_{p,T})}}\Bigr)\sqrt{\tfrac{2c}{\lambda_{\min}(K_p)}} .
 \tag{5.7b}\label{eq:5.7b}
@@ -188,7 +188,7 @@ D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{
 则 twist 误差满足有限时段均方界
 \begin{equation}
 \frac1T\int_0^T\|e_\xi(t)\|^2\,dt\;\le\;\frac{D^2}{\lambda_{\mathrm{eff}}^2}+\frac{2V(0)}{\lambda_{\mathrm{eff}}\,T},
-\qquad\forall T>0,
+\qquad 0<T\le T_\Omega,
 \tag{5.7c}\label{eq:5.7c}
 \end{equation}
 若该水平集前提对所有 $t\ge0$ 成立，则进一步有
@@ -199,13 +199,9 @@ D\triangleq D_{\mathrm{ex}}+\alpha\,\lambda_{\max}(K_p)\Bigl(1+\sqrt{\tfrac{2c}{
 \;\xrightarrow[\ \alpha\to0\ ]{}\;\frac{\|d_{\mathrm{ex}}\|_{L_\infty}}{\lambda_{\min}(K_d)} .
 \tag{5.7}\label{eq:5.7}
 \end{equation}
-即偏差型（$L_\infty$）不确定性不破坏有界性，仅按 $D/\lambda_{\mathrm{eff}}$ 抬高 twist 误差的均方稳态水平；乘性分量的作用（以 $\alpha\lambda_{\max}(K_d)$ 折减有效阻尼、以 $\alpha\lambda_{\max}(K_p)\|e_z\|$ 抬高等效扰动幅值）在 $\alpha\to0$ 时消失。位姿误差 $e_z$ 的稳态量级由静态刚度标度律（稳态残差正比于扰动、反比于刚度）给出准静态估计。
+这是以留域为前提的 twist 均方界，不证明受扰水平集不变性、全状态 ISS 或位姿稳态标度律。
 \end{theorem}
 
 \begin{proof}
 将乘性扰动 $\Theta u_{\mathrm{fb}}$ 拆为阻尼折减项与等效扰动项，分别用 Young 不等式回收，积分即得 RMS 界 \eqref{eq:5.7}。详见附录 C.6。
 \end{proof}
-
-\begin{remark}
-该结果是有限时段均方界；只有在轨迹对所有 $t\ge0$ 保持于 $\Omega_c$ 时才可使用其 $\limsup$ 形式。由于未建立含 $e_z$ 负项的 ISS 证书，本文不宣称全状态 ISS。$\blacksquare$
-\end{remark}

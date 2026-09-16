@@ -1,10 +1,10 @@
 # Fdb version 4
-["xdvipdfmx"] 1789412967.16198 "main.xdv" "main.pdf" "main" 1789412973.99141 0
-  "main.xdv" 1789412967.06322 280668 b8f478f927e3e0c87ba1e3d0e4a17837 "xelatex"
+["xdvipdfmx"] 1789486942.39252 "main.xdv" "main.pdf" "main" 1789486948.69959 0
+  "main.xdv" 1789486942.31755 246732 bb2fcd06848e6b2d68ab752097b5907d "xelatex"
   (generated)
   "main.pdf"
   (rewritten before read)
-["xelatex"] 1789412965.75937 "main.tex" "main.xdv" "main" 1789412973.9895 0
+["xelatex"] 1789486940.80356 "main.tex" "main.xdv" "main" 1789486948.69692 0
   "/etc/texmf/web2c/texmf.cnf" 1786704958.59591 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1136768653 1528 f853c4d1b4e0550255e02831fdc8496f ""
@@ -141,17 +141,17 @@
   "figures/hw_ts_laws_k36_tether2_d10.png" 1789059451.49849 423097 b407636afec73f14eaa87eebaf2730e7 ""
   "figures/hw_ts_laws_k36_tether30_d10.png" 1788791620.74872 499773 6faec23d2179f0eb4a6a95ff2a2734c5 ""
   "figures/hw_ts_laws_k36_tether60_d10.png" 1788791620.74966 517264 0ab1973d8e61b03edad2cbbcdbb9ba8b ""
-  "main.aux" 1789412967.06209 10980 c9714525c7119436ad7093ef163e3cd0 "xelatex"
-  "main.out" 1789412967.06209 2583 2c0bff63362895550227181105750150 "xelatex"
-  "main.tex" 1789299629.43378 6880 4f42881029b45482dc865ccbe539fbf3 ""
-  "sections/appendix.tex" 1789412942.37599 12033 0a6b4c03582cb613becb6e6b21ef45db ""
-  "sections/sec1-introduction.tex" 1789412360.32999 3139 dff9f075a92723d807043d9012a9ef2e ""
-  "sections/sec2-preliminaries.tex" 1789412407.82995 3971 97f4f48014334cb703b0dcc8ff523476 ""
+  "main.aux" 1789486942.31091 10087 3f15a222f06636b1cf830c6dd9ebd92e "xelatex"
+  "main.out" 1789486942.31091 2558 e3d4faaed923ce6576089e5d96ed8fb1 "xelatex"
+  "main.tex" 1789486845.84292 6735 36214c0d77ef34ee854b452c77142e7e ""
+  "sections/appendix.tex" 1789486710.91892 10780 9640d4ebd03c2ca7570bbf60db21d7ec ""
+  "sections/sec1-introduction.tex" 1789486158.96299 2696 d5141cb28e7aefe9b31b1a6cf5b847ba ""
+  "sections/sec2-preliminaries.tex" 1789486845.84292 4073 3b46dcde8c5042fddd2ce6e85aa3f043 ""
   "sections/sec3-todq.tex" 1786849315.2995 2809 e91edc7e2c23881cdb3ff3c0a82e6222 ""
-  "sections/sec4-error.tex" 1789412456.39387 5089 0706c3f48aa3d406a9e3defb5d932fce ""
-  "sections/sec5-control.tex" 1789412942.37575 16218 a0949ef0cbcda4e1a1a119d2866ee50b ""
-  "sections/sec7-conclusion.tex" 1789412775.41741 1932 e7926873fbd1bab2b2d00965b65bf773 ""
-  "sections/sec7-hardware.tex" 1789412942.37591 7851 62822aa6d1c61f50d889fd743f82208e ""
+  "sections/sec4-error.tex" 1789486158.96299 4138 a58025f4359a7d78b767ce3b94094ce1 ""
+  "sections/sec5-control.tex" 1789486710.91892 14396 960093a95431edc1c2c9715b0e8391c5 ""
+  "sections/sec7-conclusion.tex" 1789486507.61494 1236 73152b120473eea67fede68344343d9a ""
+  "sections/sec7-hardware.tex" 1789486845.84292 6331 206b7b3e92bec1764b07718648ddcd7e ""
   "tndq-style.sty" 1788973215.98155 3450 28f18aab0a2f55378a931dc770acf816 ""
   (generated)
   "main.aux"

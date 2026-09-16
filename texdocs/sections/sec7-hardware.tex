@@ -5,19 +5,19 @@
 
 \subsection{平台、任务与实验矩阵}
 
-实机平台为六自由度 B601-DM 机械臂：关节总线与状态反馈 $500\,\mathrm{Hz}$，控制周期 $\Delta t=10\,\mathrm{ms}$，力矩出口 $\boldsymbol\tau=\hat M\ddot{\boldsymbol q}_{\mathrm{ref}}+\hat C\dot{\boldsymbol q}+\hat{\boldsymbol g}$ 加前馈模型补全项（粘性摩擦 $0.8$、库仑摩擦 $[0,\,0.08,\,1.69,\,0,0,0]\,\mathrm{N\,m}$、转子惯量 $\mathrm{diag}(0.01)$，均非反馈）。任务为同一目标位姿的 $10\,\mathrm{s}$ 点到点 min-jerk 运动（$\max\|\dot{\boldsymbol q}\|=0.253\,\mathrm{rad/s}$，$\max\|\ddot{\boldsymbol q}\|=2.44\,\mathrm{rad/s^2}$）。实验矩阵为\textbf{四律 $\times$ DC 刚度 $k\in\{8,16,24,36\}\,\mathrm{s^{-2}}\times$ 固件拴定弹簧 $K_{\mathrm{tr}}\in\{12,30,60\}\,\mathrm{N\,m/rad}$}（关节 1--3 全值，腕部关节分别取 $2/4/9\,\mathrm{N\,m/rad}$；阻尼 $D_{\mathrm{tr}}=\mathrm{diag}(12,18,18,2,2,2)\,\mathrm{N\,m\,s/rad}$），其中四种控制律（以下简称 C1--C4）为：C1（本文，式 \eqref{eq:5.2}）、C2（\cite{Ch20} 螺旋对数二阶基线）、C3（\cite{P2} 一阶 H∞ 律经 $k_{\mathrm{servo}}=20$ 速度伺服桥接）、C4（经典 SE(3) 解耦二阶律，四元数矢量误差）。拴定弹簧沿规划参考轨迹拉动（非固定锚点），从官方默认 $120/18$ 降一个量级以纯化任务律；$k{=}36$ 档共 22 次运行（每设置取一次有效运行的数据入图与正文），全部 33 次有效运行中力矩饱和为 0，加速度治理器介入帧占比最高 $11.2\%$。
+实机平台为六自由度 B601-DM 机械臂：关节总线与反馈 $500\,\mathrm{Hz}$，控制周期 $10\,\mathrm{ms}$；计算力矩含粘性摩擦系数 $0.8\,\mathrm{N\,m\,s/rad}$、库仑摩擦 $[0,\,0.08,\,1.69,\,0,0,0]\,\mathrm{N\,m}$ 及转子惯量 $0.01I_6\,\mathrm{kg\,m^2}$ 的模型补偿。任务为同一目标位姿的 $10\,\mathrm{s}$ 点到点 min-jerk 运动（$\max\|\dot{\boldsymbol q}\|=0.253\,\mathrm{rad/s}$，$\max\|\ddot{\boldsymbol q}\|=2.44\,\mathrm{rad/s^2}$）。实验覆盖四律、局部 DC 刚度 $k\in\{8,16,24,36\}\,\mathrm{s^{-2}}$ 和固件拴定刚度 $K_{\mathrm{tr}}\in\{12,30,60\}\,\mathrm{N\,m/rad}$ 的可用组合，非全因子设计。关节 1--3 取上述拴定刚度，腕部对应取 $2/4/9\,\mathrm{N\,m/rad}$；阻尼为 $\mathrm{diag}(12,18,18,2,2,2)\,\mathrm{N\,m\,s/rad}$。四律为 C1（本文）、C2（\cite{Ch20} 螺旋对数二阶基线）、C3（\cite{P2} 一阶 H∞ 律经 $k_{\mathrm{servo}}=20\,\mathrm{s^{-1}}$ 速度伺服桥接）、C4（SE(3) 解耦二阶律，四元数矢量误差）。拴定弹簧跟随规划参考，另在 $k=36$ 时测试 $K_{\mathrm{tr}}=2\,\mathrm{N\,m/rad}$。$k=36$ 档共 22 次运行，每设置选一次有效记录入图；全部 33 次有效运行中力矩饱和为 0，治理器介入帧占比最高 $11.2\%$。
 
-在近恒等、准静态条件下，$A_0=\operatorname{diag}(-\tfrac12I_3,I_3)$，因此旋转通道的等效比例刚度为 $K_{p,O}/4$，平移通道为 $K_{p,T}$。为使两通道具有相同的局部 DC 刚度 $k$，本文取 $K_{p,O}=4kI_3$、$K_{p,T}=kI_3$；二阶极点按 $K_d=a+b$、$k=ab$ 配置。C2、C3、C4 的参数按各自误差定义和传输因子配平。由定理~3(c$'$)，各档认证 $d\to e_\xi$ 的 $L_2$ 增益取 $\gamma^{*}=1/(a+b)$。加速度预算 $0.53K_d+0.05k\le12$ 仅作经验代理约束，不作为理论结论。
+近恒等时 $A_0=\operatorname{diag}(-\tfrac12I_3,I_3)$，C1 的等效刚度为 $K_{p,O}/4$ 与 $K_{p,T}$，故取 $K_{p,O}=4kI_3$、$K_{p,T}=kI_3$；以 $K_d=(a+b)I_6$、$k=ab$ 配置二阶极点。其余各律按误差定义与传输因子配平局部 DC 刚度，并采用共同限幅；这不代表阻尼、带宽或瞬态控制量相同，尤其 C3 含速度桥接。C1 理论增益为 $\gamma^*=1/(a+b)$。
 
-定义治理器残差 $r_{\rm gov}=u_{\rm applied}-u_{\rm law}$；治理器未介入时使用定理 3，介入时将其视为附加扰动，本文不单独认证。
+实机采用阻尼伪逆、离散控制与加速度治理器，实际任务加速度相对理想实现的差值构成附加扰动。本文未对这些实现残差及乘性界 $\alpha$ 单独认证，故即使治理器未介入，也不据此宣称定理 3 的连续时间证书已获实机验证。
 
 \begin{table}[!tbp]
 \centering\small
-\caption{实机增益阶梯与认证 $\gamma$ 阶梯（同 DC 刚度 $k=ab$ 配平；$\gamma^{*}=1/(a+b)$ 按定理~3(c$'$) 取最优证书，证书点 $(\kappa,\gamma_a)=(\gamma^{*},\sqrt{\gamma^{*}})$）。C3 括号内 $(\gamma_O,\gamma_T)$ 为其律内 H∞ 参数（$k_O=\sqrt2/\gamma_O$、$k_T=\sqrt2/\gamma_T$、$k_{\mathrm{servo}}=20$），与本文认证增益 $\gamma^{*}$ 无关。}
+\caption{局部 DC 刚度配平的增益阶梯。末列为 C1 理想模型的最优证书 $\gamma^*=1/(a+b)$；G2 仅作理论参考，未运行 C1。C3 的 $(\gamma_O,\gamma_T)$ 是律内参数（$k_O=\sqrt2/\gamma_O$、$k_T=\sqrt2/\gamma_T$），不是本文的认证增益。}
 \label{tab:hw-gains}
 \begin{tabular}{@{}lclcccl@{}}
 \toprule
-档 & $(a,b)$ & C1 $K_d;\,(p_O,p_T)$ & C2 $K_v;\,K_P$ & C3 $(\gamma_O,\gamma_T)$ & C4 $K_d;\,(K_{p,O},K_{p,T})$ & 认证 $\gamma^{*}$ (s) \\
+档 & $(a,b)$ & C1 $K_d;\,(p_O,p_T)$ & C2 $K_v;\,K_P$ & C3 $(\gamma_O,\gamma_T)$ & C4 $K_d;\,(K_{p,O},K_{p,T})$ & $\gamma^{*}$ (s) \\
 \midrule
 G2 & $(2,4)$ & -- & $6;\ 8I_6$ & $(1.768,\,3.536)$ & -- & $1/6$ \\
 G3 & $(2,8)$ & $10;\ (64,16)$ & $10;\ 16I_6$ & $(0.884,\,1.768)$ & $10;\ (32,16)$ & $1/10$ \\
@@ -29,13 +29,13 @@ G4 & $(3,12)$ & $15;\ (144,36)$ & $15;\ 36I_6$ & $(0.393,\,0.786)$ & $15;\ (72,3
 
 \subsection{结果与分析}
 
-\textbf{增益阶梯：瞬态随 $k$ 单调改善。}图~\ref{fig:hw-ladder}（拴定 $30\,\mathrm{N\,m/rad}$）显示：姿态误差 p95 随 $k$ 在全部四律上单调下降（$k{=}8{\to}36$ 降 $14\%$--$20\%$，C1 自 $k{=}16$ 降 $29\%$），位置误差 p95 弱下降（$4\%$--$19\%$），与 $\gamma^{*}$ 收紧（$1/6\to1/15\,\mathrm{s}$，等价于阻尼 $K_d$ 提高，定理~3(c$'$)）的方向一致。
+\textbf{增益阶梯。}图~\ref{fig:hw-ladder}（拴定 $30\,\mathrm{N\,m/rad}$）中，姿态误差 p95 随 $k$ 下降（$k=8{\to}36$ 降 $14\%$--$20\%$，C1 自 $k=16$ 降 $29\%$），位置误差 p95 降 $4\%$--$19\%$。C1 对应的理论界从 $1/10$ 降至 $1/15\,\mathrm{s}$；瞬态改善与此方向一致，但非最坏扰动增益测量。
 
-\textbf{准静态残差由拴定弹簧与摩擦主导。}与理想无拴定条件不同，实机终态残差对任务刚度 $k$ 不敏感（$k{=}16{\to}36$ 变化 $\le10\%$），而随拴定刚度下降显著增大：$K_{\mathrm{tr}}=60/30/12\,\mathrm{N\,m/rad}$ 对应终态位置残差约 $5.5/17/30\,\mathrm{mm}$（图~\ref{fig:hw-laws-tether}）；拴定进一步降至 $2\,\mathrm{N\,m/rad}$（任务律近乎独立承担跟踪的纯度极限）时，残差约 $32$--$40\,\mathrm{mm}$ 且四律仍然重合（图~\ref{fig:hw-laws-tether30} 左）。机制：近零速段摩擦前馈按低速窗口淡出，残差由关节摩擦与最软弹簧（拴定）的平衡决定，任务刚度非主导弹簧。因此静态标度律（稳态残差正比于扰动、反比于刚度）的反演前提（任务刚度为主导弹簧）在该协议下不满足，其无拴定定量核验留作后续工作。
+\textbf{拴定刚度与准静态残差。}所示记录中，终态残差对任务刚度较不敏感（$k=16{\to}36$ 变化 $\le10\%$），但 $K_{\mathrm{tr}}=60/30/12\,\mathrm{N\,m/rad}$ 时位置残差约为 $5.5/17/30\,\mathrm{mm}$（图~\ref{fig:hw-laws-tether}）；降至 $2\,\mathrm{N\,m/rad}$ 后约为 $32$--$40\,\mathrm{mm}$，四律仍接近（图~\ref{fig:hw-laws-tether30} 左）。这些结果与拴定弹簧和低速摩擦补偿影响残差的解释一致，但不足以单独辨识摩擦、模型失配与任务反馈的贡献。
 
-\textbf{等控制资源条件下的控制律对比：精度相当，差异在证书。}图~\ref{fig:hw-laws-tether30}（右，$k{=}36$、拴定 $30$）显示：同一拴定档内四律的终态与 p95 差异（位置 $\le2.4\,\mathrm{mm}$、姿态 $\le0.35^\circ$）已与单次运行的测量波动同量级。记录中的精度接近，说明 C1 的收益不在跟踪精度，而在\textbf{可核验的证书}：其余三律均无定理 3 意义下的证书（C2/C4 的位姿反馈不经 $A^\top$ 整形，C3 为一阶桥接）；C1 的记录信号满足增益和水平集条件，治理器介入帧按 $r_{\rm gov}$ 计为附加扰动，不声称连续时间证书仍严格成立。
+\textbf{配平条件下的四律对比。}图~\ref{fig:hw-laws-tether30}（右，$k=36$、拴定 $30$）中，四律终态与 p95 差异为位置 $\le2.4\,\mathrm{mm}$、姿态 $\le0.35^\circ$，未作统计等效性检验。本文证书针对 C1 理想模型；C2--C4 未在此存储函数下分析，不能由此断言其不存在其他证书。
 
-\textbf{局限。}本节为单目标位姿、无外生扰动注入的实机验证；准静态残差受固件拴定弹簧与关节摩擦主导，静态标度律的实机定量核验需无拴定或任务刚度远高于拴定刚度的工况。
+\textbf{局限。}实验仅考察单目标跟踪，未注入外生扰动；跟踪精度和理论衰减界应分别解读。
 
 \begin{figure}[!tb]
 \centering
@@ -43,7 +43,7 @@ G4 & $(3,12)$ & $15;\ (144,36)$ & $15;\ 36I_6$ & $(0.393,\,0.786)$ & $15;\ (72,3
 \includegraphics[width=0.44\textwidth]{figures/hw_ts_ladder_C2_tether30_d10.png}\\
 \includegraphics[width=0.44\textwidth]{figures/hw_ts_ladder_C3_tether30_d10.png}\hfill
 \includegraphics[width=0.44\textwidth]{figures/hw_ts_ladder_C4_tether30_d10.png}
-\caption{各律增益阶梯（拴定 $30\,\mathrm{N\,m/rad}$，$k\in\{8,16,24,36\}$ 中各律可用档，$10\,\mathrm{s}$ 标准轨迹单次运行，traj\_t 对齐）：姿态与 twist 瞬态误差随 $k$ 单调下降，位置误差弱下降，与 $\gamma^{*}$ 收紧（定理~3(c$'$)）的方向一致。}
+\caption{各律增益阶梯（拴定 $30\,\mathrm{N\,m/rad}$，各律可用档，$10\,\mathrm{s}$ 轨迹单次运行，按轨迹时间对齐）：姿态与 twist 瞬态误差随增益提高而下降，位置误差变化较小。}
 \label{fig:hw-ladder}
 \end{figure}
 
@@ -51,7 +51,7 @@ G4 & $(3,12)$ & $15;\ (144,36)$ & $15;\ 36I_6$ & $(0.393,\,0.786)$ & $15;\ (72,3
 \centering
 \includegraphics[width=0.49\textwidth]{figures/hw_ts_laws_k36_tether12_d10.png}\hfill
 \includegraphics[width=0.49\textwidth]{figures/hw_ts_laws_k36_tether60_d10.png}
-\caption{拴定刚度扫描下的四律对比（$k{=}36$）：左为 $K_{\mathrm{tr}}{=}12\,\mathrm{N\,m/rad}$（摩擦平衡主导，终态残差 $\approx30\,\mathrm{mm}$）；右为 $K_{\mathrm{tr}}{=}60\,\mathrm{N\,m/rad}$（毫米级，终态 $\approx5.5\,\mathrm{mm}$）。终态残差随拴定刚度下降而增大，且四律保持重合。}
+\caption{拴定刚度扫描下的四律对比（$k=36$）：左为 $K_{\mathrm{tr}}=12\,\mathrm{N\,m/rad}$（终态残差约 $30\,\mathrm{mm}$）；右为 $60\,\mathrm{N\,m/rad}$（约 $5.5\,\mathrm{mm}$）。拴定刚度降低时残差增大，四律曲线接近。}
 \label{fig:hw-laws-tether}
 \end{figure}
 
@@ -59,6 +59,6 @@ G4 & $(3,12)$ & $15;\ (144,36)$ & $15;\ 36I_6$ & $(0.393,\,0.786)$ & $15;\ (72,3
 \centering
 \includegraphics[width=0.49\textwidth]{figures/hw_ts_laws_k36_tether2_d10.png}\hfill
 \includegraphics[width=0.49\textwidth]{figures/hw_ts_laws_k36_tether30_d10.png}
-\caption{等控制资源条件下的四律对比（$k{=}36$，单次运行，$10\,\mathrm{s}$ 标准轨迹）：左为 $K_{\mathrm{tr}}{=}2\,\mathrm{N\,m/rad}$（拴定近乎退出的纯度极限，准静态残差由摩擦死区决定、约 $32$--$40\,\mathrm{mm}$）；右为 $K_{\mathrm{tr}}{=}30\,\mathrm{N\,m/rad}$（终态 $\approx17\,\mathrm{mm}$）。拴定刚度跨越一个数量级，所示记录中的四条曲线接近；C1 的收益在证书（表~\ref{tab:hw-gains}）而非精度。}
+\caption{局部刚度配平、共同限幅下的四律对比（$k=36$，$10\,\mathrm{s}$ 轨迹单次运行）：左为 $K_{\mathrm{tr}}=2\,\mathrm{N\,m/rad}$（终态残差约 $32$--$40\,\mathrm{mm}$）；右为 $30\,\mathrm{N\,m/rad}$（约 $17\,\mathrm{mm}$）。曲线精度接近，表~\ref{tab:hw-gains} 的证书值并非实测增益。}
 \label{fig:hw-laws-tether30}
 \end{figure}

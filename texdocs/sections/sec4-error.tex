@@ -5,7 +5,7 @@
 
 \subsection{误差对象的阶数}
 
-计算力矩律的反馈项（§5）为 $-K_de_\xi-A^\top K_pe_z$，只使用位姿与速度两阶：参考加速度走前馈（来自期望轨迹，确定量），加速度层不确定性归入扰动（进入 $\dot e_\xi$ 方程的 $d(t)$，§5.2）；引入加速度误差只会把高噪声的加速度估计（差分方差 $\propto\Delta t^{-4}$）带入反馈并增加一维动态。因此\textbf{正运动学与期望轨迹用 TODQ 建模（前馈需要 $\sigma^2$ 项），误差体系定义在 HDQ 上}。
+计算力矩律的反馈项为 $-K_de_\xi-A^\top K_pe_z$，只需位姿与速度误差；期望加速度用于前馈，动力学失配归入 $\dot e_\xi$ 中的扰动。因此正运动学与期望轨迹用 TODQ 建模，误差体系定义在 HDQ 上，无需测量加速度误差。
 
 \subsection{定理 1：误差的 HDQ 表示}
 
@@ -39,12 +39,12 @@ e_\xi\triangleq\mathrm{vec}_6\tilde{\boldsymbol\xi},
 \end{theorem}
 
 \begin{proof}
-\eqref{eq:4.2}：将 \eqref{eq:2.3} 用于 $\hat{\underline a}_0=\hat{\underline x},\hat{\underline a}_1=\dot{\hat{\underline x}},\hat{\underline b}_0=\hat{\underline x}_d^{\,*},\hat{\underline b}_1=\dot{\hat{\underline x}}_d^{\,*}$（共轭与求导交换保证 $(\breve x_d)^*$ 的 $\varepsilon^*$ 项为 $\dot{\hat{\underline x}}_d^{\,*}$），$\varepsilon^*$ 项即 Leibniz 展开的 $\frac{d}{dt}(\hat{\underline x}\hat{\underline x}_d^{\,*})$。(i) 由 $2(-\dot{\tilde x})(-\tilde x^*)=2\dot{\tilde x}\tilde x^*$ 即得；(ii) 由 \eqref{eq:4.3} 右乘 $\tilde x$ 即 $\dot{\tilde x}=\tfrac12\tilde{\boldsymbol\xi}\tilde x$；(iii)：$\dot{\tilde x}=\dot{\hat{\underline x}}\hat{\underline x}_d^{\,*}+\hat{\underline x}\dot{\hat{\underline x}}_d^{\,*}=\tfrac12\boldsymbol\xi\tilde x-\tfrac12\tilde x\boldsymbol\xi_d$（用 $\dot{\hat{\underline x}}_d^{\,*}=-\tfrac12\hat{\underline x}_d^{\,*}\boldsymbol\xi_d$），右乘 $2\tilde x^*$ 得 \eqref{eq:4.4}。
+式 \eqref{eq:4.2} 由 HDQ 乘法与 Leibniz 法则直接得到。(i) 对 $\tilde x\tilde x^*=1$ 求导可得 $\tilde{\boldsymbol\xi}+\tilde{\boldsymbol\xi}^*=0$，故其为纯 DQ；同时翻转 $\tilde x,\dot{\tilde x}$ 不改变 $2\dot{\tilde x}\tilde x^*$。(ii) 式 \eqref{eq:4.3} 右乘 $\tilde x$ 即得。(iii) 由 $\dot{\hat{\underline x}}_d^{\,*}=-\tfrac12\hat{\underline x}_d^{\,*}\boldsymbol\xi_d$ 得 $\dot{\tilde x}=\tfrac12\boldsymbol\xi\tilde x-\tfrac12\tilde x\boldsymbol\xi_d$，右乘 $2\tilde x^*$ 即 \eqref{eq:4.4}。
 \end{proof}
 
-\subsection{定理 2：输出误差的级联运动学}
+\subsection{定理 2：输出误差运动学}
 
-沿用 \cite{P2} 输出 $e_z=[\mathcal O;\mathcal T]\in\mathbb R^6$，$\mathcal O=-\mathrm{Im}\,\tilde r$，$\mathcal T=\tilde p$（$\tilde r,\tilde p$ 为 $\tilde x$ 的旋转/平移分量，$\tilde r=\tilde\eta+\tilde\mu$）。合并范数采用特征长度 $\ell$ 对平移量归一化，即 $\bar{\mathcal T}=\mathcal T/\ell$、$\bar v=v/\ell$；为简洁起见，后文仍记作 $\mathcal T,v$。
+沿用 \cite{P2} 输出 $e_z=[\mathcal O;\mathcal T]\in\mathbb R^6$，$\mathcal O=-\mathrm{Im}\,\tilde r$，$\mathcal T=\tilde p$（$\tilde r,\tilde p$ 为 $\tilde x$ 的旋转/归一化平移分量，$\tilde r=\tilde\eta+\tilde\mu$）。
 
 \begin{theorem}[输出误差运动学闭式]\label{thm:2}
 记 $\tilde{\boldsymbol\xi}=\tilde\omega+\varepsilon\tilde v$，则
@@ -65,4 +65,4 @@ A(\tilde x)=
 旋转分量：由 $\dot{\tilde r}=\tfrac12\tilde\omega\tilde r$（定理 1(ii) 的四元数部），$\dot{\mathcal O}=-\mathrm{Im}(\tfrac12\tilde\omega\tilde r)=-\tfrac12(\tilde\eta I_3+[\mathcal O]_\times)\tilde\omega$（用 $\tilde\omega\times\tilde\mu=[\mathcal O]_\times\tilde\omega$）。平移分量：由 twist 约定 $\tilde v=\dot{\tilde p}+\tilde p\times\tilde\omega$ 得 $\dot{\mathcal T}=\tilde v-[\mathcal T]_\times\tilde\omega$。
 \end{proof}
 
-定理 1 + 定理 2 给出具有级联运动学结构的二阶误差系统：$e_z\xrightarrow{A}e_\xi$，$\dot e_z=Ae_\xi$；$\dot e_\xi$ 的动态由控制律与扰动决定（§5）。误差状态共 12 维，不含加速度层；这是 §4.1 论证的结构性取舍。
+定理 1、2 给出二阶误差系统：$\dot e_z=Ae_\xi$，$\dot e_\xi$ 由控制律与扰动决定（§5），无需另设加速度误差状态。
