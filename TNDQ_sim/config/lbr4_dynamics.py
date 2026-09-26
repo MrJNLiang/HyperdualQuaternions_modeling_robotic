@@ -88,6 +88,13 @@ LBR4_JOINT_LIMITS = np.deg2rad(
 # 任一控制器触发饱和即记录，饱和处理统一为限幅）
 LBR4_TORQUE_LIMITS = np.array([176.0, 176.0, 100.0, 100.0, 100.0, 38.0, 38.0])
 
+# Joint friction used by the non-ideal plant experiments.  These are explicit
+# uncertainty parameters, not claimed manufacturer values: the public LBR4+
+# model does not provide a validated friction identification table.
+LBR4_VISCOUS_FRICTION = np.array([0.35, 0.35, 0.25, 0.25, 0.12, 0.08, 0.06])
+LBR4_COULOMB_FRICTION = np.array([1.20, 1.20, 0.80, 0.80, 0.35, 0.22, 0.16])
+LBR4_FRICTION_SMOOTHING = 0.02  # rad/s, smooth sign for numerical integration
+
 GRAVITY = np.array([0.0, 0.0, -9.81])   # 基座系重力加速度 [m/s^2]
 
 _EZ = np.array([0.0, 0.0, 1.0])         # 标准 DH 关节轴（z_{i-1}）
@@ -124,7 +131,8 @@ class LBR4NominalDynamics:
                      表即与引擎 M_total = M_links + diag(B) 严格匹配
     """
 
-    def __init__(self, dh_table, mismatch_scale=1.0, motor_inertia=None):
+    def __init__(self, dh_table, mismatch_scale=1.0, motor_inertia=None,
+                 friction=False, viscous_friction=None, coulomb_friction=None):
         self.dh = np.asarray(dh_table, dtype=float)
         self.n = len(self.dh)
         s = float(mismatch_scale)
@@ -136,6 +144,18 @@ class LBR4NominalDynamics:
         base_B = LBR4_MOTOR_INERTIA[:self.n] if motor_inertia is None \
             else np.asarray(motor_inertia, dtype=float).reshape(self.n)
         self.B = base_B * s
+        self.friction = bool(friction)
+        self.viscous_friction = np.zeros(self.n) if viscous_friction is None \
+            else np.asarray(viscous_friction, dtype=float).reshape(self.n)
+        self.coulomb_friction = np.zeros(self.n) if coulomb_friction is None \
+            else np.asarray(coulomb_friction, dtype=float).reshape(self.n)
+
+    def friction_torque(self, q_dot):
+        """Object-side viscous plus smooth Coulomb friction torque."""
+        q_dot = np.asarray(q_dot, dtype=float)
+        return (self.viscous_friction * q_dot
+                + self.coulomb_friction
+                * np.tanh(q_dot / LBR4_FRICTION_SMOOTHING))
 
     # -- 内部：逐关节变换 -----------------------------------------------------
 
@@ -247,7 +267,10 @@ class LBR4NominalDynamics:
         （--backend internal --plant torque 时替代式 (5.1) 的加速度级理想对象）。"""
         M = self.mass_matrix(q)
         h = self.coriolis_plus_gravity(q, q_dot)
-        return np.linalg.solve(M, np.asarray(tau, dtype=float) - h)
+        tau_net = np.asarray(tau, dtype=float) - h
+        if self.friction:
+            tau_net = tau_net - self.friction_torque(q_dot)
+        return np.linalg.solve(M, tau_net)
 
 
 def clip_torque(tau):

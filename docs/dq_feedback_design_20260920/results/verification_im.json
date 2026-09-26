@@ -1,0 +1,59 @@
+{
+  "nonlinear": [
+    {
+      "gamma": 0.027777777777777776,
+      "modeled_disturbance": true,
+      "min_eta": 0.9999987196625575,
+      "min_integrated_dissipation_margin": 0.0,
+      "energy_output": 0.0001061112950942541,
+      "energy_bound": 0.0007517807468821283,
+      "final_h_norm": 1.580910766037675e-05,
+      "late_h_rms": 4.722511858208139e-05,
+      "induced_ratio": null
+    },
+    {
+      "gamma": 0.02,
+      "modeled_disturbance": false,
+      "min_eta": 0.9999991701960255,
+      "min_integrated_dissipation_margin": 0.0,
+      "energy_output": 6.591343089991799e-05,
+      "energy_bound": 0.00036866823918369694,
+      "final_h_norm": 5.577081672396347e-06,
+      "late_h_rms": 1.1198234168504495e-05,
+      "induced_ratio": 0.008456664325967133
+    },
+    {
+      "gamma": 0.027777777777777776,
+      "modeled_disturbance": false,
+      "min_eta": 0.9999988928042456,
+      "min_integrated_dissipation_margin": 0.0,
+      "energy_output": 9.531077037660097e-05,
+      "energy_bound": 0.0007111655848450912,
+      "final_h_norm": 2.048237019365229e-05,
+      "late_h_rms": 4.8771708509079684e-05,
+      "induced_ratio": 0.010169114170223991
+    },
+    {
+      "gamma": 0.05,
+      "modeled_disturbance": false,
+      "min_eta": 0.999998424626557,
+      "min_integrated_dissipation_margin": 0.0,
+      "energy_output": 0.0001787364260692303,
+      "energy_bound": 0.002304176494898078,
+      "final_h_norm": 9.597469926265115e-05,
+      "late_h_rms": 0.0002871368510792885,
+      "induced_ratio": 0.013925752369107073
+    }
+  ],
+  "frequency": {
+    "hinf_dense_grid": 0.027532244999925105,
+    "bound": 0.027777777777777776,
+    "max_ratio_to_C2": 1.2499007682086907,
+    "rejection_near_selected_frequencies": [
+      2.45145188697016e-11,
+      4.642383819855098e-11,
+      6.43119741894986e-11
+    ]
+  },
+  "discrete_oscillator_error": 1.2878587085651816e-14
+}

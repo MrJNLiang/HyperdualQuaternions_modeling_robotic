@@ -1,0 +1,46 @@
+{
+  "c1_gain_set": "base",
+  "cal_t_end": 10.0,
+  "full_t_end": 10.0,
+  "tol": 0.01,
+  "anchors": [
+    "E_nongrav",
+    "tau_slew_rms",
+    "tau_peak",
+    "IAE_p",
+    "IAE_a_deg"
+  ],
+  "conditions": [
+    [
+      "circle",
+      "none"
+    ],
+    [
+      "circle",
+      "noise"
+    ],
+    [
+      "circle",
+      "mismatch"
+    ],
+    [
+      "circle",
+      "friction2"
+    ],
+    [
+      "circle",
+      "contact"
+    ],
+    [
+      "line",
+      "none"
+    ]
+  ],
+  "targets": {
+    "E_nongrav": 38.433054293733285,
+    "tau_slew_rms": 5.947908790262638,
+    "tau_peak": 49.39196772103654,
+    "IAE_p": 0.3159840405992152,
+    "IAE_a_deg": 36.17617303725747
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "urdf": "reBotArm_control_py/urdf/reBot-DevArm_fixend_description/urdf/reBot-DevArm_fixend.urdf",
+  "T": 16.0,
+  "dt": 0.005,
+  "substeps": 5,
+  "nominal_armature": [
+    0.01,
+    0.01,
+    0.01,
+    0.01,
+    0.01,
+    0.01
+  ],
+  "nominal_d": 15,
+  "nominal_k": 36,
+  "lambda_": 3,
+  "kappa": 12,
+  "ki": 16,
+  "limits": [
+    27.0,
+    27.0,
+    27.0,
+    7.0,
+    7.0,
+    7.0
+  ],
+  "seeds": 3,
+  "plant": "URDF rigid body; synthetic uncertainties, no MIT tether, no hardware contact",
+  "integration": "semi-implicit Euler, five substeps; sampled controller, ZOH torque",
+  "python": "3.8.20 (default, Oct  3 2024, 15:24:27) \n[GCC 11.2.0]",
+  "pinocchio": "2.7.0",
+  "numpy": "1.24.4"
+}

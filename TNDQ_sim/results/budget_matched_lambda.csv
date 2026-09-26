@@ -1,0 +1,17 @@
+anchor,law,lam,note
+E_nongrav,C1,1.0,reference
+E_nongrav,C2,1.125,bisected
+E_nongrav,C2abl,1.0,bracket hit
+E_nongrav,C3,1.015625,bisected
+E_qddot,C1,1.0,reference
+E_qddot,C2,1.125,bisected
+E_qddot,C2abl,1.0,bracket hit
+E_qddot,C3,1.015625,bisected
+IAE_p,C1,1.15234375,bisected
+IAE_p,C2,1.15234375,bisected
+IAE_p,C2abl,1.15234375,bisected
+IAE_p,C3,1.125,bisected
+E_tau2,C1,1.0,reference
+E_tau2,C2,0.25,bracket hit
+E_tau2,C2abl,0.25,bracket hit
+E_tau2,C3,0.25,bracket hit

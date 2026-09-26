@@ -59,6 +59,7 @@ import numpy as np
 from config import params
 from config.lbr4_dynamics import (
     LBR4NominalDynamics, clip_torque, check_joint_limits, LBR4_JOINT_LIMITS,
+    LBR4_VISCOUS_FRICTION, LBR4_COULOMB_FRICTION,
 )
 from core.kinematics import TNDQSerialChain
 from core.dq_algebra import dq_translation, dq_rotation
@@ -108,11 +109,14 @@ class InternalTorquePlant:
     E3 时控制器端另建一套高估 20% 的名义模型 -> 失配折算为 w_dyn，
     由定理 3(c)/(d) 证书兜底（总方案 §5.1 的失配源设计）。"""
 
-    def __init__(self, q0, dt, dh_table):
+    def __init__(self, q0, dt, dh_table, friction_scale=1.0):
         self.q = np.asarray(q0, dtype=float).copy()
         self.q_dot = np.zeros_like(self.q)
         self.dt = dt
-        self.dyn = LBR4NominalDynamics(dh_table, mismatch_scale=1.0)
+        self.dyn = LBR4NominalDynamics(
+            dh_table, mismatch_scale=1.0, friction=True,
+            viscous_friction=friction_scale * LBR4_VISCOUS_FRICTION,
+            coulomb_friction=friction_scale * LBR4_COULOMB_FRICTION)
 
     def read(self):
         return self.q.copy(), self.q_dot.copy()

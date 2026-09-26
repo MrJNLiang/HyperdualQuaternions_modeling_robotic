@@ -1,0 +1,330 @@
+\section{先说明设计目标，再介绍分析工具}
+
+本文希望提供以下设计链：
+\[
+\boxed{\text{扰动预算与误差要求}\ \longrightarrow\ \gamma
+\ \longrightarrow\ (K_d,K_p)\ \longrightarrow\ \text{有条件的误差保证}.}
+\]
+同一符号不能混用两种目标。能量要求是 $\|y\|_{L_2}\le\gamma\|d\|_{L_2}$；逐时范围要求是 $\|d(t)\|\le D\Rightarrow\|y(t)\|\le E$。前者不能直接替代后者。非零初始误差还须计入初始能量，或限制允许的初始状态。
+
+参照文献 Figueredo、Adorno 与 Ishihara，\emph{Automatica} 132 (2021) 109817，其 Definition 1 对姿态和平移误差规定零初值 $L_2$ 增益；Theorem 1 的速度级控制器取
+\[
+\kappa_O=(\gamma_{O1}^{-2}+\gamma_{O2}^{-2})^{1/2},\qquad
+\kappa_T=(\gamma_{T1}^{-2}+\gamma_{T2}^{-2})^{1/2}.
+\]
+四个指标相同时为 $\kappa=\sqrt2/\gamma$。其含义首先是误差能量相对扰动能量的放大上限，并非仅凭这一公式即可宣布任意时刻误差小于指定毫米数。
+
+本文的原定理 3(c) 则认证加速度扰动到 \emph{twist} 误差的能量增益。该结果可以直接用于阻尼设计，但与参照文献的输入层级、输出对象不同。若目标包括逐时位姿范围，应增加第~\ref{sec:peak}~节的结论，而不能仅重命名原来的 $\gamma_a\sqrt\kappa$。
+
+\section{保留原控制律，先给出直接的 \texorpdfstring{$\gamma$}{gamma} 设计}
+
+记 $\widetilde x=xx_d^*=\widetilde r+\varepsilon\widetilde p\widetilde r/2$，$\widetilde r=\eta+\mu$，$e_z=[-\mu;p]$，$v=e_\xi=[v_R;v_T]$。下文平移、线速度和线加速度统一按固定长度 $L$ 归一化，$p=\widetilde p/L$；机械臂接口返回物理量时相应乘回 $L$。可取 $L=1\,\mathrm m$。旋转角以弧度表示。
+
+HDQ 误差提供 $\widetilde x,\dot{\widetilde x}$，并由 $\widetilde\xi=2\dot{\widetilde x}\widetilde x^*$ 得到 $v$。由现有运动学恒等式，
+\begin{equation}
+\dot e_z=A(\widetilde x)v,
+\qquad
+A=\begin{bmatrix}
+-\frac12(\eta I-[\mu]_\times)&0\\
+-[p]_\times&I
+\end{bmatrix}.
+\label{new:kin}
+\end{equation}
+保留原控制器
+\begin{equation}
+u=u_{\rm ff}-K_dv-A^\top K_pe_z,
+\qquad
+\ddot q_{\rm ref}=J^+(u-\dot J\dot q).
+\label{new:controller}
+\end{equation}
+这里及后文的任务 Jacobian 与前馈使用同样的归一化；$u_{\rm ff}$ 为原有的解析运输前馈。总加速度残差记为 $d$，闭环为
+\begin{equation}
+\dot v=-K_dv-A^\top K_pe_z+d.
+\label{new:closed}
+\end{equation}
+对实际机械臂，这一模型要求正则工作域、解析量和输入实现假设在所考察时段有效；阻尼逆、采样、饱和等若存在，须纳入实际残差预算或另作分析。
+
+为突出参数的意义，主文取
+\[
+K_p=\operatorname{diag}(p_OI_3,p_TI_3),\qquad
+K_d=\operatorname{diag}(k_RI_3,k_TI_3),
+\quad p_O,p_T,k_R,k_T>0.
+\]
+不将一般矩阵增益和两个辅助证书参数作为读者首先需要选择的量。
+
+下文的 $V$ 可以理解为“速度误差平方加上加权的位姿误差平方”，只是为了推导不等式而构造的误差总量，不必将它理解为机械臂真实的物理势能。归一化后，精确地说 $v=\operatorname{diag}(I_3,L^{-1}I_3)\operatorname{vec}_6(\widetilde\xi)$。
+
+\begin{theorem}[由目标 twist 能量增益直接设计阻尼]\label{new:energy}
+给定目标 $\gamma_{\xi,R},\gamma_{\xi,T}>0$，取
+\begin{equation}
+\boxed{k_R\ge\gamma_{\xi,R}^{-1},\qquad
+k_T\ge\gamma_{\xi,T}^{-1}.}
+\label{new:energy-gain}
+\end{equation}
+定义
+\[
+V_R=\frac12\|v_R\|^2+\frac{p_O}{2}\|\mu\|^2,
+\qquad
+V_T=\frac12\|v_T\|^2+\frac{p_T}{2}\|p\|^2.
+\]
+则对 $i\in\{R,T\}$ 和任意有效有限时段 $[0,T]$，有
+\begin{equation}
+\boxed{\int_0^T\|v_i\|^2dt
+\le\gamma_{\xi,i}^2\int_0^T\|d_i\|^2dt
++2\gamma_{\xi,i}V_i(0).}
+\label{new:energy-bound}
+\end{equation}
+零初值时，$\|d_i\|_{L_2[0,T]}\le D_{2,i}$ 且目标为 $\|v_i\|_{L_2[0,T]}\le E_{2,i}$，可选择 $\gamma_{\xi,i}\le E_{2,i}/D_{2,i}$，再由式~\eqref{new:energy-gain}~得到反馈增益。非零初值则应求解
+\[
+\gamma_{\xi,i}^2D_{2,i}^2+2\gamma_{\xi,i}V_i(0)\le E_{2,i}^2,
+\]
+不能删除初值项。这里 $\gamma_{\xi,i}$ 的量纲为时间。
+\end{theorem}
+
+\begin{proof}
+由四元数误差运动学和 $A^\top$ 反馈的配对，结合 $p\times p=0$、$p^\top(v_R\times p)=0$，两个通道分别满足
+\[
+\dot V_i=-k_i\|v_i\|^2+v_i^\top d_i.
+\]
+将储能函数缩放为 $S_i=\gamma_{\xi,i}V_i$。利用 $\gamma_{\xi,i}k_i\ge1$，直接配方得
+\begin{align*}
+\dot S_i
+&\le-\|v_i\|^2+\gamma_{\xi,i}v_i^\top d_i\\
+&=-\frac12\|v_i\|^2+\frac{\gamma_{\xi,i}^2}{2}\|d_i\|^2
+-\frac12\|v_i-\gamma_{\xi,i}d_i\|^2\\
+&\le-\frac12\|v_i\|^2+\frac{\gamma_{\xi,i}^2}{2}\|d_i\|^2.
+\end{align*}
+积分并使用 $S_i(T)\ge0$，即得式~\eqref{new:energy-bound}。
+\end{proof}
+
+\begin{remark}
+若取等号 $k_i=1/\gamma_{\xi,i}$，则 $\gamma_{\xi,i}$ 已直接进入原反馈律，没有增加控制器状态。这与原稿的最优证书反演是同一个结果的设计式写法。其意义是阻尼调参，不能据此宣称已控制位姿峰值。
+\end{remark}
+
+一个直接的例子是单轴平移模型 $\ddot p+k_T\dot p+p_Tp=d_T$。恒定扰动下，其稳态为 $\dot p=0$、$p=d_T/p_T$；速度误差很小可以同时伴随非零位置偏差。因此，上一定理中没有出现 $p_T$ 并非遗漏，而是因为它认证的输出为速度误差。恒定扰动不是无穷时域 $L_2$ 信号，这个例子说明的是输出对象的区别，不是对能量定理的反例。
+
+\subsection{原来的 Schur 补和“最优性”放在哪里}
+
+它们可移入附录作为上述直接设计的补充。原判据
+\[
+k_i\ge\tfrac12(\kappa_i^{-1}+\gamma_{a,i}^{-2})
+\]
+令 $\gamma_{\xi,i}=\gamma_{a,i}\sqrt{\kappa_i}$，在 $\kappa_i=\gamma_{a,i}^2=\gamma_{\xi,i}$ 处给出式~\eqref{new:energy-gain}。该优化针对给定储能证书族，不是对所有控制器求全局最优。
+
+小误差下，各轴速度误差的传递函数为
+\[
+G_{v,i}(z)=\frac{z}{z^2+k_i z+c_i},
+\qquad c_R=p_O/4,\quad c_T=p_T.
+\]
+其模平方为 $\omega^2/[(c_i-\omega^2)^2+k_i^2\omega^2]$，在 $\omega=\sqrt{c_i}$ 达到 $1/k_i^2$，故线性化增益为 $1/k_i$。这个结论说明该阻尼界在所述局部模型中不保守，但它仍然是速度误差增益。
+
+\section{需要“误差始终在范围内”时，补上这一主结果}\label{sec:peak}
+
+本节继续保留式~\eqref{new:controller}。引入的 $s$ 仅为证明变量，由现有误差计算，不是积分器、观测器或新的反馈状态。
+
+令
+\[
+x_R=2\mu=-2\mathcal O,\qquad x_T=p,
+\qquad s_i=v_i+a_i x_i,\quad a_i>0.
+\]
+以两个正参数 $a_i,b_i$ 表示原有增益：
+\begin{equation}
+\boxed{K_d=\operatorname{diag}((a_R+b_R)I_3,(a_T+b_T)I_3),\quad
+K_p=\operatorname{diag}(4a_Rb_RI_3,a_Tb_TI_3).}
+\label{new:ab}
+\end{equation}
+这里参数 $k_i$ 在前一定理中对应 $a_i+b_i$。
+
+由四元数乘法与原 $A^\top$ 项直接得到
+\begin{align}
+\dot x_R&=(\eta I-[\mu]_\times)v_R,
+&\dot v_R&=-(a_R+b_R)v_R-a_Rb_R\eta x_R+d_R,
+\label{new:rot}\\
+\dot x_T&=v_T+v_R\times x_T,
+&\dot v_T&=-(a_T+b_T)v_T-a_Tb_Tx_T+d_T.
+\label{new:trans}
+\end{align}
+因此原控制律本身没有改变。
+
+\begin{theorem}[原反馈律的扰动幅值到位姿范围设计]\label{new:peak}
+给定容许角度 $0<\bar\theta<\pi$、归一化平移误差半径 $E_T>0$，令
+\[
+E_R=2\sin(\bar\theta/2),\qquad
+\eta_0=\cos(\bar\theta/2)>0.
+\]
+若总加速度残差满足 $\|d_i(t)\|\le D_i$，选取任意 $a_R,a_T>0$，并令
+\begin{equation}
+\boxed{b_R\ge\frac{D_R}{a_R\eta_0E_R},\qquad
+b_T\ge2a_RE_R+\frac{D_T}{a_TE_T},\qquad b_R,b_T>0.}
+\label{new:peak-design}
+\end{equation}
+初值满足 $\eta(0)>0$ 及
+\[
+\|x_i(0)\|\le E_i,\qquad
+\|v_i(0)+a_i x_i(0)\|\le a_iE_i,
+\]
+则在误差模型有效的整个时段内，
+\begin{equation}
+\boxed{\|x_R(t)\|\le E_R,\quad
+\|x_T(t)\|\le E_T,\quad
+\|s_i(t)\|\le a_iE_i,\quad
+\eta(t)\ge\eta_0.}
+\label{new:peak-bound}
+\end{equation}
+故 $\theta(t)\le\bar\theta$。这是逐时范围保证，不以事后观察到误差留域为前提，也不等同于全局 ISS 或任意初值的收敛结论。
+\end{theorem}
+
+\begin{proof}
+证明的核心是：在每一条目标边界上，误差都没有向外增长的方向。
+
+\textbf{第一步：精确计算辅助误差动态。}令 $\beta=1-\eta$，将式~\eqref{new:rot}--\eqref{new:trans}~代入 $\dot s_i=\dot v_i+a_i\dot x_i$，并利用 $\mu\times x_R=0$，得
+\begin{align}
+\dot s_R={}&-[b_R+a_R\beta]s_R-a_R\mu\times s_R
++a_R(a_R+b_R)\beta x_R+d_R,\label{new:sR}\\
+\dot s_T={}&-b_Ts_T+a_T(v_R\times x_T)+d_T.\label{new:sT}
+\end{align}
+此处没有把非线性项当作零，也不需要求 $A^{-1}$。
+
+\textbf{第二步：检查位姿边界。}在 $\|x_i\|>0$ 时，叉乘正交性给出
+\[
+\frac{d}{dt}\|x_R\|
+=\eta\left(\frac{x_R^\top s_R}{\|x_R\|}-a_R\|x_R\|\right),
+\qquad
+\frac{d}{dt}\|x_T\|
+=\frac{x_T^\top s_T}{\|x_T\|}-a_T\|x_T\|.
+\]
+所以在 $\|x_i\|=E_i$ 且 $\|s_i\|\le a_iE_i$ 时，两式均不大于零。
+
+\textbf{第三步：检查旋转辅助误差边界。}在 $\|s_R\|=a_RE_R$、$\|x_R\|\le E_R$ 时，因 $s_R^\top(\mu\times s_R)=0$，
+\begin{align*}
+\frac{d}{dt}\|s_R\|
+&\le-[b_R+a_R\beta]a_RE_R
++a_R(a_R+b_R)\beta E_R+D_R\\
+&=-a_Rb_R\eta E_R+D_R\\
+&\le-a_Rb_R\eta_0E_R+D_R\le0.
+\end{align*}
+保留叉乘正交性，使这一估计比先对所有几何余项取范数更紧。
+
+\textbf{第四步：检查平移辅助误差边界。}在候选域内，
+\[
+\|v_R\|=\|s_R-a_Rx_R\|\le2a_RE_R.
+\]
+故在 $\|s_T\|=a_TE_T$ 时，
+\[
+\frac{d}{dt}\|s_T\|
+\le-b_Ta_TE_T+2a_Ta_RE_RE_T+D_T\le0.
+\]
+
+\textbf{第五步：闭合正分支与留域。}由单位四元数关系 $\eta^2+\|x_R\|^2/4=1$，$E_R<2$ 且初始 $\eta>0$，候选域内必有 $\eta\ge\eta_0$；不可能在离开 $x_R$ 边界之前先跨过 $\eta=0$。所有边界均满足向内条件，故该闭集对适定误差系统正向不变。有界可测扰动下按绝对连续解及几乎处处导数理解；原点的范数导数用上右导数处理。
+\end{proof}
+
+\subsection{让位姿幅值设计参数也直接出现在反馈律中}
+
+为了与能量参数区分，记 $\gamma_{p,R},\gamma_{p,T}>0$ 为\emph{给定目标域的峰值预算设计因子}，要求 $\gamma_{p,i}D_i\le E_i$。取
+\begin{equation}
+b_R=\frac1{a_R\eta_0\gamma_{p,R}},\qquad
+b_T=2a_RE_R+\frac1{a_T\gamma_{p,T}}.
+\label{new:peak-gamma}
+\end{equation}
+于是原律的实际增益直接为
+\begin{align}
+p_O&=\frac4{\eta_0\gamma_{p,R}},
+&k_R&=a_R+\frac1{a_R\eta_0\gamma_{p,R}},\label{new:explicit-R}\\
+p_T&=2a_Ra_TE_R+\frac1{\gamma_{p,T}},
+&k_T&=a_T+2a_RE_R+\frac1{a_T\gamma_{p,T}}.\label{new:explicit-T}
+\end{align}
+这些 $\gamma_p$ 的量纲为时间平方，不是前一定理的 twist $H_\infty$ 指标。由于设计依赖指定的区域与初始状态条件，也不将其宣称为全局最优诱导 $L_\infty$ 增益。
+
+若同时指定 twist 能量指标，再将式~\eqref{new:peak-design}~的下界与 $b_i\ge1/\gamma_{\xi,i}-a_i$ 一起满足即可。在本节已知总扰动预算的情形，固定 $a_i,E_i$ 后增大 $b_i$ 保持上述充分条件。
+
+\subsection{从 DQ 平移误差换算成真实 TCP 距离}
+
+设真实末端位置为 $P$、期望位置为 $P_d$，误差旋转为 $R_e$。由于 $Lp=P-R_eP_d$，
+\[
+P-P_d=Lp+(R_e-I)P_d,
+\qquad
+\|P-P_d\|\le L\|x_T\|+\|P_d\|\|x_R\|.
+\]
+若 $\|P_d(t)\|\le L_d$，则保证真实 TCP 容差 $\varepsilon_P$ 的充分分配是
+\[
+LE_T+L_dE_R\le\varepsilon_P,
+\qquad E_R\le2\sin(\theta_{\rm req}/2).
+\]
+这一合并界可能保守，但不能直接把 $\|p\|$ 当作欧氏位置距离。
+
+\subsection{一个无需重新设计控制器的调参例子}
+
+只考虑旋转误差恒为零的单方向平移，初值为零，实际平移加速度残差不超过 $0.09\,\mathrm{m/s^2}$，希望位置误差始终不超过 $0.005\,\mathrm m$。取 $a_T=3\,\mathrm{s^{-1}}$，则
+\[
+b_T\ge\frac{0.09}{3\times0.005}=6\,\mathrm{s^{-1}}.
+\]
+选择 $b_T=6$，原控制器取 $K_{d,T}=9\,\mathrm{s^{-1}}$、$K_{p,T}=18\,\mathrm{s^{-2}}$。此例的位姿峰值因子为 $1/18\,\mathrm{s^2}$，速度能量因子为 $1/9\,\mathrm s$。它们对应不同输入输出关系，数值无需相同。该例不含旋转耦合，也未检查某台实机的力矩与采样可行性。
+
+\section{模型误差随反馈增大时，不能把扰动预算当常数}
+
+力矩接口下，总残差一般含 $\Theta u_{\rm fb}$。因此，如果 $D_i$ 是某个增益下事后测得的数，不能直接代入前节公式并无限增大增益。本节给出与原律兼容的充分闭合条件，适合作为主定理后的鲁棒设计推论。
+
+设在候选工作域内，旋转／平移块满足
+\[
+d_i=\sum_j\Theta_{ij}u_{{\rm fb},j}+r_i,
+\qquad\|\Theta_{ij}\|\le\Gamma_{ij},\quad
+\|r_i\|\le\bar r_i,
+\]
+其中 $\Gamma$ 元素非负，预算对候选域中的全部状态统一有效。令
+\[
+t_i=a_ib_iE_i,\quad
+C=\begin{bmatrix}2a_R^2E_R\\2a_T^2E_T\end{bmatrix},\quad
+M=\operatorname{diag}(2-\eta_0,1),\quad
+H=\operatorname{diag}(\eta_0,1),\quad
+g=\begin{bmatrix}0\\2a_Ta_RE_RE_T\end{bmatrix}.
+\]
+\begin{theorem}[含反馈乘性残差的范围设计充分条件]\label{new:robust}
+在定理~\ref{new:peak}~的初值与适定性条件下，如果存在正向量 $t$ 满足逐分量不等式
+\begin{equation}
+\boxed{(H-\Gamma M)t\ge\Gamma C+\bar r+g,\qquad
+b_i=\frac{t_i}{a_iE_i},}
+\label{new:robust-design}
+\end{equation}
+则同一个误差范围结论~\eqref{new:peak-bound}~成立。
+\end{theorem}
+\begin{proof}
+把原反馈写成 $s,x$ 的函数，
+\[
+u_R=-(a_R+b_R)s_R+[a_R^2+a_Rb_R(1-\eta)]x_R,
+\qquad
+u_T=-(a_T+b_T)s_T+a_T^2x_T.
+\]
+所以候选域内 $\|u_{{\rm fb},i}\|\le C_i+(Mt)_i$，继而
+$\|d_i\|\le[\Gamma(C+Mt)+\bar r]_i$。
+定理~\ref{new:peak}~边界证明所需的两个条件恰为
+$D_R\le\eta_0t_R$ 和 $D_T+g_T\le t_T$。代入即得式~\eqref{new:robust-design}。
+\end{proof}
+
+若 $\rho(H^{-1}\Gamma M)<1$，则矩阵逆非负，可取
+\[
+t=(H-\Gamma M)^{-1}(\Gamma C+\bar r+g).
+\]
+必要时在右端加入正裕度后重新求解。若还指定能量指标，则同时施加 $t_i\ge a_iE_i(1/\gamma_{\xi,i}-a_i)$ 和正增益约束，形成只有两个未知量的线性可行性问题。此能量指标仍以总残差 $d$ 为输入；没有由此证明外部余项 $r$ 到误差的相同增益，无穷时域能量结论仍须 $d\in L_2$。跨块耦合存在时，不能任意单独增加某个增益而不重新检查全部不等式。这里给出的是充分设计域，不是所有控制器的必要条件或全局最优增益。
+
+\section{论文应突出什么，什么内容移到附录}
+
+建议主文按下列顺序组织：设计输入与性能定义；原控制器及直接参数公式；误差系统和一个短耗散引理；twist 能量设计；需要逐时范围时的位姿预算定理；乘性残差设计推论；一个完整调参例子与验证。
+
+原来长篇 Schur 补、辅助参数的 AM--GM 优化、一般矩阵增益扩展及线性化范数计算可放入附录。以留域为前提的均方界可作为补充结果，不应盖过直接设计主线。无需为了增加定理数量另加未经证明的全状态 ISS 标题。
+
+从贡献角度，应分层判断：
+\begin{itemize}[leftmargin=2em]
+\item 仅把 $K_d$ 改写为 $1/\gamma_\xi$，是已有证明的清晰参数化，单独理论增量有限。
+\item 将 HDQ 二阶误差与实际加速度扰动关联，给出明确的输入输出对象、初值项及参数选择，是有用的交叉领域方法结果；其相对已有 DQ 动态控制的增量须文献对照。
+\item 若完成位姿范围、受扰留域及反馈相关模型误差预算的闭合，并验证界的适用性和保守程度，就能让“扰动多大、误差允许多大、参数怎么选”成为实质结果。此时 H∞ 或 ISS 是证明工具，不是靠名称构成新颖性。
+\end{itemize}
+
+该方向不要求在每条参考轨迹上打败 C2。对照重点应是：事前算出的参数能否在指定扰动预算下达到声明的指标，以及所付出的控制代价。若比较跟踪性能，则各律仍须使用相同的信息、动力学模型、限幅和合理调参。
+
+\section{本次验证的范围}
+
+本稿的定理~\ref{new:energy}~是原证明的等价简化。定理~\ref{new:peak}--\ref{new:robust}~补充了保留原控制律的逐时范围设计；其旋转边界估计直接利用叉乘正交性，比先把全部几何余项取范数更紧。没有因此宣称该分析在文献中首次出现。
+
+附带脚本从原项目的 $A$ 与 $e_z$ 函数计算反馈，检查辅助误差恒等式和边界方向，并在 $5^\circ,60^\circ,150^\circ$ 三种允许姿态域下积分原非线性误差系统，包括常值、旋转时变以及反馈相关块不确定性。1200 次随机恒等式与边界核验中，恒等式最大残差为 $7.78\times10^{-15}$，所采样辅助误差边界的径向导数均非正。18 次积分运行中，误差与给定半径的最大比值为 $1+2.23\times10^{-16}$（浮点舍入范围内），单位四元数范数的最大偏差为 $2.23\times10^{-11}$。常值扰动的两次运行重复同一初值与输入，其余运行改变初始方向或扰动参数。
+
+这些数值检查只是解析证明的实现核对，不代替证明。验证对象是非线性误差系统，未在本次新增完整六自由度动力学仿真，也不认证实际 B601 的未知扰动预算或关节工作域。

@@ -19,7 +19,7 @@ acceleration level qddot = qddot_ref + w_dyn (formula (5.1)).
 import numpy as np
 
 from core.dq_algebra import (
-    dq_Ad, dq_ad, dq_vec6, vec6_to_pure_dq, dq_log2_vec6,
+    dq_Ad, dq_ad, dq_vec6, vec6_to_pure_dq, dq_log2_vec6, skew,
 )
 
 
@@ -139,6 +139,68 @@ def dq_hinf_kinematic_law(err, xi_d_vec6, gamma_O, gamma_T):
     # feedforward vec6(x_tilde xi_d x_tilde*) == Ad_{x_tilde} xi_d
     feedforward = dq_vec6(dq_Ad(err["x_tilde"], vec6_to_pure_dq(xi_d_vec6)))
     return feedback + feedforward
+
+
+def dq_log_kinematic_law(err, xi_d_vec6, kO, kT):
+    """Fixed-gain velocity law using the screw-log pose error.
+
+    The dual-vector screw coordinates are used directly as a six-dimensional
+    velocity correction.  The first three entries are the rotation-log vector;
+    the last three are the dual-vector screw translation coordinates.
+    """
+    ell = dq_log2_vec6(err["x_tilde"])
+    feedback = -np.r_[kO * ell[:3], kT * ell[3:]]
+    feedforward = dq_vec6(
+        dq_Ad(err["x_tilde"], vec6_to_pure_dq(xi_d_vec6)))
+    return feedback + feedforward
+
+
+def dq_log_dexp_kinematic_law(err, xi_d_vec6, kO, kT):
+    """Fixed-gain log-coordinate feedback mapped to a spatial twist."""
+    ell = dq_log2_vec6(err["x_tilde"])
+    ad = np.zeros((6, 6))
+    ad[:3, :3] = skew(ell[:3])
+    ad[3:, :3] = skew(ell[3:])
+    ad[3:, 3:] = ad[:3, :3]
+    dexp = np.eye(6)
+    power = np.eye(6)
+    for n in range(1, 19):
+        power = (power @ ad) / (n + 1)
+        dexp += power
+    feedback = -dexp @ np.r_[kO * ell[:3], kT * ell[3:]]
+    feedforward = dq_vec6(
+        dq_Ad(err["x_tilde"], vec6_to_pure_dq(xi_d_vec6)))
+    return feedback + feedforward
+
+
+def dq_log_structured_kinematic_law(err, xi_d_vec6, K, l0=1.0):
+    """Image structure: dexp applied to feedforward plus weighted log error."""
+    ell = dq_log2_vec6(err["x_tilde"])
+    z = np.r_[ell[:3], ell[3:] / l0]
+    ad = np.zeros((6, 6))
+    ad[:3, :3] = skew(ell[:3])
+    ad[3:, :3] = skew(ell[3:])
+    ad[3:, 3:] = ad[:3, :3]
+    dexp = np.eye(6); power = np.eye(6)
+    for n in range(1, 19):
+        power = (power @ ad) / (n + 1)
+        dexp += power
+    feedforward = dq_vec6(dq_Ad(err["x_tilde"], vec6_to_pure_dq(xi_d_vec6)))
+    return dexp @ (feedforward - np.asarray(K, float) @ z)
+
+
+def dq_log_hinf_kinematic_law(err, xi_d_vec6, gamma_R, gamma_H):
+    """Screw-log velocity law with separate rotation and helical gains.
+
+    With equal disturbance levels within each channel, the Schur-complement
+    design gives k_R=sqrt(2)/gamma_R and k_H=sqrt(2)/gamma_H.  The dual log
+    component is used directly, without a characteristic-length scaling.
+    """
+    if gamma_R <= 0 or gamma_H <= 0:
+        raise ValueError("gamma_R and gamma_H must be positive")
+    return dq_log_dexp_kinematic_law(
+        err, xi_d_vec6, np.sqrt(2.0) / gamma_R,
+        np.sqrt(2.0) / gamma_H)
 
 
 # ---------------------------------------------------------------------------
